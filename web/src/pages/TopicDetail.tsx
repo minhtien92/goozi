@@ -74,7 +74,10 @@ export default function TopicDetail() {
   };
 
   const handleNext = () => {
-    if (topic && currentVocabIndex < topic.vocabularies.length - 1) {
+    const vocabulariesWithTranslations = topic?.vocabularies.filter(
+      (vocab) => vocab.translations && vocab.translations.length > 0
+    ) || [];
+    if (currentVocabIndex < vocabulariesWithTranslations.length - 1) {
       setCurrentVocabIndex(currentVocabIndex + 1);
     }
   };
@@ -114,7 +117,47 @@ export default function TopicDetail() {
     );
   }
 
-  const currentVocab = topic.vocabularies[currentVocabIndex];
+  // Filter vocabularies that have at least one translation
+  const vocabulariesWithTranslations = topic.vocabularies.filter(
+    (vocab) => {
+      const hasTranslations = vocab.translations && vocab.translations.length > 0;
+      if (!hasTranslations) {
+        console.log(`TopicDetail - Vocabulary ${vocab.word} has no translations:`, vocab);
+      }
+      return hasTranslations;
+    }
+  );
+  
+  console.log('TopicDetail - Total vocabularies:', topic.vocabularies.length);
+  console.log('TopicDetail - Vocabularies with translations:', vocabulariesWithTranslations.length);
+
+  // If no vocabularies with translations, show message
+  if (vocabulariesWithTranslations.length === 0) {
+    return (
+      <div className="min-h-screen bg-gradient-to-r from-blue-400 via-blue-300 to-gray-200 flex items-center justify-center p-4">
+        <div className="bg-white rounded-2xl shadow-2xl p-8 text-center max-w-md">
+          <p className="text-xl mb-4 text-gray-800">Chủ đề này chưa có từ vựng để học</p>
+          <p className="text-sm text-gray-600 mb-6">
+            Vui lòng thêm từ vựng và bản dịch cho chủ đề này trước khi học với flashcard.
+          </p>
+          <button
+            onClick={() => navigate('/topics')}
+            className="px-6 py-3 bg-blue-400 text-white rounded-lg font-medium hover:bg-blue-500"
+          >
+            Quay lại danh sách
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // Adjust currentVocabIndex if it's out of bounds
+  const validIndex = Math.min(currentVocabIndex, vocabulariesWithTranslations.length - 1);
+  if (validIndex !== currentVocabIndex) {
+    setCurrentVocabIndex(validIndex);
+  }
+
+  const currentVocab = vocabulariesWithTranslations[validIndex];
   const sourceLang = topic.sourceLanguage;
   const targetLang = topic.targetLanguage;
 
@@ -197,7 +240,7 @@ export default function TopicDetail() {
           <div className="text-gray-500 text-sm">Avatar</div>
           <button
             onClick={handleNext}
-            disabled={currentVocabIndex === topic.vocabularies.length - 1}
+            disabled={currentVocabIndex >= vocabulariesWithTranslations.length - 1}
             className="absolute right-4 w-10 h-10 bg-white rounded-full shadow-lg flex items-center justify-center hover:bg-gray-100 disabled:opacity-50"
           >
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -280,12 +323,25 @@ export default function TopicDetail() {
         {/* Footer Actions */}
         <div className="p-6 border-t border-gray-200 flex items-center justify-between">
           <div className="w-6 h-6 border-2 border-gray-300 rounded"></div>
-          <button className="flex items-center gap-2 bg-blue-400 hover:bg-blue-500 text-white px-6 py-3 rounded-lg font-medium transition">
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-            </svg>
-            Unlock
-          </button>
+          <div className="flex gap-3">
+            <button 
+              onClick={() => navigate(`/topics/${id}/flashcard`)}
+              disabled={vocabulariesWithTranslations.length === 0}
+              className="flex items-center gap-2 bg-teal-500 hover:bg-teal-600 disabled:bg-gray-400 disabled:cursor-not-allowed text-white px-6 py-3 rounded-lg font-medium transition"
+              title={vocabulariesWithTranslations.length === 0 ? 'Chưa có từ vựng để học' : 'Học với flashcard'}
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+              </svg>
+              Học với Flashcard {vocabulariesWithTranslations.length > 0 && `(${vocabulariesWithTranslations.length})`}
+            </button>
+            <button className="flex items-center gap-2 bg-blue-400 hover:bg-blue-500 text-white px-6 py-3 rounded-lg font-medium transition">
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+              </svg>
+              Unlock
+            </button>
+          </div>
         </div>
       </div>
     </div>

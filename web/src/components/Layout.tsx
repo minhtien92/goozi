@@ -19,10 +19,12 @@ export default function Layout() {
       )}
       {(isTopicsPage || isTopicDetailPage || isFlashcardPage) && (
         <>
-          <div className="opacity-30 blur-sm pointer-events-none">
+          <div className="opacity-30 blur-sm pointer-events-none fixed inset-0">
             <Home />
           </div>
-          <Outlet />
+          <div className="relative z-50">
+            <Outlet />
+          </div>
         </>
       )}
     </>

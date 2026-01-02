@@ -15,7 +15,7 @@ export default function (sequelize) {
       },
       meaning: {
         type: DataTypes.TEXT,
-        allowNull: false,
+        allowNull: true,
       },
       example: {
         type: DataTypes.TEXT,

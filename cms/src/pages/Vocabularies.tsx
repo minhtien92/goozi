@@ -87,6 +87,11 @@ export default function Vocabularies() {
   };
 
   const handleCreate = () => {
+    if (topics.length === 0) {
+      alert('Chưa có chủ đề nào. Vui lòng tạo chủ đề trước khi thêm từ vựng.');
+      return;
+    }
+    
     setEditingVocab(null);
     const translations: Record<string, Record<number, any>> = {};
     languages.forEach((lang) => {
@@ -229,9 +234,15 @@ export default function Vocabularies() {
       }
       setShowModal(false);
       fetchData();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error saving vocabulary:', error);
-      alert('Lưu từ vựng thất bại');
+      const errorMessage = error.response?.data?.error || error.message || 'Lưu từ vựng thất bại';
+      alert(`Lưu từ vựng thất bại: ${errorMessage}`);
+      
+      // If topic not found, suggest checking topic selection
+      if (errorMessage.includes('Topic not found') || error.response?.status === 404) {
+        alert('Chủ đề không tồn tại. Vui lòng chọn lại chủ đề.');
+      }
     }
   };
 
@@ -351,7 +362,7 @@ export default function Vocabularies() {
           <div className="card-body">
             <form onSubmit={handleSubmit}>
               <div className="form-group">
-                <label>Topic</label>
+                <label>Topic {!formData.topicId && <span className="text-danger">*</span>}</label>
                 <select
                   className="form-control"
                   value={formData.topicId}
@@ -365,6 +376,9 @@ export default function Vocabularies() {
                     </option>
                   ))}
                 </select>
+                {topics.length === 0 && (
+                  <small className="text-danger d-block mt-1">Chưa có chủ đề nào. Vui lòng tạo chủ đề trước.</small>
+                )}
               </div>
 
               <div className="form-group">

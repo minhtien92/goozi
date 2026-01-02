@@ -68,6 +68,11 @@ class VocabularyService {
     return vocabulary;
   }
 
+  async getVocabularyByIdAsJSON(id) {
+    const vocabulary = await this.getVocabularyById(id);
+    return vocabulary.toJSON ? vocabulary.toJSON() : vocabulary;
+  }
+
   async createVocabulary(data) {
     const { word, topicId, avatar, order, isActive, translations } = data;
 
