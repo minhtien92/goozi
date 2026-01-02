@@ -43,6 +43,8 @@ export default function Vocabularies() {
   const [languages, setLanguages] = useState<Language[]>([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
+  const [showDetailModal, setShowDetailModal] = useState(false);
+  const [detailVocab, setDetailVocab] = useState<Vocabulary | null>(null);
   const [editingVocab, setEditingVocab] = useState<Vocabulary | null>(null);
   const [formData, setFormData] = useState({
     word: '',
@@ -71,6 +73,16 @@ export default function Vocabularies() {
       console.error('Error fetching data:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchVocabularyDetail = async (id: string) => {
+    try {
+      const response = await api.get(`/vocabularies/${id}`);
+      return response.data.vocabulary;
+    } catch (error) {
+      console.error('Error fetching vocabulary detail:', error);
+      return null;
     }
   };
 
@@ -287,7 +299,19 @@ export default function Vocabularies() {
                       </td>
                       <td>{vocab.topic?.name || 'N/A'}</td>
                       <td>
-                        <button className="btn btn-sm btn-info" title="Detail">
+                        <button
+                          onClick={async () => {
+                            const detail = await fetchVocabularyDetail(vocab.id);
+                            if (detail) {
+                              setDetailVocab(detail);
+                              setShowDetailModal(true);
+                            } else {
+                              alert('Không thể tải chi tiết từ vựng');
+                            }
+                          }}
+                          className="btn btn-sm btn-info"
+                          title="Detail"
+                        >
                           <i className="fas fa-eye"></i>
                         </button>
                       </td>
@@ -497,6 +521,132 @@ export default function Vocabularies() {
           </div>
         </div>
       )}
+
+      {/* Detail Modal */}
+      {showDetailModal && detailVocab && (
+        <div className="modal fade show" style={{ display: 'block' }} tabIndex={-1}>
+          <div className="modal-dialog modal-lg">
+            <div className="modal-content">
+              <div className="modal-header">
+                <h4 className="modal-title">Chi tiết từ vựng</h4>
+                <button
+                  type="button"
+                  className="close"
+                  onClick={() => setShowDetailModal(false)}
+                >
+                  <span>&times;</span>
+                </button>
+              </div>
+              <div className="modal-body">
+                <div className="row mb-3">
+                  <div className="col-md-6">
+                    <strong>Từ vựng:</strong>
+                    <p>{detailVocab.word}</p>
+                  </div>
+                  <div className="col-md-6">
+                    <strong>Chủ đề:</strong>
+                    <p>{detailVocab.topic?.name || 'N/A'}</p>
+                  </div>
+                </div>
+                <div className="row mb-3">
+                  <div className="col-md-6">
+                    <strong>No (Order):</strong>
+                    <p>{detailVocab.order || '-'}</p>
+                  </div>
+                  <div className="col-md-6">
+                    <strong>Trạng thái:</strong>
+                    <p>
+                      <span className={`badge ${detailVocab.isActive ? 'badge-success' : 'badge-secondary'}`}>
+                        {detailVocab.isActive ? 'Hoạt động' : 'Tạm dừng'}
+                      </span>
+                    </p>
+                  </div>
+                </div>
+                {detailVocab.avatar && (
+                  <div className="mb-3">
+                    <strong>Avatar:</strong>
+                    <div className="mt-2">
+                      <img src={detailVocab.avatar} alt="Avatar" style={{ maxWidth: '200px', maxHeight: '200px' }} />
+                    </div>
+                  </div>
+                )}
+                {detailVocab.translations && detailVocab.translations.length > 0 && (
+                  <div>
+                    <strong>Bản dịch:</strong>
+                    <div className="mt-2">
+                      {detailVocab.translations.map((trans, index) => (
+                        <div key={trans.id || index} className="card mb-2">
+                          <div className="card-body">
+                            <div className="d-flex align-items-center gap-2 mb-2">
+                              <span className="text-lg">{trans.language?.flag || '🌐'}</span>
+                              <strong>{trans.language?.nativeName || trans.language?.name || 'Unknown'}</strong>
+                              <span className="badge badge-primary">V{trans.version}</span>
+                            </div>
+                            <div className="mb-2">
+                              <strong>Nghĩa:</strong>
+                              <p className="mb-0">{trans.meaning}</p>
+                            </div>
+                            {trans.pronunciation && (
+                              <div className="mb-2">
+                                <strong>Phát âm:</strong>
+                                <p className="mb-0">{trans.pronunciation}</p>
+                              </div>
+                            )}
+                            {trans.example && (
+                              <div className="mb-2">
+                                <strong>Ví dụ:</strong>
+                                <p className="mb-0 italic">"{trans.example}"</p>
+                              </div>
+                            )}
+                            {trans.audioUrl && (
+                              <div>
+                                <strong>Audio:</strong>
+                                <div className="mt-1">
+                                  <audio controls src={trans.audioUrl} style={{ width: '100%' }}>
+                                    Your browser does not support the audio element.
+                                  </audio>
+                                </div>
+                                <a href={trans.audioUrl} target="_blank" rel="noopener noreferrer" className="text-sm">
+                                  {trans.audioUrl}
+                                </a>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                {(!detailVocab.translations || detailVocab.translations.length === 0) && (
+                  <div className="alert alert-info">
+                    Chưa có bản dịch nào cho từ vựng này.
+                  </div>
+                )}
+              </div>
+              <div className="modal-footer">
+                <button
+                  type="button"
+                  className="btn btn-default"
+                  onClick={() => setShowDetailModal(false)}
+                >
+                  Đóng
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-primary"
+                  onClick={() => {
+                    setShowDetailModal(false);
+                    handleEdit(detailVocab);
+                  }}
+                >
+                  Sửa
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+      {showDetailModal && <div className="modal-backdrop fade show"></div>}
     </div>
   );
 }

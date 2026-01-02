@@ -2,13 +2,23 @@ import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import api from '../config/api';
 
+interface VocabularyTranslation {
+  id: string;
+  languageId: string;
+  meaning: string;
+  pronunciation: string | null;
+  example: string | null;
+  audioUrl: string | null;
+  version: number;
+  language?: Language;
+}
+
 interface Vocabulary {
   id: string;
   word: string;
-  meaning: string;
-  example: string | null;
-  pronunciation: string | null;
-  audioUrl: string | null;
+  avatar: string | null;
+  order: number | null;
+  translations?: VocabularyTranslation[];
 }
 
 interface Language {
@@ -108,6 +118,14 @@ export default function TopicDetail() {
   const sourceLang = topic.sourceLanguage;
   const targetLang = topic.targetLanguage;
 
+  // Get translations for source and target languages
+  const sourceTranslation = currentVocab?.translations?.find(
+    (t) => t.languageId === sourceLang?.id
+  );
+  const targetTranslation = currentVocab?.translations?.find(
+    (t) => t.languageId === targetLang?.id
+  ) || currentVocab?.translations?.[0]; // Fallback to first translation if target language not found
+
   const handleClose = () => {
     navigate('/');
   };
@@ -134,7 +152,7 @@ export default function TopicDetail() {
               </svg>
             </button>
             <h2 className="text-xl font-bold text-gray-800">
-              {currentVocab.word || `Name of word ${currentVocabIndex + 1}`}
+              {currentVocab.word || `Word ${currentVocabIndex + 1}`}
             </h2>
           </div>
           <div className="flex items-center gap-2">
@@ -160,8 +178,13 @@ export default function TopicDetail() {
           </div>
         </div>
 
-        {/* Image Placeholder */}
+        {/* Image/Avatar */}
         <div className="relative bg-gray-200 h-64 flex items-center justify-center">
+          {currentVocab.avatar ? (
+            <img src={currentVocab.avatar} alt={currentVocab.word} className="w-full h-full object-cover" />
+          ) : (
+            <div className="text-gray-500 text-sm">Avatar</div>
+          )}
           <button
             onClick={handlePrevious}
             disabled={currentVocabIndex === 0}
@@ -191,19 +214,21 @@ export default function TopicDetail() {
               <span className="text-3xl">{sourceLang.flag}</span>
               <div className="flex-1">
                 <div className="font-semibold text-lg text-gray-800">{currentVocab.word}</div>
-                {currentVocab.pronunciation && (
-                  <div className="text-sm text-gray-600 italic">{currentVocab.pronunciation}</div>
+                {sourceTranslation?.pronunciation && (
+                  <div className="text-sm text-gray-600 italic">{sourceTranslation.pronunciation}</div>
                 )}
               </div>
               <div className="flex gap-2">
-                <button
-                  onClick={() => playAudio(currentVocab.audioUrl, currentVocab.word)}
-                  className="w-8 h-8 rounded-full bg-blue-100 hover:bg-blue-200 flex items-center justify-center"
-                >
-                  <svg className="w-4 h-4 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
-                    <path d="M18 3a1 1 0 00-1.196-.98l-10 2A1 1 0 006 5v9.114A4.369 4.369 0 005 14c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V7.82l8-1.6v5.894A4.37 4.37 0 0015 12c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V3z" />
-                  </svg>
-                </button>
+                {sourceTranslation?.audioUrl && (
+                  <button
+                    onClick={() => playAudio(sourceTranslation.audioUrl, currentVocab.word)}
+                    className="w-8 h-8 rounded-full bg-blue-100 hover:bg-blue-200 flex items-center justify-center"
+                  >
+                    <svg className="w-4 h-4 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+                      <path d="M18 3a1 1 0 00-1.196-.98l-10 2A1 1 0 006 5v9.114A4.369 4.369 0 005 14c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V7.82l8-1.6v5.894A4.37 4.37 0 0015 12c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V3z" />
+                    </svg>
+                  </button>
+                )}
                 <button className="w-8 h-8 rounded-full bg-gray-200 hover:bg-gray-300 flex items-center justify-center">
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
@@ -214,33 +239,40 @@ export default function TopicDetail() {
           )}
 
           {/* Target Language */}
-          {targetLang && (
+          {targetTranslation && (
             <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-lg">
-              <span className="text-3xl">{targetLang.flag}</span>
+              <span className="text-3xl">{targetTranslation.language?.flag || targetLang?.flag || '🌐'}</span>
               <div className="flex-1">
-                <div className="font-semibold text-lg text-gray-800">{currentVocab.meaning}</div>
-                {currentVocab.pronunciation && (
-                  <div className="text-sm text-gray-600 italic">{currentVocab.pronunciation}</div>
+                <div className="font-semibold text-lg text-gray-800">{targetTranslation.meaning}</div>
+                {targetTranslation.pronunciation && (
+                  <div className="text-sm text-gray-600 italic">{targetTranslation.pronunciation}</div>
                 )}
-                {currentVocab.example && (
-                  <div className="text-sm text-gray-500 mt-1 italic">"{currentVocab.example}"</div>
+                {targetTranslation.example && (
+                  <div className="text-sm text-gray-500 mt-1 italic">"{targetTranslation.example}"</div>
                 )}
               </div>
               <div className="flex gap-2">
-                <button
-                  onClick={() => playAudio(currentVocab.audioUrl, currentVocab.meaning)}
-                  className="w-8 h-8 rounded-full bg-blue-100 hover:bg-blue-200 flex items-center justify-center"
-                >
-                  <svg className="w-4 h-4 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
-                    <path d="M18 3a1 1 0 00-1.196-.98l-10 2A1 1 0 006 5v9.114A4.369 4.369 0 005 14c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V7.82l8-1.6v5.894A4.37 4.37 0 0015 12c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V3z" />
-                  </svg>
-                </button>
+                {targetTranslation.audioUrl && (
+                  <button
+                    onClick={() => playAudio(targetTranslation.audioUrl, targetTranslation.meaning)}
+                    className="w-8 h-8 rounded-full bg-blue-100 hover:bg-blue-200 flex items-center justify-center"
+                  >
+                    <svg className="w-4 h-4 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+                      <path d="M18 3a1 1 0 00-1.196-.98l-10 2A1 1 0 006 5v9.114A4.369 4.369 0 005 14c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V7.82l8-1.6v5.894A4.37 4.37 0 0015 12c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V3z" />
+                    </svg>
+                  </button>
+                )}
                 <button className="w-8 h-8 rounded-full bg-gray-200 hover:bg-gray-300 flex items-center justify-center">
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
                   </svg>
                 </button>
               </div>
+            </div>
+          )}
+          {!targetTranslation && (
+            <div className="p-4 bg-yellow-50 rounded-lg text-center text-gray-600">
+              Chưa có bản dịch cho từ vựng này
             </div>
           )}
         </div>

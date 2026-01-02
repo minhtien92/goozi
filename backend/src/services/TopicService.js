@@ -64,7 +64,20 @@ class TopicService {
         as: 'vocabularies',
         where: { isActive: true },
         required: false,
-        order: [['createdAt', 'ASC']],
+        include: [
+          {
+            model: db.VocabularyTranslation,
+            as: 'translations',
+            include: [
+              {
+                model: db.Language,
+                as: 'language',
+                attributes: ['id', 'code', 'name', 'nativeName', 'flag'],
+              },
+            ],
+          },
+        ],
+        order: [['order', 'ASC'], ['createdAt', 'ASC']],
       });
     }
 
