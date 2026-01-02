@@ -1,0 +1,181 @@
+import { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuthStore } from '../store/authStore';
+import LanguageSelector from '../components/LanguageSelector';
+
+const greetings = [
+  { text: 'Salut!', color: 'bg-orange-400', lang: 'French' },
+  { text: 'Hi!', color: 'bg-amber-800', lang: 'English' },
+  { text: 'Hallo!', color: 'bg-orange-400', lang: 'German' },
+  { text: 'Hello!', color: 'bg-amber-800', lang: 'English' },
+  { text: 'नमस्ते', color: 'bg-red-500', lang: 'Hindi' },
+  { text: 'Bonjour!', color: 'bg-orange-400', lang: 'French' },
+  { text: 'Olá!', color: 'bg-red-500', lang: 'Portuguese' },
+  { text: 'Ciao!', color: 'bg-amber-800', lang: 'Italian' },
+  { text: '你好', color: 'bg-red-500', lang: 'Chinese' },
+  { text: 'مرحبا', color: 'bg-orange-400', lang: 'Arabic' },
+];
+
+export default function Home() {
+  const { user, logout } = useAuthStore();
+  const navigate = useNavigate();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  const handleLogout = () => {
+    logout();
+    navigate('/login');
+  };
+
+  return (
+    <div className="min-h-screen bg-gradient-to-r from-blue-400 via-blue-300 to-gray-200 relative overflow-hidden">
+      {/* Sidebar */}
+      <div
+        className={`fixed left-0 top-0 h-full w-64 bg-green-100 transform transition-transform duration-300 z-50 ${
+          sidebarOpen ? 'translate-x-0' : '-translate-x-full'
+        }`}
+      >
+        <div className="p-6">
+          <div className="text-2xl font-bold text-blue-600 mb-8">GOOZI</div>
+          <nav className="space-y-4">
+            <Link
+              to="/"
+              className="block text-gray-700 hover:text-blue-600 font-medium"
+              onClick={() => setSidebarOpen(false)}
+            >
+              Home
+            </Link>
+            <Link
+              to="/topics"
+              className="block text-gray-700 hover:text-blue-600 font-medium"
+              onClick={() => setSidebarOpen(false)}
+            >
+              Vocabulary
+            </Link>
+            <Link
+              to="/"
+              className="block text-gray-700 hover:text-blue-600 font-medium"
+              onClick={() => setSidebarOpen(false)}
+            >
+              Phrase
+            </Link>
+            <Link
+              to="/"
+              className="block text-gray-700 hover:text-blue-600 font-medium"
+              onClick={() => setSidebarOpen(false)}
+            >
+              Sentence
+            </Link>
+          </nav>
+          <div className="mt-8 pt-8 border-t border-gray-300">
+            <div className="text-sm text-gray-600">{user?.name || 'User Name'}</div>
+            <div className="text-sm text-gray-500">{user?.email || 'user@email.com'}</div>
+            <button
+              onClick={handleLogout}
+              className="mt-4 text-sm text-gray-700 hover:text-red-600"
+            >
+              Sign out
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Overlay */}
+      {sidebarOpen && (
+        <div
+          className="fixed inset-0 bg-black bg-opacity-50 z-40"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+
+      {/* Main Content */}
+      <div className="relative z-10">
+        {/* Header */}
+        <header className="flex justify-between items-center p-6">
+          <div className="flex items-center gap-4">
+            <button
+              onClick={() => setSidebarOpen(true)}
+              className="text-white hover:text-gray-200"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+            </button>
+            <div className="w-12 h-12 bg-blue-200 rounded-full flex items-center justify-center">
+              <span className="text-blue-600 font-bold text-xl">G</span>
+            </div>
+            <h1 className="text-4xl font-bold text-white tracking-wider">GOOZI</h1>
+          </div>
+          <div className="flex items-center gap-4 text-white">
+            <LanguageSelector />
+            <div className="flex items-center gap-2">
+              <span>{user?.name || 'Angelyna'}</span>
+              {user?.nativeLanguage?.flag && (
+                <span className="text-2xl">{user.nativeLanguage.flag}</span>
+              )}
+            </div>
+          </div>
+        </header>
+
+        {/* Main Content Area */}
+        <div className="px-6 pb-20">
+          {/* Tagline */}
+          <div className="text-center mb-12">
+            <p className="text-2xl md:text-3xl text-gray-800 font-medium">
+              The more languages you learn, the easier it becomes
+            </p>
+          </div>
+
+          {/* Greetings with Characters */}
+          <div className="flex flex-wrap justify-center gap-8 mb-12">
+            {greetings.map((greeting, index) => (
+              <div key={index} className="flex flex-col items-center">
+                <div
+                  className={`${greeting.color} rounded-full px-4 py-2 mb-2 text-white font-semibold text-lg shadow-lg`}
+                >
+                  {greeting.text}
+                </div>
+                <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-md">
+                  <div className="w-12 h-12 bg-gradient-to-br from-blue-300 to-purple-300 rounded-full"></div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Feature Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12 max-w-5xl mx-auto">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="bg-gray-100 rounded-lg p-6 shadow-md">
+                <h3 className="text-lg font-semibold text-gray-800 mb-2">Title here</h3>
+                <p className="text-gray-600 text-sm">
+                  Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor
+                  incididunt ut labore et dolore magna aliqua.
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Navigation Buttons (Right Side) */}
+        <div className="fixed right-6 top-1/2 transform -translate-y-1/2 z-20 space-y-3">
+          <Link
+            to="/topics"
+            className="block w-32 bg-blue-400 hover:bg-blue-500 text-white font-medium py-3 px-6 rounded-lg shadow-lg transition text-center"
+          >
+            Vocabulary
+          </Link>
+          <button className="block w-32 bg-blue-400 hover:bg-blue-500 text-white font-medium py-3 px-6 rounded-lg shadow-lg transition">
+            Phrase
+          </button>
+          <button className="block w-32 bg-blue-400 hover:bg-blue-500 text-white font-medium py-3 px-6 rounded-lg shadow-lg transition">
+            Sentence
+          </button>
+        </div>
+
+        {/* Footer */}
+        <footer className="fixed bottom-0 left-0 right-0 text-center py-4 text-gray-600 text-sm bg-white bg-opacity-50">
+          Copyright @ 2025 Goozi
+        </footer>
+      </div>
+    </div>
+  );
+}

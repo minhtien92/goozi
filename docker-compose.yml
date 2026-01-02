@@ -1,0 +1,92 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: goozi-postgres
+    environment:
+      POSTGRES_DB: ${DB_NAME:-goozi_db}
+      POSTGRES_USER: ${DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
+    ports:
+      - "${DB_PORT:-5432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-postgres}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - goozi-network
+
+  # Backend API
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: goozi-backend
+    environment:
+      NODE_ENV: production
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: ${DB_NAME:-goozi_db}
+      DB_USER: ${DB_USER:-postgres}
+      DB_PASSWORD: ${DB_PASSWORD:-postgres}
+      JWT_SECRET: ${JWT_SECRET:-your-super-secret-jwt-key-change-in-production}
+      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-7d}
+      PORT: 3001
+      FRONTEND_URL: http://localhost:3000
+      CMS_URL: http://localhost:3002
+    ports:
+      - "3001:3001"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+      - backend_uploads:/app/uploads
+    networks:
+      - goozi-network
+    command: sh -c "sleep 5 && npm run migrate && npm run create-admin && npm start"
+
+  # Frontend Web
+  web:
+    build:
+      context: ./web
+      dockerfile: Dockerfile
+      args:
+        - VITE_API_URL=http://localhost:3001/api
+    container_name: goozi-web
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    networks:
+      - goozi-network
+
+  # CMS Admin
+  cms:
+    build:
+      context: ./cms
+      dockerfile: Dockerfile
+      args:
+        - VITE_API_URL=http://localhost:3001/api
+    container_name: goozi-cms
+    ports:
+      - "3002:3002"
+    depends_on:
+      - backend
+    networks:
+      - goozi-network
+
+volumes:
+  postgres_data:
+  backend_uploads:
+
+networks:
+  goozi-network:
+    driver: bridge
+
