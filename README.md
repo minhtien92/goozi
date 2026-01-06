@@ -388,3 +388,6 @@ docker-compose exec -T postgres psql -U postgres goozi_db < backup.sql
 - Cấu hình CORS phù hợp với domain của bạn
 - File `.env` không được commit lên git
 
+
+
+docker-compose exec backend npm run migrate

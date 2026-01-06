@@ -118,6 +118,26 @@ export default function Layout() {
                   <p>Ngôn ngữ</p>
                 </Link>
               </li>
+              <li className={`nav-item has-treeview ${location.pathname.startsWith('/home-settings') ? 'menu-open' : ''}`}>
+                <a href="#" className={`nav-link ${location.pathname.startsWith('/home-settings') ? 'active' : ''}`}>
+                  <i className="nav-icon fas fa-home"></i>
+                  <p>
+                    WEB/HOME
+                    <i className="right fas fa-angle-left"></i>
+                  </p>
+                </a>
+                <ul className="nav nav-treeview">
+                  <li className="nav-item">
+                    <Link
+                      to="/home-settings"
+                      className={`nav-link ${isActive('/home-settings') ? 'active' : ''}`}
+                    >
+                      <i className="far fa-circle nav-icon"></i>
+                      <p>Slogan & Picture</p>
+                    </Link>
+                  </li>
+                </ul>
+              </li>
               <li className="nav-header">HỆ THỐNG</li>
               <li className="nav-item">
                 <a href="#" className="nav-link" onClick={handleLogout}>
@@ -143,6 +163,7 @@ export default function Layout() {
                   {location.pathname === '/topics' && 'Quản lý chủ đề'}
                   {location.pathname === '/vocabularies' && 'Quản lý từ vựng'}
                   {location.pathname === '/languages' && 'Quản lý ngôn ngữ'}
+                  {location.pathname === '/home-settings' && 'Cài đặt trang chủ'}
                 </h1>
               </div>
               <div className="col-sm-6">
@@ -156,6 +177,7 @@ export default function Layout() {
                     {location.pathname === '/topics' && 'Chủ đề'}
                     {location.pathname === '/vocabularies' && 'Từ vựng'}
                     {location.pathname === '/languages' && 'Ngôn ngữ'}
+                    {location.pathname === '/home-settings' && 'Cài đặt trang chủ'}
                   </li>
                 </ol>
               </div>

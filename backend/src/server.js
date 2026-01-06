@@ -14,6 +14,7 @@ import vocabulariesRoutes from './routes/vocabularies.js';
 import usersRoutes from './routes/users.js';
 import languagesRoutes from './routes/languages.js';
 import uploadRoutes from './routes/upload.js';
+import homeSettingsRoutes from './routes/home-settings.js';
 
 dotenv.config();
 
@@ -53,6 +54,7 @@ await fastify.register(vocabulariesRoutes, { prefix: '/api/vocabularies' });
 await fastify.register(usersRoutes, { prefix: '/api/users' });
 await fastify.register(languagesRoutes, { prefix: '/api/languages' });
 await fastify.register(uploadRoutes, { prefix: '/api/upload' });
+await fastify.register(homeSettingsRoutes, { prefix: '/api/home-settings' });
 
 // Serve static files (uploads)
 fastify.register(import('@fastify/static'), {

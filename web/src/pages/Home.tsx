@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
 import LanguageSelector from '../components/LanguageSelector';
+import api from '../config/api';
 
 const greetings = [
   { text: 'Salut!', color: 'bg-orange-400', lang: 'French' },
@@ -20,14 +21,69 @@ export default function Home() {
   const { user, logout } = useAuthStore();
   const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [slogans, setSlogans] = useState<string[]>([]);
+  const [backgroundImage, setBackgroundImage] = useState<string>('');
+  const [currentSloganIndex, setCurrentSloganIndex] = useState(0);
+
+  useEffect(() => {
+    fetchHomeSettings();
+  }, []);
+
+  useEffect(() => {
+    if (slogans.length > 1) {
+      const interval = setInterval(() => {
+        setCurrentSloganIndex((prev) => (prev + 1) % slogans.length);
+      }, 5000); // Change slogan every 5 seconds
+      return () => clearInterval(interval);
+    }
+  }, [slogans]);
+
+  const fetchHomeSettings = async () => {
+    try {
+      const response = await api.get('/home-settings/active');
+      const settings = response.data.settings;
+      
+      // Get slogans
+      const sloganSettings = settings.filter((s: any) => s.key === 'slogan');
+      sloganSettings.sort((a: any, b: any) => a.order - b.order);
+      const sloganValues = sloganSettings.map((s: any) => s.value);
+      if (sloganValues.length > 0) {
+        setSlogans(sloganValues);
+      }
+
+      // Get background image
+      const bgSetting = settings.find((s: any) => s.key === 'background_image');
+      if (bgSetting && bgSetting.value) {
+        const baseUrl = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:3001';
+        const bgUrl = bgSetting.value.startsWith('http') ? bgSetting.value : `${baseUrl}${bgSetting.value}`;
+        setBackgroundImage(bgUrl);
+      }
+    } catch (error) {
+      console.error('Error fetching home settings:', error);
+    }
+  };
 
   const handleLogout = () => {
     logout();
     navigate('/login');
   };
 
+  const backgroundStyle = backgroundImage
+    ? {
+        backgroundImage: `url(${backgroundImage})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat',
+      }
+    : {
+        background: 'linear-gradient(to right, #60a5fa, #4fd1c7, #e5e7eb)',
+      };
+
   return (
-    <div className="min-h-screen bg-gradient-to-r from-blue-400 via-blue-300 to-gray-200 relative overflow-hidden">
+    <div className="min-h-screen relative overflow-hidden" style={backgroundStyle}>
+      {backgroundImage && (
+        <div className="absolute inset-0 bg-black bg-opacity-30"></div>
+      )}
       {/* Sidebar */}
       <div
         className={`fixed left-0 top-0 h-full w-64 bg-green-100 transform transition-transform duration-300 z-50 ${
@@ -88,13 +144,13 @@ export default function Home() {
       )}
 
       {/* Main Content */}
-      <div className="relative z-10">
+      <div className="relative z-10" style={{ position: 'relative' }}>
         {/* Header */}
         <header className="flex justify-between items-center p-6">
           <div className="flex items-center gap-4">
             <button
               onClick={() => setSidebarOpen(true)}
-              className="text-white hover:text-gray-200"
+              className={`${backgroundImage ? 'text-white drop-shadow-lg' : 'text-white'} hover:text-gray-200`}
             >
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
@@ -103,9 +159,9 @@ export default function Home() {
             <div className="w-12 h-12 bg-blue-200 rounded-full flex items-center justify-center">
               <span className="text-blue-600 font-bold text-xl">G</span>
             </div>
-            <h1 className="text-4xl font-bold text-white tracking-wider">GOOZI</h1>
+            <h1 className={`text-4xl font-bold tracking-wider ${backgroundImage ? 'text-white drop-shadow-lg' : 'text-white'}`}>GOOZI</h1>
           </div>
-          <div className="flex items-center gap-4 text-white">
+          <div className={`flex items-center gap-4 ${backgroundImage ? 'text-white drop-shadow-lg' : 'text-white'}`}>
             <LanguageSelector />
             <div className="flex items-center gap-2">
               <span>{user?.name || 'Angelyna'}</span>
@@ -120,9 +176,17 @@ export default function Home() {
         <div className="px-6 pb-20">
           {/* Tagline */}
           <div className="text-center mb-12">
-            <p className="text-2xl md:text-3xl text-gray-800 font-medium">
-              The more languages you learn, the easier it becomes
-            </p>
+            {slogans.length > 0 ? (
+              <div className="bg-red-500 text-white px-6 py-3 rounded-lg inline-block shadow-lg">
+                <p className="text-2xl md:text-3xl font-medium">
+                  {slogans[currentSloganIndex]}
+                </p>
+              </div>
+            ) : (
+              <p className={`text-2xl md:text-3xl font-medium ${backgroundImage ? 'text-white drop-shadow-lg' : 'text-gray-800'}`}>
+                The more languages you learn, the easier it becomes
+              </p>
+            )}
           </div>
 
           {/* Greetings with Characters */}
@@ -172,7 +236,7 @@ export default function Home() {
         </div>
 
         {/* Footer */}
-        <footer className="fixed bottom-0 left-0 right-0 text-center py-4 text-gray-600 text-sm bg-white bg-opacity-50">
+        <footer className={`fixed bottom-0 left-0 right-0 text-center py-4 text-sm ${backgroundImage ? 'text-white bg-black bg-opacity-50' : 'text-gray-600 bg-white bg-opacity-50'}`}>
           Copyright @ 2025 Goozi
         </footer>
       </div>
