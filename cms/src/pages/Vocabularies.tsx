@@ -102,10 +102,16 @@ export default function Vocabularies() {
         4: { meaning: '', pronunciation: '', example: '', audioUrl: '' },
       };
     });
+    
+    // Tự động tính order (số thứ tự tiếp theo)
+    const maxOrder = vocabularies.length > 0 
+      ? Math.max(...vocabularies.map(v => v.order || 0)) + 1 
+      : 1;
+    
     setFormData({
       word: '',
       topicId: topics[0]?.id || '',
-      order: '',
+      order: maxOrder.toString(),
       avatar: '',
       isActive: true,
       translations,
@@ -381,26 +387,17 @@ export default function Vocabularies() {
                 )}
               </div>
 
-              <div className="form-group">
-                <label>No</label>
-                <input
-                  type="number"
-                  className="form-control"
-                  value={formData.order}
-                  onChange={(e) => setFormData({ ...formData, order: e.target.value })}
-                  placeholder="Order number"
-                />
-              </div>
 
               <div className="form-group">
                 <label>Avatar</label>
-                <div className="d-flex align-items-center gap-2">
+                <div className="d-flex align-items-center" style={{ gap: '8px' }}>
                   <input
                     type="text"
                     className="form-control"
                     value={formData.avatar}
                     onChange={(e) => setFormData({ ...formData, avatar: e.target.value })}
                     placeholder="Avatar URL"
+                    style={{ flex: 1 }}
                   />
                   <button type="button" className="btn btn-secondary btn-sm">Upload</button>
                 </div>
@@ -433,11 +430,11 @@ export default function Vocabularies() {
                         const trans = formData.translations[lang.id]?.[version] || { meaning: '', pronunciation: '', example: '', audioUrl: '' };
                         return (
                           <div key={version} className="mb-2 p-2 bg-light rounded">
-                            <div className="d-flex align-items-center gap-1 mb-1">
+                            <div className="d-flex align-items-center mb-1" style={{ gap: '8px' }}>
                               <button
                                 type="button"
                                 className="btn btn-sm btn-outline-primary"
-                                style={{ minWidth: '45px' }}
+                                style={{ minWidth: '45px', flexShrink: 0 }}
                                 title={`Version ${version}`}
                               >
                                 V{version}
@@ -448,24 +445,43 @@ export default function Vocabularies() {
                                 value={trans.meaning}
                                 onChange={(e) => updateTranslation(lang.id, version, 'meaning', e.target.value)}
                                 placeholder="Meaning"
+                                style={{ resize: 'none', overflow: 'hidden', flex: 1 }}
                               />
                             </div>
-                            <div className="d-flex gap-1 mb-1">
+                            <div className="d-flex mb-1" style={{ gap: '8px' }}>
                               <input
                                 type="text"
                                 className="form-control form-control-sm"
                                 value={trans.pronunciation || ''}
                                 onChange={(e) => updateTranslation(lang.id, version, 'pronunciation', e.target.value)}
                                 placeholder="Pronunciation"
+                                style={{ resize: 'none', overflow: 'hidden', flex: 1 }}
                               />
-                              <div className="d-flex gap-1" style={{ flex: 1 }}>
-                                <input
-                                  type="text"
-                                  className="form-control form-control-sm"
-                                  value={trans.audioUrl || ''}
-                                  onChange={(e) => updateTranslation(lang.id, version, 'audioUrl', e.target.value)}
-                                  placeholder="Audio URL"
-                                />
+                              <div className="d-flex" style={{ gap: '8px', flexShrink: 0 }}>
+                                {trans.audioUrl ? (
+                                  <button
+                                    type="button"
+                                    className="btn btn-sm btn-success mb-0"
+                                    style={{ flexShrink: 0 }}
+                                    title="Play audio"
+                                    onClick={() => {
+                                      const audio = new Audio(trans.audioUrl);
+                                      audio.play().catch(err => console.error('Error playing audio:', err));
+                                    }}
+                                  >
+                                    <i className="fas fa-play"></i>
+                                  </button>
+                                ) : (
+                                  <button
+                                    type="button"
+                                    className="btn btn-sm btn-secondary mb-0"
+                                    style={{ flexShrink: 0 }}
+                                    disabled
+                                    title="No audio uploaded"
+                                  >
+                                    <i className="fas fa-play"></i>
+                                  </button>
+                                )}
                                 <input
                                   type="file"
                                   accept="audio/*"
@@ -482,7 +498,7 @@ export default function Vocabularies() {
                                 <label
                                   htmlFor={`audio-upload-${lang.id}-${version}`}
                                   className="btn btn-sm btn-outline-primary mb-0"
-                                  style={{ cursor: 'pointer' }}
+                                  style={{ cursor: 'pointer', flexShrink: 0 }}
                                   title="Upload audio file"
                                 >
                                   <i className="fas fa-upload"></i>
@@ -491,10 +507,11 @@ export default function Vocabularies() {
                             </div>
                             <textarea
                               className="form-control form-control-sm"
-                              rows={1}
+                              rows={2}
                               value={trans.example || ''}
                               onChange={(e) => updateTranslation(lang.id, version, 'example', e.target.value)}
                               placeholder="Example sentence"
+                              style={{ resize: 'vertical', minHeight: '60px' }}
                             />
                           </div>
                         );

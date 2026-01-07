@@ -1,28 +1,29 @@
 import { DataTypes } from 'sequelize';
 
 export default function (sequelize) {
-  const HomeSetting = sequelize.define(
-    'HomeSetting',
+  const Testimonial = sequelize.define(
+    'Testimonial',
     {
       id: {
         type: DataTypes.UUID,
         defaultValue: DataTypes.UUIDV4,
         primaryKey: true,
       },
-      key: {
+      name: {
         type: DataTypes.STRING,
         allowNull: false,
-        comment: 'Setting key: slogan, background_image, etc.',
+        comment: 'Name of the person giving testimonial',
       },
-      value: {
+      quote: {
         type: DataTypes.TEXT,
-        allowNull: true,
-        comment: 'Setting value (JSON string for complex data)',
+        allowNull: false,
+        comment: 'Testimonial quote/text',
       },
       order: {
         type: DataTypes.INTEGER,
         allowNull: true,
         defaultValue: 0,
+        comment: 'Order for display',
       },
       isActive: {
         type: DataTypes.BOOLEAN,
@@ -30,11 +31,11 @@ export default function (sequelize) {
       },
     },
     {
-      tableName: 'home_settings',
+      tableName: 'testimonials',
       timestamps: true,
     }
   );
 
-  return HomeSetting;
+  return Testimonial;
 }
 

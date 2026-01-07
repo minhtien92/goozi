@@ -51,3 +51,35 @@
   vertical-align: middle;
 }
 
+/* Remove scrollbar and resize handle from input fields */
+.form-control-sm[type="text"],
+.form-control-sm[type="number"] {
+  resize: none;
+  overflow: hidden;
+}
+
+/* Only allow vertical resize for textarea */
+textarea.form-control-sm {
+  resize: vertical;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+/* Ensure treeview arrow icons are visible */
+.nav-sidebar .nav-item.has-treeview > .nav-link {
+  position: relative;
+}
+
+.nav-sidebar .nav-item.has-treeview > .nav-link > p {
+  position: relative;
+  padding-right: 30px;
+}
+
+.nav-sidebar .nav-item.has-treeview > .nav-link > p > .right {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 0.875rem;
+}
+

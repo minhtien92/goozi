@@ -9,7 +9,20 @@ async function homeSettingsRoutes(fastify, options) {
   // Get active settings (public)
   fastify.get('/active', HomeSettingController.getActiveSettings.bind(HomeSettingController));
 
+  // Create new setting (admin only) - always creates new, doesn't update
+  // MUST be before /:key route to avoid route conflict
+  fastify.post('/create', {
+    preHandler: [fastify.requireAdmin],
+  }, HomeSettingController.createSetting.bind(HomeSettingController));
+
+  // Bulk update slogans (admin only)
+  // MUST be before /:key route to avoid route conflict
+  fastify.post('/slogans/bulk', {
+    preHandler: [fastify.requireAdmin],
+  }, HomeSettingController.bulkUpdateSlogans.bind(HomeSettingController));
+
   // Get setting by key (public)
+  // MUST be after specific routes to avoid conflicts
   fastify.get('/:key', HomeSettingController.getSettingByKey.bind(HomeSettingController));
 
   // Create or update setting (admin only)
@@ -26,11 +39,6 @@ async function homeSettingsRoutes(fastify, options) {
   fastify.delete('/:id', {
     preHandler: [fastify.requireAdmin],
   }, HomeSettingController.deleteSetting.bind(HomeSettingController));
-
-  // Bulk update slogans (admin only)
-  fastify.post('/slogans/bulk', {
-    preHandler: [fastify.requireAdmin],
-  }, HomeSettingController.bulkUpdateSlogans.bind(HomeSettingController));
 }
 
 export default homeSettingsRoutes;

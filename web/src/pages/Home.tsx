@@ -24,6 +24,7 @@ export default function Home() {
   const [slogans, setSlogans] = useState<string[]>([]);
   const [backgroundImage, setBackgroundImage] = useState<string>('');
   const [currentSloganIndex, setCurrentSloganIndex] = useState(0);
+  const [testimonials, setTestimonials] = useState<any[]>([]);
 
   useEffect(() => {
     fetchHomeSettings();
@@ -51,8 +52,20 @@ export default function Home() {
         setSlogans(sloganValues);
       }
 
-      // Get background image
-      const bgSetting = settings.find((s: any) => s.key === 'background_image');
+      // Get background image - check both 'background_image' and 'picture' keys
+      // Priority: background_image > picture (latest by order)
+      let bgSetting = settings.find((s: any) => s.key === 'background_image');
+      
+      // If no background_image, get the latest picture
+      if (!bgSetting) {
+        const pictureSettings = settings.filter((s: any) => s.key === 'picture');
+        if (pictureSettings.length > 0) {
+          // Sort by order descending to get the latest
+          pictureSettings.sort((a: any, b: any) => (b.order || 0) - (a.order || 0));
+          bgSetting = pictureSettings[0];
+        }
+      }
+      
       if (bgSetting && bgSetting.value) {
         const baseUrl = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:3001';
         const bgUrl = bgSetting.value.startsWith('http') ? bgSetting.value : `${baseUrl}${bgSetting.value}`;
@@ -62,6 +75,22 @@ export default function Home() {
       console.error('Error fetching home settings:', error);
     }
   };
+
+  const fetchTestimonials = async () => {
+    try {
+      const response = await api.get('/testimonials/active');
+      const sorted = response.data.testimonials.sort((a: any, b: any) => 
+        (a.order || 0) - (b.order || 0)
+      );
+      setTestimonials(sorted);
+    } catch (error) {
+      console.error('Error fetching testimonials:', error);
+    }
+  };
+
+  useEffect(() => {
+    fetchTestimonials();
+  }, []);
 
   const handleLogout = () => {
     logout();
@@ -205,18 +234,21 @@ export default function Home() {
             ))}
           </div>
 
-          {/* Feature Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12 max-w-5xl mx-auto">
-            {[1, 2, 3].map((i) => (
-              <div key={i} className="bg-gray-100 rounded-lg p-6 shadow-md">
-                <h3 className="text-lg font-semibold text-gray-800 mb-2">Title here</h3>
-                <p className="text-gray-600 text-sm">
-                  Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor
-                  incididunt ut labore et dolore magna aliqua.
-                </p>
-              </div>
-            ))}
-          </div>
+          {/* Testimonials */}
+          {testimonials.length > 0 && (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12 max-w-5xl mx-auto">
+              {testimonials.map((testimonial) => (
+                <div key={testimonial.id} className="bg-gray-100 rounded-lg p-6 shadow-md">
+                  <p className="text-gray-600 text-sm mb-4 italic">
+                    "{testimonial.quote}"
+                  </p>
+                  <h3 className="text-lg font-semibold text-gray-800">
+                    {testimonial.name}
+                  </h3>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Navigation Buttons (Right Side) */}

@@ -74,6 +74,35 @@ class HomeSettingController {
     }
   }
 
+  async createSetting(request, reply) {
+    try {
+      const { key, value, order, isActive } = request.body;
+
+      if (!key) {
+        return reply.code(400).send({
+          error: 'Key is required',
+        });
+      }
+
+      const setting = await HomeSettingService.createSetting(
+        key,
+        value,
+        order,
+        isActive
+      );
+
+      return reply.code(201).send({
+        message: 'Setting created successfully',
+        setting: setting.toJSON(),
+      });
+    } catch (error) {
+      return reply.code(500).send({
+        error: 'Internal server error',
+        message: error.message,
+      });
+    }
+  }
+
   async updateSetting(request, reply) {
     try {
       const { id } = request.params;

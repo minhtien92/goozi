@@ -6,7 +6,9 @@ import Users from './pages/Users';
 import Topics from './pages/Topics';
 import Vocabularies from './pages/Vocabularies';
 import Languages from './pages/Languages';
-import HomeSettings from './pages/HomeSettings';
+import Slogan from './pages/Slogan';
+import Picture from './pages/Picture';
+import Testimonials from './pages/Testimonials';
 import Layout from './components/Layout';
 
 function PrivateRoute({ children }: { children: React.ReactNode }) {
@@ -42,7 +44,10 @@ function App() {
           <Route path="topics" element={<Topics />} />
           <Route path="vocabularies" element={<Vocabularies />} />
           <Route path="languages" element={<Languages />} />
-          <Route path="home-settings" element={<HomeSettings />} />
+          <Route path="home-settings" element={<Navigate to="/home-settings/slogan" replace />} />
+          <Route path="home-settings/slogan" element={<Slogan />} />
+          <Route path="home-settings/picture" element={<Picture />} />
+          <Route path="testimonials" element={<Testimonials />} />
         </Route>
       </Routes>
     </BrowserRouter>

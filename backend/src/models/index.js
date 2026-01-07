@@ -6,6 +6,7 @@ import Vocabulary from './Vocabulary.js';
 import VocabularyTranslation from './VocabularyTranslation.js';
 import Language from './Language.js';
 import HomeSetting from './HomeSetting.js';
+import Testimonial from './Testimonial.js';
 
 dotenv.config();
 
@@ -30,6 +31,7 @@ const db = {
   VocabularyTranslation: VocabularyTranslation(sequelize),
   Language: Language(sequelize),
   HomeSetting: HomeSetting(sequelize),
+  Testimonial: Testimonial(sequelize),
 };
 
 // Define associations

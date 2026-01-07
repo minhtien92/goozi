@@ -48,6 +48,17 @@ class HomeSettingService {
     return setting;
   }
 
+  async createSetting(key, value, order = null, isActive = true) {
+    const setting = await db.HomeSetting.create({
+      key,
+      value,
+      order: order !== null ? order : 0,
+      isActive,
+    });
+
+    return setting;
+  }
+
   async updateSetting(id, data) {
     const setting = await db.HomeSetting.findByPk(id);
     if (!setting) {

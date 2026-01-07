@@ -1,11 +1,17 @@
 import { Outlet, Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
 export default function Layout() {
   const { user, logout } = useAuthStore();
   const navigate = useNavigate();
   const location = useLocation();
+  const [isHomeMenuOpen, setIsHomeMenuOpen] = useState(false);
+
+  useEffect(() => {
+    // Auto-open menu if on home-settings or testimonials page
+    setIsHomeMenuOpen(location.pathname.startsWith('/home-settings') || location.pathname.startsWith('/testimonials'));
+  }, [location.pathname]);
 
   useEffect(() => {
     // Initialize AdminLTE
@@ -13,6 +19,9 @@ export default function Layout() {
       window.$(document).ready(() => {
         // Enable sidebar push menu
         window.$('[data-widget="pushmenu"]').PushMenu('init');
+        
+        // Initialize treeview
+        window.$('[data-widget="treeview"]').Treeview('init');
       });
     }
   }, []);
@@ -118,22 +127,47 @@ export default function Layout() {
                   <p>Ngôn ngữ</p>
                 </Link>
               </li>
-              <li className={`nav-item has-treeview ${location.pathname.startsWith('/home-settings') ? 'menu-open' : ''}`}>
-                <a href="#" className={`nav-link ${location.pathname.startsWith('/home-settings') ? 'active' : ''}`}>
+              <li className={`nav-item has-treeview ${isHomeMenuOpen ? 'menu-open' : ''}`}>
+                <a 
+                  href="#" 
+                  className={`nav-link ${location.pathname.startsWith('/home-settings') || location.pathname.startsWith('/testimonials') ? 'active' : ''}`}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setIsHomeMenuOpen(!isHomeMenuOpen);
+                  }}
+                >
                   <i className="nav-icon fas fa-home"></i>
                   <p>
                     WEB/HOME
-                    <i className="right fas fa-angle-left"></i>
+                    <i className={`right fas fa-angle-${isHomeMenuOpen ? 'down' : 'left'}`} style={{ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)' }}></i>
                   </p>
                 </a>
-                <ul className="nav nav-treeview">
+                <ul className="nav nav-treeview" style={{ display: isHomeMenuOpen ? 'block' : 'none' }}>
                   <li className="nav-item">
                     <Link
-                      to="/home-settings"
-                      className={`nav-link ${isActive('/home-settings') ? 'active' : ''}`}
+                      to="/home-settings/slogan"
+                      className={`nav-link ${isActive('/home-settings/slogan') ? 'active' : ''}`}
                     >
                       <i className="far fa-circle nav-icon"></i>
-                      <p>Slogan & Picture</p>
+                      <p>Slogan</p>
+                    </Link>
+                  </li>
+                  <li className="nav-item">
+                    <Link
+                      to="/home-settings/picture"
+                      className={`nav-link ${isActive('/home-settings/picture') ? 'active' : ''}`}
+                    >
+                      <i className="far fa-circle nav-icon"></i>
+                      <p>Picture</p>
+                    </Link>
+                  </li>
+                  <li className="nav-item">
+                    <Link
+                      to="/testimonials"
+                      className={`nav-link ${isActive('/testimonials') ? 'active' : ''}`}
+                    >
+                      <i className="far fa-circle nav-icon"></i>
+                      <p>Testimonials</p>
                     </Link>
                   </li>
                 </ul>
@@ -163,7 +197,9 @@ export default function Layout() {
                   {location.pathname === '/topics' && 'Quản lý chủ đề'}
                   {location.pathname === '/vocabularies' && 'Quản lý từ vựng'}
                   {location.pathname === '/languages' && 'Quản lý ngôn ngữ'}
-                  {location.pathname === '/home-settings' && 'Cài đặt trang chủ'}
+                  {location.pathname === '/home-settings/slogan' && 'Quản lý Slogan'}
+                  {location.pathname === '/home-settings/picture' && 'Quản lý Picture'}
+                  {location.pathname === '/testimonials' && 'Quản lý Testimonials'}
                 </h1>
               </div>
               <div className="col-sm-6">
@@ -177,7 +213,9 @@ export default function Layout() {
                     {location.pathname === '/topics' && 'Chủ đề'}
                     {location.pathname === '/vocabularies' && 'Từ vựng'}
                     {location.pathname === '/languages' && 'Ngôn ngữ'}
-                    {location.pathname === '/home-settings' && 'Cài đặt trang chủ'}
+                    {location.pathname === '/home-settings/slogan' && 'Slogan'}
+                    {location.pathname === '/home-settings/picture' && 'Picture'}
+                    {location.pathname === '/testimonials' && 'Testimonials'}
                   </li>
                 </ol>
               </div>
