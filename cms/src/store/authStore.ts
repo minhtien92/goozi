@@ -6,6 +6,12 @@ interface User {
   email: string;
   name: string;
   role: string;
+  permissions?: {
+    topics?: boolean;
+    vocabularies?: boolean;
+    home?: boolean;
+    users?: boolean;
+  };
 }
 
 interface AuthState {

@@ -6,6 +6,11 @@ async function usersRoutes(fastify, options) {
     preHandler: [fastify.requireAdmin],
   }, UserController.getAllUsers.bind(UserController));
 
+  // Create user (admin only)
+  fastify.post('/', {
+    preHandler: [fastify.requireAdmin],
+  }, UserController.createUser.bind(UserController));
+
   // Get single user (admin only)
   fastify.get('/:id', {
     preHandler: [fastify.requireAdmin],

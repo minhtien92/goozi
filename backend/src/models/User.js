@@ -30,6 +30,12 @@ export default function (sequelize) {
         type: DataTypes.ENUM('user', 'admin'),
         defaultValue: 'user',
       },
+      permissions: {
+        // JSON: { topics: boolean, vocabularies: boolean, home: boolean, users: boolean }
+        type: DataTypes.JSONB,
+        allowNull: true,
+        defaultValue: null,
+      },
       nativeLanguageId: {
         type: DataTypes.UUID,
         allowNull: true,

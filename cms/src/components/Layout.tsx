@@ -103,30 +103,37 @@ export default function Layout() {
                   <p>Dashboard</p>
                 </Link>
               </li>
-              <li className="nav-item">
-                <Link to="/users" className={`nav-link ${isActive('/users') ? 'active' : ''}`}>
-                  <i className="nav-icon fas fa-users"></i>
-                  <p>Người dùng</p>
-                </Link>
-              </li>
-              <li className="nav-item">
-                <Link to="/topics" className={`nav-link ${isActive('/topics') ? 'active' : ''}`}>
-                  <i className="nav-icon fas fa-folder"></i>
-                  <p>Chủ đề</p>
-                </Link>
-              </li>
-              <li className="nav-item">
-                <Link to="/vocabularies" className={`nav-link ${isActive('/vocabularies') ? 'active' : ''}`}>
-                  <i className="nav-icon fas fa-book"></i>
-                  <p>Từ vựng</p>
-                </Link>
-              </li>
+              {user?.role === 'admin' && (user.permissions?.users ?? true) && (
+                <li className="nav-item">
+                  <Link to="/users" className={`nav-link ${isActive('/users') ? 'active' : ''}`}>
+                    <i className="nav-icon fas fa-users"></i>
+                    <p>Người dùng</p>
+                  </Link>
+                </li>
+              )}
+              {user?.role === 'admin' && (user.permissions?.topics ?? true) && (
+                <li className="nav-item">
+                  <Link to="/topics" className={`nav-link ${isActive('/topics') ? 'active' : ''}`}>
+                    <i className="nav-icon fas fa-folder"></i>
+                    <p>Chủ đề</p>
+                  </Link>
+                </li>
+              )}
+              {user?.role === 'admin' && (user.permissions?.vocabularies ?? true) && (
+                <li className="nav-item">
+                  <Link to="/vocabularies" className={`nav-link ${isActive('/vocabularies') ? 'active' : ''}`}>
+                    <i className="nav-icon fas fa-book"></i>
+                    <p>Từ vựng</p>
+                  </Link>
+                </li>
+              )}
               <li className="nav-item">
                 <Link to="/languages" className={`nav-link ${isActive('/languages') ? 'active' : ''}`}>
                   <i className="nav-icon fas fa-globe"></i>
                   <p>Ngôn ngữ</p>
                 </Link>
               </li>
+              {user?.role === 'admin' && (user.permissions?.home ?? true) && (
               <li className={`nav-item has-treeview ${isHomeMenuOpen ? 'menu-open' : ''}`}>
                 <a 
                   href="#" 
@@ -172,6 +179,7 @@ export default function Layout() {
                   </li>
                 </ul>
               </li>
+              )}
               <li className="nav-header">HỆ THỐNG</li>
               <li className="nav-item">
                 <a href="#" className="nav-link" onClick={handleLogout}>

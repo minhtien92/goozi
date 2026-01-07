@@ -37,7 +37,7 @@ class UserService {
       throw new Error('User not found');
     }
 
-    const { email, name, role, nativeLanguageId } = data;
+    const { email, name, role, nativeLanguageId, permissions } = data;
 
     // For self-update, only allow updating name and nativeLanguageId
     if (isSelfUpdate) {
@@ -51,6 +51,7 @@ class UserService {
         email: email || user.email,
         name: name || user.name,
         role: role !== undefined ? role : user.role,
+        permissions: permissions !== undefined ? permissions : user.permissions,
         nativeLanguageId: nativeLanguageId !== undefined ? nativeLanguageId : user.nativeLanguageId,
       });
     }
@@ -77,6 +78,29 @@ class UserService {
 
     await user.destroy();
     return true;
+  }
+
+  async createUser(data) {
+    const { email, password, name, role = 'user', nativeLanguageId, permissions } = data;
+
+    // Check if user already exists
+    const existing = await db.User.findOne({ where: { email } });
+    if (existing) {
+      throw new Error('User with this email already exists');
+    }
+
+    const user = await db.User.create({
+      email,
+      password,
+      name,
+      role,
+      nativeLanguageId: nativeLanguageId || null,
+      permissions: permissions || null,
+    });
+
+    return await db.User.findByPk(user.id, {
+      attributes: { exclude: ['password'] },
+    });
   }
 }
 

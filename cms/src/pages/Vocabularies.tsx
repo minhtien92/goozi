@@ -1,6 +1,9 @@
 import { useEffect, useState } from 'react';
 import api, { uploadFile } from '../config/api';
 
+const DEFAULT_IMAGE =
+  'data:image/svg+xml,%3Csvg xmlns=\"http://www.w3.org/2000/svg\" width=\"120\" height=\"80\"%3E%3Crect width=\"120\" height=\"80\" fill=\"%23f0f0f0\"/%3E%3Ctext x=\"50%25\" y=\"50%25\" text-anchor=\"middle\" dy=\".3em\" fill=\"%23999\" font-size=\"12\"%3ENo Image%3C/text%3E%3C/svg%3E';
+
 interface Topic {
   id: string;
   name: string;
@@ -267,9 +270,9 @@ export default function Vocabularies() {
       {/* Left Panel - Word List */}
       <div className="flex-fill" style={{ overflowY: 'auto', paddingRight: '10px' }}>
         <div className="card">
-          <div className="card-header d-flex justify-content-between align-items-center">
+          <div className="card-header">
             <h3 className="card-title mb-0">Word</h3>
-            <div className="d-flex align-items-center gap-2">
+            <div className="card-tools d-flex align-items-center" style={{ gap: '10px' }}>
               <input
                 type="text"
                 className="form-control form-control-sm"
@@ -294,7 +297,7 @@ export default function Vocabularies() {
                     <th style={{ width: '50px' }}>No</th>
                     <th style={{ width: '80px' }}>Avatar</th>
                     <th>English</th>
-                    <th>Topic</th>
+                    <th style={{ width: '160px' }}>Topic</th>
                     <th style={{ width: '100px' }}>Detail</th>
                     <th style={{ width: '80px' }}>Edit</th>
                     <th style={{ width: '80px' }}>Delete</th>
@@ -305,16 +308,30 @@ export default function Vocabularies() {
                     <tr key={vocab.id}>
                       <td>{vocab.order || '-'}</td>
                       <td>
-                        {vocab.avatar ? (
-                          <img src={vocab.avatar} alt="" style={{ width: '40px', height: '40px', objectFit: 'cover' }} />
-                        ) : (
-                          <div style={{ width: '40px', height: '40px', backgroundColor: '#ddd', borderRadius: '4px' }}></div>
-                        )}
+                        <img
+                          src={vocab.avatar || DEFAULT_IMAGE}
+                          alt={vocab.word}
+                          style={{ width: '40px', height: '40px', objectFit: 'cover', borderRadius: '4px' }}
+                          onError={(e) => {
+                            const target = e.target as HTMLImageElement;
+                            if (target.src !== DEFAULT_IMAGE) {
+                              target.src = DEFAULT_IMAGE;
+                            }
+                          }}
+                        />
                       </td>
                       <td>
                         <strong>{vocab.word}</strong>
                       </td>
-                      <td>{vocab.topic?.name || 'N/A'}</td>
+                      <td>
+                        <div
+                          className="text-truncate"
+                          style={{ maxWidth: '150px' }}
+                          title={vocab.topic?.name || 'N/A'}
+                        >
+                          {vocab.topic?.name || 'N/A'}
+                        </div>
+                      </td>
                       <td>
                         <button
                           onClick={async () => {
@@ -362,11 +379,26 @@ export default function Vocabularies() {
       {/* Right Panel - Form */}
       {showModal && (
         <div className="card" style={{ width: '500px', marginLeft: '10px', overflowY: 'auto' }}>
-          <div className="card-header">
-            <h4 className="card-title mb-0">Add a new word</h4>
+          <div className="card-header d-flex align-items-center">
+            <h4 className="card-title mb-0" style={{ flex: 1 }}>Add a new word</h4>
+            <div className="d-flex" style={{ gap: '8px', marginLeft: 'auto' }}>
+              <button
+                type="button"
+                className="btn btn-sm btn-secondary"
+                onClick={() => {
+                  setShowModal(false);
+                  setEditingVocab(null);
+                }}
+              >
+                Cancel
+              </button>
+              <button type="submit" form="vocab-form" className="btn btn-sm btn-primary">
+                Save
+              </button>
+            </div>
           </div>
           <div className="card-body">
-            <form onSubmit={handleSubmit}>
+            <form id="vocab-form" onSubmit={handleSubmit}>
               <div className="form-group">
                 <label>Topic {!formData.topicId && <span className="text-danger">*</span>}</label>
                 <select
@@ -458,6 +490,12 @@ export default function Vocabularies() {
                                 style={{ resize: 'none', overflow: 'hidden', flex: 1 }}
                               />
                               <div className="d-flex" style={{ gap: '8px', flexShrink: 0 }}>
+                                {/* Hidden audio element để đảm bảo play ổn định khi edit lại */}
+                                <audio
+                                  id={`audio-player-${lang.id}-${version}`}
+                                  src={trans.audioUrl || ''}
+                                  style={{ display: 'none' }}
+                                />
                                 {trans.audioUrl ? (
                                   <button
                                     type="button"
@@ -465,8 +503,15 @@ export default function Vocabularies() {
                                     style={{ flexShrink: 0 }}
                                     title="Play audio"
                                     onClick={() => {
-                                      const audio = new Audio(trans.audioUrl);
-                                      audio.play().catch(err => console.error('Error playing audio:', err));
+                                      const audioEl = document.getElementById(
+                                        `audio-player-${lang.id}-${version}`
+                                      ) as HTMLAudioElement | null;
+                                      if (audioEl) {
+                                        audioEl.currentTime = 0;
+                                        audioEl
+                                          .play()
+                                          .catch((err) => console.error('Error playing audio:', err));
+                                      }
                                     }}
                                   >
                                     <i className="fas fa-play"></i>
@@ -593,14 +638,22 @@ export default function Vocabularies() {
                     </p>
                   </div>
                 </div>
-                {detailVocab.avatar && (
-                  <div className="mb-3">
-                    <strong>Avatar:</strong>
-                    <div className="mt-2">
-                      <img src={detailVocab.avatar} alt="Avatar" style={{ maxWidth: '200px', maxHeight: '200px' }} />
-                    </div>
+                <div className="mb-3">
+                  <strong>Avatar:</strong>
+                  <div className="mt-2">
+                    <img
+                      src={detailVocab.avatar || DEFAULT_IMAGE}
+                      alt="Avatar"
+                      style={{ maxWidth: '200px', maxHeight: '200px', objectFit: 'cover', borderRadius: '4px' }}
+                      onError={(e) => {
+                        const target = e.target as HTMLImageElement;
+                        if (target.src !== DEFAULT_IMAGE) {
+                          target.src = DEFAULT_IMAGE;
+                        }
+                      }}
+                    />
                   </div>
-                )}
+                </div>
                 {detailVocab.translations && detailVocab.translations.length > 0 && (
                   <div>
                     <strong>Bản dịch:</strong>

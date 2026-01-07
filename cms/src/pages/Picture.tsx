@@ -1,6 +1,9 @@
 import { useEffect, useState } from 'react';
 import api, { uploadFile } from '../config/api';
 
+const DEFAULT_IMAGE =
+  'data:image/svg+xml,%3Csvg xmlns=\"http://www.w3.org/2000/svg\" width=\"120\" height=\"80\"%3E%3Crect width=\"120\" height=\"80\" fill=\"%23f0f0f0\"/%3E%3Ctext x=\"50%25\" y=\"50%25\" text-anchor=\"middle\" dy=\".3em\" fill=\"%23999\" font-size=\"12\"%3ENo Image%3C/text%3E%3C/svg%3E';
+
 interface HomeSetting {
   id: string;
   key: string;
@@ -198,7 +201,10 @@ export default function Picture() {
                                   objectFit: 'cover',
                                 }}
                                 onError={(e) => {
-                                  (e.target as HTMLImageElement).src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="100" height="80"%3E%3Crect width="100" height="80" fill="%23f0f0f0"/%3E%3Ctext x="50%25" y="50%25" text-anchor="middle" dy=".3em" fill="%23999" font-size="10"%3ELỗi%3C/text%3E%3C/svg%3E';
+                                  const target = e.target as HTMLImageElement;
+                                  if (target.src !== DEFAULT_IMAGE) {
+                                    target.src = DEFAULT_IMAGE;
+                                  }
                                 }}
                               />
                             </div>

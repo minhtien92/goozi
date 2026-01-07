@@ -1,6 +1,9 @@
 import { useEffect, useState } from 'react';
 import api, { uploadFile } from '../config/api';
 
+const DEFAULT_IMAGE =
+  'data:image/svg+xml,%3Csvg xmlns=\"http://www.w3.org/2000/svg\" width=\"120\" height=\"80\"%3E%3Crect width=\"120\" height=\"80\" fill=\"%23f0f0f0\"/%3E%3Ctext x=\"50%25\" y=\"50%25\" text-anchor=\"middle\" dy=\".3em\" fill=\"%23999\" font-size=\"12\"%3ENo Image%3C/text%3E%3C/svg%3E';
+
 interface HomeSetting {
   id: string;
   key: string;
@@ -205,32 +208,26 @@ export default function HomeSettings() {
           <div className="form-group">
             <label>Picture</label>
             <div className="mt-2">
-              {backgroundImage ? (
-                <div className="mb-3">
-                  <img
-                    src={backgroundImage}
-                    alt="Background"
-                    style={{ width: '100%', maxHeight: '300px', objectFit: 'cover', borderRadius: '4px' }}
-                  />
+              <div className="mb-3">
+                <img
+                  src={backgroundImage || DEFAULT_IMAGE}
+                  alt="Background"
+                  style={{ width: '100%', maxHeight: '300px', objectFit: 'cover', borderRadius: '4px' }}
+                  onError={(e) => {
+                    const target = e.target as HTMLImageElement;
+                    if (target.src !== DEFAULT_IMAGE) {
+                      target.src = DEFAULT_IMAGE;
+                    }
+                  }}
+                />
+                {backgroundImage && (
                   <div className="mt-2">
                     <a href={backgroundImage} target="_blank" rel="noopener noreferrer" className="text-sm">
                       {backgroundImage}
                     </a>
                   </div>
-                </div>
-              ) : (
-                <div
-                  className="border border-primary d-flex align-items-center justify-content-center"
-                  style={{
-                    width: '100%',
-                    height: '200px',
-                    borderRadius: '4px',
-                    backgroundColor: '#f8f9fa',
-                  }}
-                >
-                  <span className="text-muted">Chưa có ảnh nền</span>
-                </div>
-              )}
+                )}
+              </div>
               <input
                 type="file"
                 accept="image/*"

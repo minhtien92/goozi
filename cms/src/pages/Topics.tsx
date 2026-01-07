@@ -9,6 +9,9 @@ interface Language {
   flag: string;
 }
 
+const DEFAULT_IMAGE =
+  'data:image/svg+xml,%3Csvg xmlns=\"http://www.w3.org/2000/svg\" width=\"120\" height=\"80\"%3E%3Crect width=\"120\" height=\"80\" fill=\"%23f0f0f0\"/%3E%3Ctext x=\"50%25\" y=\"50%25\" text-anchor=\"middle\" dy=\".3em\" fill=\"%23999\" font-size=\"12\"%3ENo Image%3C/text%3E%3C/svg%3E';
+
 interface Topic {
   id: string;
   name: string;
@@ -26,6 +29,7 @@ export default function Topics() {
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [editingTopic, setEditingTopic] = useState<Topic | null>(null);
+  const [searchTerm, setSearchTerm] = useState('');
   const [formData, setFormData] = useState({
     name: '',
     description: '',
@@ -137,12 +141,29 @@ export default function Topics() {
     );
   }
 
+  const filteredTopics = topics.filter((topic) => {
+    if (!searchTerm.trim()) return true;
+    const keyword = searchTerm.trim().toLowerCase();
+    return (
+      topic.name.toLowerCase().includes(keyword) ||
+      (topic.description && topic.description.toLowerCase().includes(keyword))
+    );
+  });
+
   return (
     <div>
       <div className="card">
         <div className="card-header">
-          <h3 className="card-title">Danh sách chủ đề</h3>
-          <div className="card-tools">
+          <h3 className="card-title mb-0">Danh sách chủ đề</h3>
+          <div className="card-tools d-flex align-items-center" style={{ gap: '8px' }}>
+            <input
+              type="text"
+              className="form-control form-control-sm"
+              placeholder="Tìm theo tên hoặc mô tả..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              style={{ width: '260px' }}
+            />
             <button
               type="button"
               className="btn btn-primary btn-sm"
@@ -154,67 +175,118 @@ export default function Topics() {
           </div>
         </div>
         <div className="card-body p-0">
-          <div className="row p-3">
-            {topics.map((topic) => (
-              <div key={topic.id} className="col-md-4 mb-3">
-                <div className="card card-primary card-outline">
-                  {topic.image && (
-                    <img
-                      src={topic.image}
-                      alt={topic.name}
-                      className="card-img-top"
-                      style={{ height: '200px', objectFit: 'cover' }}
-                    />
-                  )}
-                  <div className="card-body">
-                    <h5 className="card-title">{topic.name}</h5>
-                    <p className="card-text text-sm">{topic.description}</p>
-                    {(topic.sourceLanguage || topic.targetLanguage) && (
-                      <div className="mb-2">
-                        {topic.sourceLanguage && (
-                          <span className="badge badge-info mr-1">
-                            {topic.sourceLanguage.flag} {topic.sourceLanguage.nativeName}
-                          </span>
-                        )}
-                        {topic.sourceLanguage && topic.targetLanguage && (
-                          <i className="fas fa-arrow-right mx-1"></i>
-                        )}
-                        {topic.targetLanguage && (
-                          <span className="badge badge-success">
-                            {topic.targetLanguage.flag} {topic.targetLanguage.nativeName}
-                          </span>
-                        )}
-                      </div>
-                    )}
-                    <div className="d-flex justify-content-between align-items-center">
-                      <span className={`badge ${topic.isActive ? 'badge-success' : 'badge-secondary'}`}>
+          <div className="table-responsive">
+            <table className="table table-bordered table-striped table-hover mb-0">
+              <thead>
+                <tr>
+                  <th style={{ width: '60px' }}>No</th>
+                  <th style={{ width: '90px' }}>Ảnh</th>
+                  <th>Tên chủ đề</th>
+                  <th style={{ width: '200px' }}>Ngôn ngữ</th>
+                  <th style={{ width: '110px' }}>Trạng thái</th>
+                  <th style={{ width: '90px' }}>Edit</th>
+                  <th style={{ width: '90px' }}>Delete</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredTopics.map((topic, index) => (
+                  <tr key={topic.id}>
+                    <td>{index + 1}</td>
+                    <td>
+                      <img
+                        src={topic.image || DEFAULT_IMAGE}
+                        alt={topic.name}
+                        style={{
+                          width: '60px',
+                          height: '40px',
+                          objectFit: 'cover',
+                          borderRadius: '4px',
+                        }}
+                        onError={(e) => {
+                          const target = e.target as HTMLImageElement;
+                          if (target.src !== DEFAULT_IMAGE) {
+                            target.src = DEFAULT_IMAGE;
+                          }
+                        }}
+                      />
+                    </td>
+                    <td>
+                      <div className="font-weight-bold">{topic.name}</div>
+                      {topic.description && (
+                        <div
+                          className="text-muted small text-truncate"
+                          style={{ maxWidth: '260px' }}
+                          title={topic.description}
+                        >
+                          {topic.description}
+                        </div>
+                      )}
+                    </td>
+                    <td>
+                      {(topic.sourceLanguage || topic.targetLanguage) ? (
+                        <div className="small">
+                          {topic.sourceLanguage && (
+                            <span className="badge badge-info mr-1">
+                              {topic.sourceLanguage.flag} {topic.sourceLanguage.nativeName}
+                            </span>
+                          )}
+                          {topic.sourceLanguage && topic.targetLanguage && (
+                            <i className="fas fa-arrow-right mx-1"></i>
+                          )}
+                          {topic.targetLanguage && (
+                            <span className="badge badge-success">
+                              {topic.targetLanguage.flag} {topic.targetLanguage.nativeName}
+                            </span>
+                          )}
+                        </div>
+                      ) : (
+                        <span className="text-muted small">Chưa cấu hình</span>
+                      )}
+                    </td>
+                    <td>
+                      <span
+                        className={`badge ${topic.isActive ? 'badge-success' : 'badge-secondary'}`}
+                      >
                         {topic.isActive ? 'Hoạt động' : 'Tạm dừng'}
                       </span>
-                      <div>
-                        <button
-                          onClick={() => handleEdit(topic)}
-                          className="btn btn-sm btn-primary mr-1"
-                        >
-                          <i className="fas fa-edit"></i>
-                        </button>
-                        <button
-                          onClick={() => handleDelete(topic.id)}
-                          className="btn btn-sm btn-danger"
-                        >
-                          <i className="fas fa-trash"></i>
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ))}
+                    </td>
+                    <td>
+                      <button
+                        onClick={() => handleEdit(topic)}
+                        className="btn btn-sm btn-success"
+                        title="Edit"
+                      >
+                        <i className="fas fa-edit"></i>
+                      </button>
+                    </td>
+                    <td>
+                      <button
+                        onClick={() => handleDelete(topic.id)}
+                        className="btn btn-sm btn-danger"
+                        title="Delete"
+                      >
+                        <i className="fas fa-trash"></i>
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+                {topics.length === 0 && (
+                  <tr>
+                    <td colSpan={7} className="text-center py-4 text-muted">
+                      Chưa có chủ đề nào
+                    </td>
+                  </tr>
+                )}
+                {topics.length > 0 && filteredTopics.length === 0 && (
+                  <tr>
+                    <td colSpan={7} className="text-center py-4 text-muted">
+                      Không tìm thấy chủ đề phù hợp
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
           </div>
-          {topics.length === 0 && (
-            <div className="text-center py-5">
-              <p className="text-muted">Chưa có chủ đề nào</p>
-            </div>
-          )}
         </div>
       </div>
 

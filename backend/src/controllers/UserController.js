@@ -84,6 +84,42 @@ class UserController {
       });
     }
   }
+
+  async createUser(request, reply) {
+    try {
+      const { email, password, name, role, nativeLanguageId, permissions } = request.body;
+
+      if (!email || !password || !name) {
+        return reply.code(400).send({
+          error: 'Email, password và tên là bắt buộc',
+        });
+      }
+
+      const user = await UserService.createUser({
+        email,
+        password,
+        name,
+        role,
+        nativeLanguageId,
+        permissions,
+      });
+
+      return reply.code(201).send({
+        message: 'User created successfully',
+        user: user.toJSON ? user.toJSON() : user,
+      });
+    } catch (error) {
+      if (error.message === 'User with this email already exists') {
+        return reply.code(400).send({
+          error: error.message,
+        });
+      }
+      return reply.code(500).send({
+        error: 'Internal server error',
+        message: error.message,
+      });
+    }
+  }
 }
 
 export default new UserController();
