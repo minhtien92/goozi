@@ -49,6 +49,7 @@ export default function Vocabularies() {
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [detailVocab, setDetailVocab] = useState<Vocabulary | null>(null);
   const [editingVocab, setEditingVocab] = useState<Vocabulary | null>(null);
+  const [searchTerm, setSearchTerm] = useState('');
   const [formData, setFormData] = useState({
     word: '',
     topicId: '',
@@ -278,6 +279,8 @@ export default function Vocabularies() {
                 className="form-control form-control-sm"
                 placeholder="Search..."
                 style={{ width: '200px' }}
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
               />
               <button
                 type="button"
@@ -304,7 +307,16 @@ export default function Vocabularies() {
                   </tr>
                 </thead>
                 <tbody>
-                  {vocabularies.map((vocab) => (
+                {vocabularies
+                  .filter((vocab) => {
+                    if (!searchTerm.trim()) return true;
+                    const keyword = searchTerm.trim().toLowerCase();
+                    return (
+                      vocab.word.toLowerCase().includes(keyword) ||
+                      (vocab.topic?.name || '').toLowerCase().includes(keyword)
+                    );
+                  })
+                  .map((vocab) => (
                     <tr key={vocab.id}>
                       <td>{vocab.order || '-'}</td>
                       <td>
@@ -501,16 +513,21 @@ export default function Vocabularies() {
                                     type="button"
                                     className="btn btn-sm btn-success mb-0"
                                     style={{ flexShrink: 0 }}
-                                    title="Play audio"
+                                    title="Play / Stop audio"
                                     onClick={() => {
                                       const audioEl = document.getElementById(
                                         `audio-player-${lang.id}-${version}`
                                       ) as HTMLAudioElement | null;
                                       if (audioEl) {
-                                        audioEl.currentTime = 0;
-                                        audioEl
-                                          .play()
-                                          .catch((err) => console.error('Error playing audio:', err));
+                                        if (!audioEl.paused) {
+                                          audioEl.pause();
+                                          audioEl.currentTime = 0;
+                                        } else {
+                                          audioEl.currentTime = 0;
+                                          audioEl
+                                            .play()
+                                            .catch((err) => console.error('Error playing audio:', err));
+                                        }
                                       }
                                     }}
                                   >

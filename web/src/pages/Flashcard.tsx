@@ -116,7 +116,9 @@ export default function Flashcard() {
     }
   };
 
-  const playAudio = () => {
+  const playAudio = (() => {
+    let currentAudio: HTMLAudioElement | null = null;
+    return () => {
     const currentVocab = vocabularies[currentIndex];
     if (!currentVocab) return;
 
@@ -124,15 +126,31 @@ export default function Flashcard() {
     const targetTranslation = getTargetTranslation(currentVocab);
     
     if (targetTranslation?.audioUrl) {
-      const audio = new Audio(targetTranslation.audioUrl);
-      audio.play();
+        if (currentAudio) {
+          if (!currentAudio.paused && currentAudio.src === targetTranslation.audioUrl) {
+            currentAudio.pause();
+            currentAudio.currentTime = 0;
+            currentAudio = null;
+            return;
+          } else {
+            currentAudio.pause();
+            currentAudio.currentTime = 0;
+          }
+        }
+        const audio = new Audio(targetTranslation.audioUrl);
+        currentAudio = audio;
+        audio.play().catch((err) => console.error('Error playing audio:', err));
+        audio.onended = () => {
+          currentAudio = null;
+        };
     } else if (currentVocab.word) {
       // Fallback to browser TTS if no audio URL
       const utterance = new SpeechSynthesisUtterance(currentVocab.word);
       utterance.lang = 'en-US';
       window.speechSynthesis.speak(utterance);
     }
-  };
+    };
+  })();
 
   const getTargetTranslation = (vocab: Vocabulary) => {
     if (!vocab.translations || vocab.translations.length === 0) return null;

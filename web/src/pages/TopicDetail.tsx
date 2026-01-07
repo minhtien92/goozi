@@ -82,16 +82,36 @@ export default function TopicDetail() {
     }
   };
 
-  const playAudio = (audioUrl: string | null, word: string) => {
-    if (audioUrl) {
-      const audio = new Audio(audioUrl);
-      audio.play();
-    } else if (word) {
-      const utterance = new SpeechSynthesisUtterance(word);
-      utterance.lang = 'en-US';
-      window.speechSynthesis.speak(utterance);
-    }
-  };
+  const playAudio = (() => {
+    let currentAudio: HTMLAudioElement | null = null;
+    return (audioUrl: string | null, word: string) => {
+      if (audioUrl) {
+        if (currentAudio) {
+          // If same source is playing, toggle stop
+          if (!currentAudio.paused && currentAudio.src === audioUrl) {
+            currentAudio.pause();
+            currentAudio.currentTime = 0;
+            currentAudio = null;
+            return;
+          } else {
+            currentAudio.pause();
+            currentAudio.currentTime = 0;
+          }
+        }
+        const audio = new Audio(audioUrl);
+        currentAudio = audio;
+        audio.play().catch((err) => console.error('Error playing audio:', err));
+        audio.onended = () => {
+          currentAudio = null;
+        };
+      } else if (word) {
+        // fallback TTS
+        const utterance = new SpeechSynthesisUtterance(word);
+        utterance.lang = 'en-US';
+        window.speechSynthesis.speak(utterance);
+      }
+    };
+  })();
 
   if (loading) {
     return (
