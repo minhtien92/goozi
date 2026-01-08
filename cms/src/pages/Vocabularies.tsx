@@ -140,7 +140,7 @@ export default function Vocabularies() {
     // Fill in existing translations
     if (vocab.translations) {
       vocab.translations.forEach((trans) => {
-        if (translations[trans.languageId]) {
+        if (translations[trans.languageId] && trans.version >= 1 && trans.version <= 4) {
           translations[trans.languageId][trans.version] = {
             meaning: trans.meaning || '',
             pronunciation: trans.pronunciation || '',
@@ -190,6 +190,27 @@ export default function Vocabularies() {
     }));
   };
 
+  // Update meaning for all versions of a language (single meaning per language)
+  const updateLanguageMeaning = (languageId: string, value: string) => {
+    setFormData((prev) => {
+      const langEntry = prev.translations[languageId] || {};
+      const updated: Record<number, any> = { ...langEntry };
+      [1, 2, 3, 4].forEach((v) => {
+        updated[v] = {
+          ...(updated[v] || { meaning: '', pronunciation: '', example: '', audioUrl: '' }),
+          meaning: value,
+        };
+      });
+      return {
+        ...prev,
+        translations: {
+          ...prev.translations,
+          [languageId]: updated,
+        },
+      };
+    });
+  };
+
   const handleAudioUpload = async (languageId: string, version: number, file: File) => {
     try {
       const response = await uploadFile('/upload/audio', file);
@@ -206,6 +227,22 @@ export default function Vocabularies() {
     }
   };
 
+  const handleAvatarUpload = async (file: File) => {
+    try {
+      const response = await uploadFile('/upload/image', file);
+
+      if (response.data.url) {
+        // Get full URL
+        const baseUrl = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:3001';
+        const fullUrl = `${baseUrl}${response.data.url}`;
+        setFormData({ ...formData, avatar: fullUrl });
+      }
+    } catch (error: any) {
+      console.error('Error uploading avatar:', error);
+      alert('Upload avatar thất bại: ' + (error.response?.data?.message || error.message));
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -215,7 +252,7 @@ export default function Vocabularies() {
       Object.keys(formData.translations).forEach((languageId) => {
         [1, 2, 3, 4].forEach((version) => {
           const trans = formData.translations[languageId][version];
-          if (trans.meaning.trim()) {
+          if (trans && trans.meaning && trans.meaning.trim()) {
             translationsArray.push({
               languageId,
               version,
@@ -390,7 +427,7 @@ export default function Vocabularies() {
 
       {/* Right Panel - Form */}
       {showModal && (
-        <div className="card" style={{ width: '500px', marginLeft: '10px', overflowY: 'auto' }}>
+        <div className="card" style={{ width: '800px', marginLeft: '10px', overflowY: 'auto' }}>
           <div className="card-header d-flex align-items-center">
             <h4 className="card-title mb-0" style={{ flex: 1 }}>Add a new word</h4>
             <div className="d-flex" style={{ gap: '8px', marginLeft: 'auto' }}>
@@ -411,39 +448,62 @@ export default function Vocabularies() {
           </div>
           <div className="card-body">
             <form id="vocab-form" onSubmit={handleSubmit}>
-              <div className="form-group">
-                <label>Topic {!formData.topicId && <span className="text-danger">*</span>}</label>
-                <select
-                  className="form-control"
-                  value={formData.topicId}
-                  onChange={(e) => setFormData({ ...formData, topicId: e.target.value })}
-                  required
-                >
-                  <option value="">Chọn chủ đề</option>
-                  {topics.map((topic) => (
-                    <option key={topic.id} value={topic.id}>
-                      {topic.name}
-                    </option>
-                  ))}
-                </select>
-                {topics.length === 0 && (
-                  <small className="text-danger d-block mt-1">Chưa có chủ đề nào. Vui lòng tạo chủ đề trước.</small>
-                )}
-              </div>
-
-
-              <div className="form-group">
-                <label>Avatar</label>
-                <div className="d-flex align-items-center" style={{ gap: '8px' }}>
-                  <input
-                    type="text"
-                    className="form-control"
-                    value={formData.avatar}
-                    onChange={(e) => setFormData({ ...formData, avatar: e.target.value })}
-                    placeholder="Avatar URL"
-                    style={{ flex: 1 }}
-                  />
-                  <button type="button" className="btn btn-secondary btn-sm">Upload</button>
+              <div className="form-row">
+                <div className="col-md-6">
+                  <div className="form-group">
+                    <label>Topic {!formData.topicId && <span className="text-danger">*</span>}</label>
+                    <select
+                      className="form-control"
+                      value={formData.topicId}
+                      onChange={(e) => setFormData({ ...formData, topicId: e.target.value })}
+                      required
+                    >
+                      <option value="">Chọn chủ đề</option>
+                      {topics.map((topic) => (
+                        <option key={topic.id} value={topic.id}>
+                          {topic.name}
+                        </option>
+                      ))}
+                    </select>
+                    {topics.length === 0 && (
+                      <small className="text-danger d-block mt-1">Chưa có chủ đề nào. Vui lòng tạo chủ đề trước.</small>
+                    )}
+                  </div>
+                </div>
+                <div className="col-md-6">
+                  <div className="form-group d-flex flex-column align-items-end">
+                    <label>Avatar</label>
+                    <div
+                      className="d-flex align-items-center justify-content-center"
+                      style={{
+                        width: '100px',
+                        height: '100px',
+                        cursor: 'pointer',
+                        backgroundImage: `url(${formData.avatar || DEFAULT_IMAGE})`,
+                        backgroundSize: 'cover',
+                        backgroundPosition: 'center',
+                        border: '1px solid #ced4da',
+                        borderRadius: '0.375rem'
+                      }}
+                      onClick={() => document.getElementById('avatar-file-input')?.click()}
+                      title="Click to select image"
+                    >
+                      {!formData.avatar && <span className="text-muted">Select Image</span>}
+                    </div>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="d-none"
+                      id="avatar-file-input"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          handleAvatarUpload(file);
+                        }
+                        e.target.value = '';
+                      }}
+                    />
+                  </div>
                 </div>
               </div>
 
@@ -463,123 +523,102 @@ export default function Vocabularies() {
               <div className="form-group">
                 <label className="mb-3">Translations</label>
                 <div style={{ maxHeight: '500px', overflowY: 'auto' }}>
-                  {languages.map((lang, langIndex) => (
-                    <div key={lang.id} className="mb-3 p-2 border rounded">
-                      <div className="d-flex align-items-center gap-2 mb-2">
-                        <span className="text-lg">{lang.flag}</span>
-                        <strong>Language {langIndex + 1}</strong>
-                        <span className="text-muted small">({lang.nativeName})</span>
-                      </div>
-                      {[1, 2, 3, 4].map((version) => {
-                        const trans = formData.translations[lang.id]?.[version] || { meaning: '', pronunciation: '', example: '', audioUrl: '' };
-                        return (
-                          <div key={version} className="mb-2 p-2 bg-light rounded">
-                            <div className="d-flex align-items-center mb-1" style={{ gap: '8px' }}>
-                              <button
-                                type="button"
-                                className="btn btn-sm btn-outline-primary"
-                                style={{ minWidth: '45px', flexShrink: 0 }}
-                                title={`Version ${version}`}
-                              >
-                                V{version}
-                              </button>
-                              <input
-                                type="text"
-                                className="form-control form-control-sm"
-                                value={trans.meaning}
-                                onChange={(e) => updateTranslation(lang.id, version, 'meaning', e.target.value)}
-                                placeholder="Meaning"
-                                style={{ resize: 'none', overflow: 'hidden', flex: 1 }}
-                              />
-                            </div>
-                            <div className="d-flex mb-1" style={{ gap: '8px' }}>
-                              <input
-                                type="text"
-                                className="form-control form-control-sm"
-                                value={trans.pronunciation || ''}
-                                onChange={(e) => updateTranslation(lang.id, version, 'pronunciation', e.target.value)}
-                                placeholder="Pronunciation"
-                                style={{ resize: 'none', overflow: 'hidden', flex: 1 }}
-                              />
-                              <div className="d-flex" style={{ gap: '8px', flexShrink: 0 }}>
-                                {/* Hidden audio element để đảm bảo play ổn định khi edit lại */}
-                                <audio
-                                  id={`audio-player-${lang.id}-${version}`}
-                                  src={trans.audioUrl || ''}
-                                  style={{ display: 'none' }}
-                                />
-                                {trans.audioUrl ? (
-                                  <button
-                                    type="button"
-                                    className="btn btn-sm btn-success mb-0"
-                                    style={{ flexShrink: 0 }}
-                                    title="Play / Stop audio"
-                                    onClick={() => {
-                                      const audioEl = document.getElementById(
-                                        `audio-player-${lang.id}-${version}`
-                                      ) as HTMLAudioElement | null;
-                                      if (audioEl) {
-                                        if (!audioEl.paused) {
-                                          audioEl.pause();
-                                          audioEl.currentTime = 0;
-                                        } else {
-                                          audioEl.currentTime = 0;
-                                          audioEl
-                                            .play()
-                                            .catch((err) => console.error('Error playing audio:', err));
+                  {languages.map((lang, langIndex) => {
+                    const firstMeaning =
+                      formData.translations[lang.id]?.[1]?.meaning ||
+                      formData.translations[lang.id]?.[2]?.meaning ||
+                      formData.translations[lang.id]?.[3]?.meaning ||
+                      formData.translations[lang.id]?.[4]?.meaning || '';
+                    return (
+                      <div key={lang.id} className="mb-3 p-2 border rounded">
+                        <div className="d-flex align-items-center gap-2 mb-2">
+                          <span className="text-lg">{lang.flag}</span>
+                          <span className="text-muted">{lang.nativeName}</span>
+                        </div>
+                        <div className="d-flex align-items-start" style={{ gap: '8px' }}>
+                          <input
+                            type="text"
+                            className="form-control form-control-sm"
+                            value={firstMeaning}
+                            onChange={(e) => updateLanguageMeaning(lang.id, e.target.value)}
+                            placeholder="Meaning"
+                            style={{ flex: 1, marginTop: '0px', marginBottom: '0px', height: '100%' }}
+                          />
+                          <div className="d-flex" style={{ gap: '8px' }}>
+                            {[1, 2, 3, 4].map((version) => {
+                              const trans = formData.translations[lang.id]?.[version] || { audioUrl: '' };
+                              return (
+                                <div key={version} className="d-flex" style={{ gap: '6px', alignItems: 'center' }}>
+                                  <label
+                                    htmlFor={`audio-upload-${lang.id}-${version}`}
+                                    className="btn btn-sm btn-outline-primary"
+                                    style={{ minWidth: '45px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', marginTop: '0px', marginBottom: '0px', height: '100%' }}
+                                    title={`V${version}`}
+                                  >
+                                    V{version}
+                                  </label>
+                                  <audio
+                                    id={`audio-player-${lang.id}-${version}`}
+                                    src={trans.audioUrl || ''}
+                                    style={{ display: 'none' }}
+                                  />
+                                  {trans.audioUrl ? (
+                                    <button
+                                      type="button"
+                                      className="btn btn-sm btn-success mb-0"
+                                      title="Play / Stop audio"
+                                      style={{ marginTop: '0px', marginBottom: '0px', height: '100%' }}
+                                      onClick={() => {
+                                        const audioEl = document.getElementById(
+                                          `audio-player-${lang.id}-${version}`
+                                        ) as HTMLAudioElement | null;
+                                        if (audioEl) {
+                                          if (!audioEl.paused) {
+                                            audioEl.pause();
+                                            audioEl.currentTime = 0;
+                                          } else {
+                                            audioEl.currentTime = 0;
+                                            audioEl
+                                              .play()
+                                              .catch((err) => console.error('Error playing audio:', err));
+                                          }
                                         }
+                                      }}
+                                    >
+                                      <i className="fas fa-play"></i>
+                                    </button>
+                                  ) : (
+                                    <button
+                                      type="button"
+                                      className="btn btn-sm btn-secondary mb-0"
+                                      disabled
+                                      title="No audio uploaded"
+                                      style={{ marginTop: '0px', marginBottom: '0px', height: '100%' }}
+                                    >
+                                      <i className="fas fa-play"></i>
+                                    </button>
+                                  )}
+                                  <input
+                                    type="file"
+                                    accept="audio/*"
+                                    className="d-none"
+                                    id={`audio-upload-${lang.id}-${version}`}
+                                    onChange={async (e) => {
+                                      const file = e.target.files?.[0];
+                                      if (file) {
+                                        await handleAudioUpload(lang.id, version, file);
                                       }
+                                      e.target.value = ''; // Reset input
                                     }}
-                                  >
-                                    <i className="fas fa-play"></i>
-                                  </button>
-                                ) : (
-                                  <button
-                                    type="button"
-                                    className="btn btn-sm btn-secondary mb-0"
-                                    style={{ flexShrink: 0 }}
-                                    disabled
-                                    title="No audio uploaded"
-                                  >
-                                    <i className="fas fa-play"></i>
-                                  </button>
-                                )}
-                                <input
-                                  type="file"
-                                  accept="audio/*"
-                                  className="d-none"
-                                  id={`audio-upload-${lang.id}-${version}`}
-                                  onChange={async (e) => {
-                                    const file = e.target.files?.[0];
-                                    if (file) {
-                                      await handleAudioUpload(lang.id, version, file);
-                                    }
-                                    e.target.value = ''; // Reset input
-                                  }}
-                                />
-                                <label
-                                  htmlFor={`audio-upload-${lang.id}-${version}`}
-                                  className="btn btn-sm btn-outline-primary mb-0"
-                                  style={{ cursor: 'pointer', flexShrink: 0 }}
-                                  title="Upload audio file"
-                                >
-                                  <i className="fas fa-upload"></i>
-                                </label>
-                              </div>
-                            </div>
-                            <textarea
-                              className="form-control form-control-sm"
-                              rows={2}
-                              value={trans.example || ''}
-                              onChange={(e) => updateTranslation(lang.id, version, 'example', e.target.value)}
-                              placeholder="Example sentence"
-                              style={{ resize: 'vertical', minHeight: '60px' }}
-                            />
+                                  />
+                                </div>
+                              );
+                            })}
                           </div>
-                        );
-                      })}
-                    </div>
-                  ))}
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
 
