@@ -28,6 +28,48 @@ export default function Languages() {
     fetchLanguages();
   }, []);
 
+  // Auto open/close form based on screen size
+  useEffect(() => {
+    if (loading) return; // Wait for data to load
+
+    let previousWidth = window.innerWidth;
+    let isInitialMount = true;
+
+    const handleResize = () => {
+      const currentWidth = window.innerWidth;
+      const isLargeScreen = currentWidth >= 1200;
+      const wasLargeScreen = previousWidth >= 1200;
+
+      if (isInitialMount) {
+        // On initial mount, only auto-open on large screens
+        if (isLargeScreen && !editingLanguage && !showModal) {
+          setFormData({ code: '', name: '', nativeName: '', flag: '', isActive: true });
+          setShowModal(true);
+        }
+        isInitialMount = false;
+      } else {
+        // On resize, handle transitions
+        if (isLargeScreen && !editingLanguage && !showModal) {
+          // Resize from small to large: auto open
+          setFormData({ code: '', name: '', nativeName: '', flag: '', isActive: true });
+          setShowModal(true);
+        } else if (!isLargeScreen && wasLargeScreen && showModal && !editingLanguage) {
+          // Resize from large to small: auto close (only when transitioning from large to small)
+          setShowModal(false);
+        }
+      }
+
+      previousWidth = currentWidth;
+    };
+
+    // Check on mount
+    handleResize();
+
+    // Listen to resize events
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [loading, editingLanguage]);
+
   const fetchLanguages = async () => {
     try {
       const response = await api.get('/languages');

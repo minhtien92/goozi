@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import api from '../config/api';
+import api, { uploadFile } from '../config/api';
 
 interface Language {
   id: string;
@@ -12,14 +12,23 @@ interface Language {
 const DEFAULT_IMAGE =
   'data:image/svg+xml,%3Csvg xmlns=\"http://www.w3.org/2000/svg\" width=\"120\" height=\"80\"%3E%3Crect width=\"120\" height=\"80\" fill=\"%23f0f0f0\"/%3E%3Ctext x=\"50%25\" y=\"50%25\" text-anchor=\"middle\" dy=\".3em\" fill=\"%23999\" font-size=\"12\"%3ENo Image%3C/text%3E%3C/svg%3E';
 
+interface TopicTranslation {
+  id: string;
+  languageId: string;
+  meaning: string;
+  version: number;
+  audioUrl: string | null;
+  language?: Language;
+}
+
 interface Topic {
   id: string;
   name: string;
   description: string;
   image: string | null;
+  order: number | null;
   isActive: boolean;
-  sourceLanguage?: Language;
-  targetLanguage?: Language;
+  translations?: TopicTranslation[];
   createdAt: string;
 }
 
@@ -34,15 +43,95 @@ export default function Topics() {
     name: '',
     description: '',
     image: '',
-    sourceLanguageId: '',
-    targetLanguageId: '',
+    order: '',
     isActive: true,
+    translations: {} as Record<string, Record<number, { meaning: string; audioUrl: string }>>,
   });
 
   useEffect(() => {
     fetchLanguages();
     fetchTopics();
   }, []);
+
+  // Auto open/close form based on screen size
+  useEffect(() => {
+    if (loading || languages.length === 0) return; // Wait for data to load
+
+    let previousWidth = window.innerWidth;
+    let isInitialMount = true;
+
+    const handleResize = () => {
+      const currentWidth = window.innerWidth;
+      const isLargeScreen = currentWidth >= 1200;
+      const wasLargeScreen = previousWidth >= 1200;
+
+      if (isInitialMount) {
+        // On initial mount, only auto-open on large screens
+        if (isLargeScreen && !editingTopic && !showModal) {
+          const maxOrder = topics.length > 0 
+            ? Math.max(...topics.map(t => t.order || 0)) + 1 
+            : 1;
+          const translations: Record<string, Record<number, any>> = {};
+          languages.forEach((lang) => {
+            translations[lang.id] = {
+              1: { meaning: '', audioUrl: '' },
+              2: { meaning: '', audioUrl: '' },
+              3: { meaning: '', audioUrl: '' },
+              4: { meaning: '', audioUrl: '' },
+            };
+          });
+          setFormData({ 
+            name: '', 
+            description: '', 
+            image: '', 
+            order: maxOrder.toString(),
+            isActive: true,
+            translations,
+          });
+          setShowModal(true);
+        }
+        isInitialMount = false;
+      } else {
+        // On resize, handle transitions
+        if (isLargeScreen && !editingTopic && !showModal) {
+          // Resize from small to large: auto open
+          const maxOrder = topics.length > 0 
+            ? Math.max(...topics.map(t => t.order || 0)) + 1 
+            : 1;
+          const translations: Record<string, Record<number, any>> = {};
+          languages.forEach((lang) => {
+            translations[lang.id] = {
+              1: { meaning: '', audioUrl: '' },
+              2: { meaning: '', audioUrl: '' },
+              3: { meaning: '', audioUrl: '' },
+              4: { meaning: '', audioUrl: '' },
+            };
+          });
+          setFormData({ 
+            name: '', 
+            description: '', 
+            image: '', 
+            order: maxOrder.toString(),
+            isActive: true,
+            translations,
+          });
+          setShowModal(true);
+        } else if (!isLargeScreen && wasLargeScreen && showModal && !editingTopic) {
+          // Resize from large to small: auto close (only when transitioning from large to small)
+          setShowModal(false);
+        }
+      }
+
+      previousWidth = currentWidth;
+    };
+
+    // Check on mount
+    handleResize();
+
+    // Listen to resize events
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [loading, languages.length, editingTopic, topics.length]);
 
   const fetchLanguages = async () => {
     try {
@@ -66,26 +155,67 @@ export default function Topics() {
 
   const handleCreate = () => {
     setEditingTopic(null);
+    
+    // Tự động tính order (số thứ tự tiếp theo)
+    const maxOrder = topics.length > 0 
+      ? Math.max(...topics.map(t => t.order || 0)) + 1 
+      : 1;
+    
+    const translations: Record<string, Record<number, any>> = {};
+    languages.forEach((lang) => {
+      translations[lang.id] = {
+        1: { meaning: '', audioUrl: '' },
+        2: { meaning: '', audioUrl: '' },
+        3: { meaning: '', audioUrl: '' },
+        4: { meaning: '', audioUrl: '' },
+      };
+    });
+    
     setFormData({ 
       name: '', 
       description: '', 
       image: '', 
-      sourceLanguageId: '',
-      targetLanguageId: '',
-      isActive: true 
+      order: maxOrder.toString(),
+      isActive: true,
+      translations,
     });
     setShowModal(true);
   };
 
   const handleEdit = (topic: Topic) => {
     setEditingTopic(topic);
+    
+    const translations: Record<string, Record<number, any>> = {};
+    
+    // Initialize all languages with empty versions
+    languages.forEach((lang) => {
+      translations[lang.id] = {
+        1: { meaning: '', audioUrl: '' },
+        2: { meaning: '', audioUrl: '' },
+        3: { meaning: '', audioUrl: '' },
+        4: { meaning: '', audioUrl: '' },
+      };
+    });
+
+    // Fill in existing translations
+    if (topic.translations) {
+      topic.translations.forEach((trans) => {
+        if (translations[trans.languageId] && trans.version >= 1 && trans.version <= 4) {
+          translations[trans.languageId][trans.version] = {
+            meaning: trans.meaning || '',
+            audioUrl: trans.audioUrl || '',
+          };
+        }
+      });
+    }
+
     setFormData({
       name: topic.name,
       description: topic.description || '',
       image: topic.image || '',
-      sourceLanguageId: topic.sourceLanguage?.id || '',
-      targetLanguageId: topic.targetLanguage?.id || '',
+      order: topic.order?.toString() || '',
       isActive: topic.isActive,
+      translations,
     });
     setShowModal(true);
   };
@@ -102,19 +232,102 @@ export default function Topics() {
     }
   };
 
+  const updateTranslation = (languageId: string, version: number, field: string, value: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      translations: {
+        ...prev.translations,
+        [languageId]: {
+          ...prev.translations[languageId],
+          [version]: {
+            ...prev.translations[languageId][version],
+            [field]: value,
+          },
+        },
+      },
+    }));
+  };
+
+  // Update meaning for all versions of a language (single meaning per language)
+  const updateLanguageMeaning = (languageId: string, value: string) => {
+    setFormData((prev) => {
+      const langEntry = prev.translations[languageId] || {};
+      const updated: Record<number, any> = { ...langEntry };
+      [1, 2, 3, 4].forEach((v) => {
+        updated[v] = {
+          ...(updated[v] || { meaning: '', audioUrl: '' }),
+          meaning: value,
+        };
+      });
+      return {
+        ...prev,
+        translations: {
+          ...prev.translations,
+          [languageId]: updated,
+        },
+      };
+    });
+  };
+
+  const handleAudioUpload = async (languageId: string, version: number, file: File) => {
+    try {
+      const response = await uploadFile('/upload/audio', file);
+
+      if (response.data.url) {
+        // Get full URL - response.data.url is already /uploads/audio/xxx.mp3
+        const baseUrl = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:3001';
+        const fullUrl = `${baseUrl}${response.data.url}`;
+        updateTranslation(languageId, version, 'audioUrl', fullUrl);
+      }
+    } catch (error: any) {
+      console.error('Error uploading audio:', error);
+      alert('Upload audio thất bại: ' + (error.response?.data?.message || error.message));
+    }
+  };
+
+  const handleImageUpload = async (file: File) => {
+    try {
+      const response = await uploadFile('/upload/image', file);
+
+      if (response.data.url) {
+        // Get full URL
+        const baseUrl = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:3001';
+        const fullUrl = `${baseUrl}${response.data.url}`;
+        setFormData({ ...formData, image: fullUrl });
+      }
+    } catch (error: any) {
+      console.error('Error uploading image:', error);
+      alert('Upload ảnh thất bại: ' + (error.response?.data?.message || error.message));
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     try {
-      // Convert empty strings to null for UUID fields
+      // Convert translations object to array
+      const translationsArray: any[] = [];
+      Object.keys(formData.translations).forEach((languageId) => {
+        [1, 2, 3, 4].forEach((version) => {
+          const trans = formData.translations[languageId][version];
+          if (trans && trans.meaning && trans.meaning.trim()) {
+            translationsArray.push({
+              languageId,
+              version,
+              meaning: trans.meaning,
+              audioUrl: trans.audioUrl || null,
+            });
+          }
+        });
+      });
+
       const payload = {
-        ...formData,
-        sourceLanguageId: formData.sourceLanguageId && formData.sourceLanguageId.trim() !== '' 
-          ? formData.sourceLanguageId 
-          : null,
-        targetLanguageId: formData.targetLanguageId && formData.targetLanguageId.trim() !== '' 
-          ? formData.targetLanguageId 
-          : null,
+        name: formData.name,
+        description: formData.description,
+        order: formData.order ? parseInt(formData.order) : null,
+        image: formData.image || null,
+        isActive: formData.isActive,
+        translations: translationsArray,
       };
 
       if (editingTopic) {
@@ -156,15 +369,15 @@ export default function Topics() {
       <div className="flex-fill" style={{ overflowY: 'auto', paddingRight: '10px' }}>
         <div className="card">
           <div className="card-header">
-            <h3 className="card-title mb-0">Danh sách chủ đề</h3>
-            <div className="card-tools d-flex align-items-center" style={{ gap: '8px' }}>
+            <h3 className="card-title mb-0">Topics</h3>
+            <div className="card-tools d-flex align-items-center" style={{ gap: '10px' }}>
               <input
                 type="text"
                 className="form-control form-control-sm"
-                placeholder="Tìm theo tên hoặc mô tả..."
+                placeholder="Search..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                style={{ width: '260px' }}
+                style={{ width: '200px' }}
               />
               <button
                 type="button"
@@ -172,7 +385,7 @@ export default function Topics() {
                 onClick={handleCreate}
               >
                 <i className="fas fa-plus mr-1"></i>
-                Thêm chủ đề
+                Add a new topic
               </button>
             </div>
           </div>
@@ -181,25 +394,23 @@ export default function Topics() {
               <table className="table table-bordered table-striped table-hover mb-0">
                 <thead>
                   <tr>
-                    <th style={{ width: '60px' }}>No</th>
-                    <th style={{ width: '90px' }}>Ảnh</th>
-                    <th>Tên chủ đề</th>
-                    <th style={{ width: '200px' }}>Ngôn ngữ</th>
-                    <th style={{ width: '110px' }}>Trạng thái</th>
-                    <th style={{ width: '90px' }}>Edit</th>
-                    <th style={{ width: '90px' }}>Delete</th>
+                    <th style={{ width: '50px' }}>No</th>
+                    <th style={{ width: '80px' }}>Image</th>
+                    <th>Topic Name</th>
+                    <th style={{ width: '80px' }}>Edit</th>
+                    <th style={{ width: '80px' }}>Delete</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredTopics.map((topic, index) => (
+                  {filteredTopics.map((topic) => (
                     <tr key={topic.id}>
-                      <td>{index + 1}</td>
+                      <td>{topic.order || '-'}</td>
                       <td>
                         <img
                           src={topic.image || DEFAULT_IMAGE}
                           alt={topic.name}
                           style={{
-                            width: '60px',
+                            width: '40px',
                             height: '40px',
                             objectFit: 'cover',
                             borderRadius: '4px',
@@ -217,40 +428,12 @@ export default function Topics() {
                         {topic.description && (
                           <div
                             className="text-muted small text-truncate"
-                            style={{ maxWidth: '260px' }}
+                            style={{ maxWidth: '200px' }}
                             title={topic.description}
                           >
                             {topic.description}
                           </div>
                         )}
-                      </td>
-                      <td>
-                        {(topic.sourceLanguage || topic.targetLanguage) ? (
-                          <div className="small">
-                            {topic.sourceLanguage && (
-                              <span className="badge badge-info mr-1">
-                                {topic.sourceLanguage.flag} {topic.sourceLanguage.nativeName}
-                              </span>
-                            )}
-                            {topic.sourceLanguage && topic.targetLanguage && (
-                              <i className="fas fa-arrow-right mx-1"></i>
-                            )}
-                            {topic.targetLanguage && (
-                              <span className="badge badge-success">
-                                {topic.targetLanguage.flag} {topic.targetLanguage.nativeName}
-                              </span>
-                            )}
-                          </div>
-                        ) : (
-                          <span className="text-muted small">Chưa cấu hình</span>
-                        )}
-                      </td>
-                      <td>
-                        <span
-                          className={`badge ${topic.isActive ? 'badge-success' : 'badge-secondary'}`}
-                        >
-                          {topic.isActive ? 'Hoạt động' : 'Tạm dừng'}
-                        </span>
                       </td>
                       <td>
                         <button
@@ -274,14 +457,14 @@ export default function Topics() {
                   ))}
                   {topics.length === 0 && (
                     <tr>
-                      <td colSpan={7} className="text-center py-4 text-muted">
+                      <td colSpan={5} className="text-center py-4 text-muted">
                         Chưa có chủ đề nào
                       </td>
                     </tr>
                   )}
                   {topics.length > 0 && filteredTopics.length === 0 && (
                     <tr>
-                      <td colSpan={7} className="text-center py-4 text-muted">
+                      <td colSpan={5} className="text-center py-4 text-muted">
                         Không tìm thấy chủ đề phù hợp
                       </td>
                     </tr>
@@ -298,7 +481,7 @@ export default function Topics() {
         <div className="card" style={{ width: '800px', marginLeft: '10px', overflowY: 'auto' }}>
           <div className="card-header d-flex align-items-center">
             <h4 className="card-title mb-0" style={{ flex: 1 }}>
-              {editingTopic ? 'Sửa chủ đề' : 'Thêm chủ đề mới'}
+              {editingTopic ? 'Edit topic' : 'Add a new topic'}
             </h4>
             <div className="d-flex" style={{ gap: '8px', marginLeft: 'auto' }}>
               <button
@@ -309,79 +492,192 @@ export default function Topics() {
                   setEditingTopic(null);
                 }}
               >
-                Hủy
+                Cancel
               </button>
               <button type="submit" form="topic-form" className="btn btn-sm btn-primary">
-                Lưu
+                Save
               </button>
             </div>
           </div>
           <div className="card-body">
             <form id="topic-form" onSubmit={handleSubmit}>
-              <div className="form-group">
-                <label>Tên chủ đề *</label>
-                <input
-                  type="text"
-                  className="form-control"
-                  value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  required
-                />
+              <div className="form-row">
+                <div style={{ flex: '0 0 60%', maxWidth: '60%', paddingRight: '15px' }}>
+                  <div className="form-group">
+                    <label>Topic Name *</label>
+                    <input
+                      type="text"
+                      className="form-control"
+                      value={formData.name}
+                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                      required
+                      placeholder="Enter topic name"
+                    />
+                  </div>
+                </div>
+                <div style={{ flex: '0 0 40%', maxWidth: '40%', paddingLeft: '15px' }}>
+                  <div className="form-group d-flex flex-column align-items-center">
+                    <label>Image</label>
+                    <div
+                      className="d-flex align-items-center justify-content-center"
+                      style={{
+                        width: '100px',
+                        height: '100px',
+                        cursor: 'pointer',
+                        backgroundImage: `url(${formData.image || DEFAULT_IMAGE})`,
+                        backgroundSize: 'cover',
+                        backgroundPosition: 'center',
+                        border: '1px solid #ced4da',
+                        borderRadius: '0.375rem',
+                      }}
+                      onClick={() => document.getElementById('image-file-input')?.click()}
+                      title="Click to select image"
+                    >
+                      {!formData.image && <span className="text-muted">Select Image</span>}
+                    </div>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="d-none"
+                      id="image-file-input"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          handleImageUpload(file);
+                        }
+                        e.target.value = '';
+                      }}
+                    />
+                  </div>
+                </div>
               </div>
+
               <div className="form-group">
-                <label>Mô tả</label>
+                <label>Description</label>
                 <textarea
                   className="form-control"
                   rows={3}
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                  placeholder="Enter description (optional)"
                 />
               </div>
+
+              {/* Language Fields - Translations */}
               <div className="form-group">
-                <label>URL hình ảnh</label>
-                <input
-                  type="text"
-                  className="form-control"
-                  value={formData.image}
-                  onChange={(e) => setFormData({ ...formData, image: e.target.value })}
-                />
-              </div>
-              <div className="row">
-                <div className="col-md-6">
-                  <div className="form-group">
-                    <label>Ngôn ngữ nguồn</label>
-                    <select
-                      className="form-control"
-                      value={formData.sourceLanguageId}
-                      onChange={(e) => setFormData({ ...formData, sourceLanguageId: e.target.value })}
-                    >
-                      <option value="">Chọn ngôn ngữ nguồn</option>
-                      {languages.map((lang) => (
-                        <option key={lang.id} value={lang.id}>
-                          {lang.flag} {lang.nativeName} ({lang.name})
-                        </option>
-                      ))}
-                    </select>
-                  </div>
+                <label className="mb-3">Translations</label>
+                <div>
+                  {languages.map((lang) => {
+                    const firstMeaning =
+                      formData.translations[lang.id]?.[1]?.meaning ||
+                      formData.translations[lang.id]?.[2]?.meaning ||
+                      formData.translations[lang.id]?.[3]?.meaning ||
+                      formData.translations[lang.id]?.[4]?.meaning || '';
+                    return (
+                      <div key={lang.id} className="mb-3 p-2 border rounded">
+                        <div className="d-flex align-items-center mb-2" style={{ gap: '8px' }}>
+                          <span style={{ fontSize: '1.2rem', lineHeight: '1', minWidth: '28px', textAlign: 'center' }}>{lang.flag}</span>
+                          <span className="text-muted" style={{ fontWeight: '500' }}>{lang.nativeName}</span>
+                        </div>
+                        <div className="d-flex align-items-start" style={{ gap: '8px' }}>
+                          <input
+                            type="text"
+                            className="form-control form-control-sm"
+                            value={firstMeaning}
+                            onChange={(e) => updateLanguageMeaning(lang.id, e.target.value)}
+                            placeholder="Meaning"
+                            style={{ flex: 1, marginTop: '0px', marginBottom: '0px', height: '100%' }}
+                          />
+                          <div className="d-flex" style={{ gap: '8px' }}>
+                            {[1, 2, 3, 4].map((version) => {
+                              const trans = formData.translations[lang.id]?.[version] || { audioUrl: '' };
+                              return (
+                                <div key={version} className="d-flex" style={{ gap: '6px', alignItems: 'center' }}>
+                                  <button
+                                    type="button"
+                                    className="btn btn-sm btn-outline-primary"
+                                    style={{
+                                      minWidth: '45px',
+                                      display: 'inline-flex',
+                                      alignItems: 'center',
+                                      justifyContent: 'center',
+                                      cursor: 'pointer',
+                                      marginTop: '0px',
+                                      marginBottom: '0px',
+                                      height: '100%',
+                                    }}
+                                    title={`V${version}`}
+                                    onClick={() =>
+                                      document.getElementById(`audio-upload-${lang.id}-${version}`)?.click()
+                                    }
+                                  >
+                                    V{version}
+                                  </button>
+                                  <audio
+                                    id={`audio-player-${lang.id}-${version}`}
+                                    src={trans.audioUrl || ''}
+                                    style={{ display: 'none' }}
+                                  />
+                                  {trans.audioUrl ? (
+                                    <button
+                                      type="button"
+                                      className="btn btn-sm btn-success mb-0"
+                                      title="Play / Stop audio"
+                                      style={{ marginTop: '0px', marginBottom: '0px', height: '100%' }}
+                                      onClick={() => {
+                                        const audioEl = document.getElementById(
+                                          `audio-player-${lang.id}-${version}`
+                                        ) as HTMLAudioElement | null;
+                                        if (audioEl) {
+                                          if (!audioEl.paused) {
+                                            audioEl.pause();
+                                            audioEl.currentTime = 0;
+                                          } else {
+                                            audioEl.currentTime = 0;
+                                            audioEl
+                                              .play()
+                                              .catch((err) => console.error('Error playing audio:', err));
+                                          }
+                                        }
+                                      }}
+                                    >
+                                      <i className="fas fa-play"></i>
+                                    </button>
+                                  ) : (
+                                    <button
+                                      type="button"
+                                      className="btn btn-sm btn-secondary mb-0"
+                                      disabled
+                                      title="No audio uploaded"
+                                      style={{ marginTop: '0px', marginBottom: '0px', height: '100%' }}
+                                    >
+                                      <i className="fas fa-play"></i>
+                                    </button>
+                                  )}
+                                  <input
+                                    type="file"
+                                    accept="audio/*"
+                                    className="d-none"
+                                    id={`audio-upload-${lang.id}-${version}`}
+                                    onChange={async (e) => {
+                                      const file = e.target.files?.[0];
+                                      if (file) {
+                                        await handleAudioUpload(lang.id, version, file);
+                                      }
+                                      e.target.value = ''; // Reset input
+                                    }}
+                                  />
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
-                <div className="col-md-6">
-                  <div className="form-group">
-                    <label>Ngôn ngữ đích</label>
-                    <select
-                      className="form-control"
-                      value={formData.targetLanguageId}
-                      onChange={(e) => setFormData({ ...formData, targetLanguageId: e.target.value })}
-                    >
-                      <option value="">Chọn ngôn ngữ đích</option>
-                      {languages.map((lang) => (
-                        <option key={lang.id} value={lang.id}>
-                          {lang.flag} {lang.nativeName} ({lang.name})
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
               </div>
+
               <div className="form-group">
                 <div className="custom-control custom-switch">
                   <input

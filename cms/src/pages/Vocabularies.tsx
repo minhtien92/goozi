@@ -63,6 +63,86 @@ export default function Vocabularies() {
     fetchData();
   }, []);
 
+  // Auto open/close form based on screen size
+  useEffect(() => {
+    if (loading || topics.length === 0 || languages.length === 0) return; // Wait for data to load
+
+    let previousWidth = window.innerWidth;
+    let isInitialMount = true;
+
+    const handleResize = () => {
+      const currentWidth = window.innerWidth;
+      const isLargeScreen = currentWidth >= 1200;
+      const wasLargeScreen = previousWidth >= 1200;
+
+      if (isInitialMount) {
+        // On initial mount, only auto-open on large screens
+        if (isLargeScreen && !editingVocab && !showModal) {
+          const translations: Record<string, Record<number, any>> = {};
+          languages.forEach((lang) => {
+            translations[lang.id] = {
+              1: { meaning: '', pronunciation: '', example: '', audioUrl: '' },
+              2: { meaning: '', pronunciation: '', example: '', audioUrl: '' },
+              3: { meaning: '', pronunciation: '', example: '', audioUrl: '' },
+              4: { meaning: '', pronunciation: '', example: '', audioUrl: '' },
+            };
+          });
+          const maxOrder = vocabularies.length > 0 
+            ? Math.max(...vocabularies.map(v => v.order || 0)) + 1 
+            : 1;
+          setFormData({
+            word: '',
+            topicId: topics[0]?.id || '',
+            order: maxOrder.toString(),
+            avatar: '',
+            isActive: true,
+            translations,
+          });
+          setShowModal(true);
+        }
+        isInitialMount = false;
+      } else {
+        // On resize, handle transitions
+        if (isLargeScreen && !editingVocab && !showModal) {
+          // Resize from small to large: auto open
+          const translations: Record<string, Record<number, any>> = {};
+          languages.forEach((lang) => {
+            translations[lang.id] = {
+              1: { meaning: '', pronunciation: '', example: '', audioUrl: '' },
+              2: { meaning: '', pronunciation: '', example: '', audioUrl: '' },
+              3: { meaning: '', pronunciation: '', example: '', audioUrl: '' },
+              4: { meaning: '', pronunciation: '', example: '', audioUrl: '' },
+            };
+          });
+          const maxOrder = vocabularies.length > 0 
+            ? Math.max(...vocabularies.map(v => v.order || 0)) + 1 
+            : 1;
+          setFormData({
+            word: '',
+            topicId: topics[0]?.id || '',
+            order: maxOrder.toString(),
+            avatar: '',
+            isActive: true,
+            translations,
+          });
+          setShowModal(true);
+        } else if (!isLargeScreen && wasLargeScreen && showModal && !editingVocab) {
+          // Resize from large to small: auto close (only when transitioning from large to small)
+          setShowModal(false);
+        }
+      }
+
+      previousWidth = currentWidth;
+    };
+
+    // Check on mount
+    handleResize();
+
+    // Listen to resize events
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [loading, topics.length, languages.length, editingVocab, vocabularies.length]);
+
   const fetchData = async () => {
     try {
       const [vocabRes, topicsRes, languagesRes] = await Promise.all([

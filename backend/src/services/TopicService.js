@@ -2,38 +2,30 @@ import db from '../models/index.js';
 
 class TopicService {
   async getAllTopics(filters = {}) {
-    const { isActive, sourceLanguageId, targetLanguageId } = filters;
+    const { isActive } = filters;
     const where = {};
 
     if (isActive !== undefined) {
       where.isActive = isActive === 'true';
     }
 
-    if (sourceLanguageId) {
-      where.sourceLanguageId = sourceLanguageId;
-    }
-
-    if (targetLanguageId) {
-      where.targetLanguageId = targetLanguageId;
-    }
-
     const topics = await db.Topic.findAll({
       where,
       include: [
         {
-          model: db.Language,
-          as: 'sourceLanguage',
-          attributes: ['id', 'code', 'name', 'nativeName', 'flag'],
-          required: false,
-        },
-        {
-          model: db.Language,
-          as: 'targetLanguage',
-          attributes: ['id', 'code', 'name', 'nativeName', 'flag'],
+          model: db.TopicTranslation,
+          as: 'translations',
+          include: [
+            {
+              model: db.Language,
+              as: 'language',
+              attributes: ['id', 'code', 'name', 'nativeName', 'flag'],
+            },
+          ],
           required: false,
         },
       ],
-      order: [['createdAt', 'DESC']],
+      order: [['order', 'ASC'], ['createdAt', 'DESC']],
     });
 
     // Get vocabulary counts separately to avoid filtering issues
@@ -81,18 +73,18 @@ class TopicService {
       });
     }
 
-    // Always include language relations
+    // Always include translations
     include.push(
       {
-        model: db.Language,
-        as: 'sourceLanguage',
-        attributes: ['id', 'code', 'name', 'nativeName', 'flag'],
-        required: false,
-      },
-      {
-        model: db.Language,
-        as: 'targetLanguage',
-        attributes: ['id', 'code', 'name', 'nativeName', 'flag'],
+        model: db.TopicTranslation,
+        as: 'translations',
+        include: [
+          {
+            model: db.Language,
+            as: 'language',
+            attributes: ['id', 'code', 'name', 'nativeName', 'flag'],
+          },
+        ],
         required: false,
       }
     );
@@ -107,54 +99,46 @@ class TopicService {
   }
 
   async createTopic(data) {
-    const { name, description, image, isActive, sourceLanguageId, targetLanguageId } = data;
+    const { name, description, image, order, isActive, translations } = data;
 
     if (!name) {
       throw new Error('Topic name is required');
-    }
-
-    // Convert empty strings to null for UUID fields
-    const normalizedSourceLanguageId = sourceLanguageId && sourceLanguageId.trim() !== '' ? sourceLanguageId : null;
-    const normalizedTargetLanguageId = targetLanguageId && targetLanguageId.trim() !== '' ? targetLanguageId : null;
-
-    // Verify languages exist if provided
-    if (normalizedSourceLanguageId) {
-      const sourceLang = await db.Language.findByPk(normalizedSourceLanguageId);
-      if (!sourceLang) {
-        throw new Error('Source language not found');
-      }
-    }
-
-    if (normalizedTargetLanguageId) {
-      const targetLang = await db.Language.findByPk(normalizedTargetLanguageId);
-      if (!targetLang) {
-        throw new Error('Target language not found');
-      }
     }
 
     const topic = await db.Topic.create({
       name,
       description,
       image,
+      order: order !== undefined && order !== null ? order : null,
       isActive: isActive !== undefined ? isActive : true,
-      sourceLanguageId: normalizedSourceLanguageId,
-      targetLanguageId: normalizedTargetLanguageId,
     });
 
-    // Load with language relations
+    // Create translations if provided
+    if (translations && Array.isArray(translations) && translations.length > 0) {
+      const translationRecords = translations.map((trans) => ({
+        topicId: topic.id,
+        languageId: trans.languageId,
+        meaning: trans.meaning,
+        version: trans.version || 1,
+        audioUrl: trans.audioUrl || null,
+      }));
+
+      await db.TopicTranslation.bulkCreate(translationRecords);
+    }
+
+    // Load with translations
     return await db.Topic.findByPk(topic.id, {
       include: [
         {
-          model: db.Language,
-          as: 'sourceLanguage',
-          attributes: ['id', 'code', 'name', 'nativeName', 'flag'],
-          required: false,
-        },
-        {
-          model: db.Language,
-          as: 'targetLanguage',
-          attributes: ['id', 'code', 'name', 'nativeName', 'flag'],
-          required: false,
+          model: db.TopicTranslation,
+          as: 'translations',
+          include: [
+            {
+              model: db.Language,
+              as: 'language',
+              attributes: ['id', 'code', 'name', 'nativeName', 'flag'],
+            },
+          ],
         },
       ],
     });
@@ -166,58 +150,48 @@ class TopicService {
       throw new Error('Topic not found');
     }
 
-    const { name, description, image, isActive, sourceLanguageId, targetLanguageId } = data;
-
-    // Convert empty strings to null for UUID fields
-    const normalizedSourceLanguageId = sourceLanguageId !== undefined 
-      ? (sourceLanguageId && sourceLanguageId.trim() !== '' ? sourceLanguageId : null)
-      : undefined;
-    const normalizedTargetLanguageId = targetLanguageId !== undefined
-      ? (targetLanguageId && targetLanguageId.trim() !== '' ? targetLanguageId : null)
-      : undefined;
-
-    // Verify languages exist if being updated
-    if (normalizedSourceLanguageId !== undefined && normalizedSourceLanguageId !== topic.sourceLanguageId) {
-      if (normalizedSourceLanguageId) {
-        const sourceLang = await db.Language.findByPk(normalizedSourceLanguageId);
-        if (!sourceLang) {
-          throw new Error('Source language not found');
-        }
-      }
-    }
-
-    if (normalizedTargetLanguageId !== undefined && normalizedTargetLanguageId !== topic.targetLanguageId) {
-      if (normalizedTargetLanguageId) {
-        const targetLang = await db.Language.findByPk(normalizedTargetLanguageId);
-        if (!targetLang) {
-          throw new Error('Target language not found');
-        }
-      }
-    }
+    const { name, description, image, order, isActive, translations } = data;
 
     await topic.update({
       name: name || topic.name,
       description: description !== undefined ? description : topic.description,
       image: image !== undefined ? image : topic.image,
+      order: order !== undefined ? (order !== null ? order : null) : topic.order,
       isActive: isActive !== undefined ? isActive : topic.isActive,
-      sourceLanguageId: normalizedSourceLanguageId !== undefined ? normalizedSourceLanguageId : topic.sourceLanguageId,
-      targetLanguageId: normalizedTargetLanguageId !== undefined ? normalizedTargetLanguageId : topic.targetLanguageId,
     });
 
-    // Load with language relations
+    // Update translations if provided
+    if (translations && Array.isArray(translations)) {
+      // Delete existing translations
+      await db.TopicTranslation.destroy({ where: { topicId: topic.id } });
+
+      // Create new translations
+      if (translations.length > 0) {
+        const translationRecords = translations.map((trans) => ({
+          topicId: topic.id,
+          languageId: trans.languageId,
+          meaning: trans.meaning,
+          version: trans.version || 1,
+          audioUrl: trans.audioUrl || null,
+        }));
+
+        await db.TopicTranslation.bulkCreate(translationRecords);
+      }
+    }
+
+    // Load with translations
     return await db.Topic.findByPk(topic.id, {
       include: [
         {
-          model: db.Language,
-          as: 'sourceLanguage',
-          attributes: ['id', 'code', 'name', 'nativeName', 'flag'],
-          required: false,
-        },
-        {
-          model: db.Language,
-          as: 'targetLanguage',
-          attributes: ['id', 'code', 'name', 'nativeName', 'flag'],
-          required: false,
+          model: db.TopicTranslation,
+          as: 'translations',
+          include: [
+            {
+              model: db.Language,
+              as: 'language',
+              attributes: ['id', 'code', 'name', 'nativeName', 'flag'],
+            },
+          ],
         },
       ],
     });

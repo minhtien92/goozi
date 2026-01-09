@@ -21,27 +21,14 @@ export default function (sequelize) {
         type: DataTypes.STRING,
         allowNull: true,
       },
+      order: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+        comment: 'Thứ tự sắp xếp của topic',
+      },
       isActive: {
         type: DataTypes.BOOLEAN,
         defaultValue: true,
-      },
-      sourceLanguageId: {
-        type: DataTypes.UUID,
-        allowNull: true,
-        references: {
-          model: 'languages',
-          key: 'id',
-        },
-        comment: 'Ngôn ngữ nguồn (ngôn ngữ chính của người học)',
-      },
-      targetLanguageId: {
-        type: DataTypes.UUID,
-        allowNull: true,
-        references: {
-          model: 'languages',
-          key: 'id',
-        },
-        comment: 'Ngôn ngữ đích (ngôn ngữ đang học)',
       },
     },
     {

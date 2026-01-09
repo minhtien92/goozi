@@ -27,6 +27,52 @@ export default function Testimonials() {
     fetchTestimonials();
   }, []);
 
+  // Auto open/close form based on screen size
+  useEffect(() => {
+    if (loading) return; // Wait for data to load
+
+    let previousWidth = window.innerWidth;
+    let isInitialMount = true;
+
+    const handleResize = () => {
+      const currentWidth = window.innerWidth;
+      const isLargeScreen = currentWidth >= 1200;
+      const wasLargeScreen = previousWidth >= 1200;
+
+      if (isInitialMount) {
+        // On initial mount, only auto-open on large screens
+        if (isLargeScreen && !editingId && !showModal) {
+          setNewName('');
+          setNewQuote('');
+          setNewOrder(0);
+          setShowModal(true);
+        }
+        isInitialMount = false;
+      } else {
+        // On resize, handle transitions
+        if (isLargeScreen && !editingId && !showModal) {
+          // Resize from small to large: auto open
+          setNewName('');
+          setNewQuote('');
+          setNewOrder(0);
+          setShowModal(true);
+        } else if (!isLargeScreen && wasLargeScreen && showModal && !editingId) {
+          // Resize from large to small: auto close (only when transitioning from large to small)
+          setShowModal(false);
+        }
+      }
+
+      previousWidth = currentWidth;
+    };
+
+    // Check on mount
+    handleResize();
+
+    // Listen to resize events
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [loading, editingId]);
+
   const fetchTestimonials = async () => {
     try {
       const response = await api.get('/testimonials');
