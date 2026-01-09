@@ -304,7 +304,7 @@ export default function Vocabularies() {
   }
 
   return (
-    <div className="d-flex" style={{ height: 'calc(100vh - 100px)' }}>
+    <div className="d-flex" style={{ minHeight: 'calc(100vh - 200px)' }}>
       {/* Left Panel - Word List */}
       <div className="flex-fill" style={{ overflowY: 'auto', paddingRight: '10px' }}>
         <div className="card">
@@ -431,7 +431,7 @@ export default function Vocabularies() {
           <div className="card-body">
             <form id="vocab-form" onSubmit={handleSubmit}>
               <div className="form-row">
-                <div className="col-md-6">
+                <div style={{ flex: '0 0 60%', maxWidth: '60%', paddingRight: '15px' }}>
               <div className="form-group">
                 <label>Topic {!formData.topicId && <span className="text-danger">*</span>}</label>
                 <select
@@ -452,7 +452,7 @@ export default function Vocabularies() {
                 )}
               </div>
                 </div>
-                <div className="col-md-6">
+                <div style={{ flex: '0 0 40%', maxWidth: '40%', paddingLeft: '15px' }}>
                   <div className="form-group d-flex flex-column align-items-center">
                     <label>Avatar</label>
                     <div
@@ -504,7 +504,7 @@ export default function Vocabularies() {
               {/* Language Fields */}
               <div className="form-group">
                 <label className="mb-3">Translations</label>
-                <div style={{ maxHeight: '500px', overflowY: 'auto' }}>
+                <div>
                   {languages.map((lang, langIndex) => {
                     const firstMeaning =
                       formData.translations[lang.id]?.[1]?.meaning ||
@@ -513,9 +513,9 @@ export default function Vocabularies() {
                       formData.translations[lang.id]?.[4]?.meaning || '';
                     return (
                     <div key={lang.id} className="mb-3 p-2 border rounded">
-                      <div className="d-flex align-items-center gap-2 mb-2">
-                        <span className="text-lg">{lang.flag}</span>
-                          <span className="text-muted">{lang.nativeName}</span>
+                      <div className="d-flex align-items-center mb-2" style={{ gap: '8px' }}>
+                        <span style={{ fontSize: '1.2rem', lineHeight: '1', minWidth: '28px', textAlign: 'center' }}>{lang.flag}</span>
+                        <span className="text-muted" style={{ fontWeight: '500' }}>{lang.nativeName}</span>
                       </div>
                         <div className="d-flex align-items-start" style={{ gap: '8px' }}>
                           <input

@@ -129,7 +129,7 @@ export default function HomeSettings() {
   }
 
   return (
-    <div className="d-flex" style={{ height: 'calc(100vh - 100px)' }}>
+    <div className="d-flex" style={{ minHeight: 'calc(100vh - 200px)' }}>
       {/* Left Panel - Slogans */}
       <div className="flex-fill" style={{ overflowY: 'auto', paddingRight: '10px' }}>
         <div className="card">

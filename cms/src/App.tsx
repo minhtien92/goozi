@@ -9,6 +9,7 @@ import Languages from './pages/Languages';
 import Slogan from './pages/Slogan';
 import Picture from './pages/Picture';
 import Testimonials from './pages/Testimonials';
+import Feedback from './pages/Feedback';
 import Layout from './components/Layout';
 
 function PrivateRoute({ children }: { children: React.ReactNode }) {
@@ -48,6 +49,7 @@ function App() {
           <Route path="home-settings/slogan" element={<Slogan />} />
           <Route path="home-settings/picture" element={<Picture />} />
           <Route path="testimonials" element={<Testimonials />} />
+          <Route path="feedback" element={<Feedback />} />
         </Route>
       </Routes>
     </BrowserRouter>

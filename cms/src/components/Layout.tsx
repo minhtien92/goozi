@@ -1,16 +1,20 @@
 import { Outlet, Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
 import { useEffect, useState } from 'react';
+import logoSvg from '../assets/img/logo.svg';
 
 export default function Layout() {
   const { user, logout } = useAuthStore();
   const navigate = useNavigate();
   const location = useLocation();
   const [isHomeMenuOpen, setIsHomeMenuOpen] = useState(false);
+  const [isVocabularyMenuOpen, setIsVocabularyMenuOpen] = useState(false);
 
   useEffect(() => {
     // Auto-open menu if on home-settings or testimonials page
     setIsHomeMenuOpen(location.pathname.startsWith('/home-settings') || location.pathname.startsWith('/testimonials'));
+    // Auto-open Vocabulary menu if on topics or vocabularies page
+    setIsVocabularyMenuOpen(location.pathname.startsWith('/topics') || location.pathname.startsWith('/vocabularies'));
   }, [location.pathname]);
 
   useEffect(() => {
@@ -76,8 +80,8 @@ export default function Layout() {
       {/* Main Sidebar Container */}
       <aside className="main-sidebar sidebar-dark-primary elevation-4">
         {/* Brand Logo */}
-        <Link to="/" className="brand-link">
-          <span className="brand-text font-weight-light">Goozi CMS</span>
+        <Link to="/" className="brand-link" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0.8rem 0.5rem' }}>
+          <img src={logoSvg} alt="Goozi Logo" style={{ maxWidth: '140px', height: 'auto' }} />
         </Link>
 
         {/* Sidebar */}
@@ -91,27 +95,65 @@ export default function Layout() {
                   <p>Dashboard</p>
                 </Link>
               </li>
-              {user?.role === 'admin' && (user.permissions?.topics ?? true) && (
-                <li className="nav-item">
-                  <Link to="/topics" className={`nav-link ${isActive('/topics') ? 'active' : ''}`}>
-                    <i className="nav-icon fas fa-folder"></i>
-                    <p>Chủ đề</p>
-                  </Link>
-                </li>
-              )}
-              {user?.role === 'admin' && (user.permissions?.vocabularies ?? true) && (
-                <li className="nav-item">
-                  <Link to="/vocabularies" className={`nav-link ${isActive('/vocabularies') ? 'active' : ''}`}>
-                    <i className="nav-icon fas fa-book"></i>
-                    <p>Từ vựng</p>
-                  </Link>
-                </li>
-              )}
               <li className="nav-item">
                 <Link to="/languages" className={`nav-link ${isActive('/languages') ? 'active' : ''}`}>
                   <i className="nav-icon fas fa-globe"></i>
-                  <p>Ngôn ngữ</p>
+                  <p>Language</p>
                 </Link>
+              </li>
+              {user?.role === 'admin' && ((user.permissions?.topics ?? true) || (user.permissions?.vocabularies ?? true)) && (
+                <li className={`nav-item has-treeview ${isVocabularyMenuOpen ? 'menu-open' : ''}`}>
+                  <a 
+                    href="#" 
+                    className={`nav-link ${location.pathname.startsWith('/topics') || location.pathname.startsWith('/vocabularies') ? 'active' : ''}`}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      setIsVocabularyMenuOpen(!isVocabularyMenuOpen);
+                    }}
+                  >
+                    <i className="nav-icon fas fa-book"></i>
+                    <p>
+                      Vocabulary
+                      <i className={`right fas fa-angle-${isVocabularyMenuOpen ? 'down' : 'left'}`} style={{ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)' }}></i>
+                    </p>
+                  </a>
+                  <ul className="nav nav-treeview" style={{ display: isVocabularyMenuOpen ? 'block' : 'none' }}>
+                    {user?.role === 'admin' && (user.permissions?.topics ?? true) && (
+                      <li className="nav-item">
+                        <Link
+                          to="/topics"
+                          className={`nav-link ${isActive('/topics') ? 'active' : ''}`}
+                        >
+                          <i className="far fa-circle nav-icon"></i>
+                          <p>Topics</p>
+                        </Link>
+                      </li>
+                    )}
+                    {user?.role === 'admin' && (user.permissions?.vocabularies ?? true) && (
+                      <li className="nav-item">
+                        <Link
+                          to="/vocabularies"
+                          className={`nav-link ${isActive('/vocabularies') ? 'active' : ''}`}
+                        >
+                          <i className="far fa-circle nav-icon"></i>
+                          <p>Word</p>
+                        </Link>
+                      </li>
+                    )}
+                  </ul>
+                </li>
+              )}
+              <li className="nav-item">
+                <a href="#" className="nav-link">
+                  <i className="nav-icon fas fa-quote-left"></i>
+                  <p>Phrase</p>
+                </a>
+              </li>
+              <li className="nav-item">
+                <a href="#" className="nav-link">
+                  <i className="nav-icon fas fa-align-left"></i>
+                  <p>Sentence</p>
+                </a>
               </li>
               {user?.role === 'admin' && (user.permissions?.home ?? true) && (
               <li className={`nav-item has-treeview ${isHomeMenuOpen ? 'menu-open' : ''}`}>
@@ -125,7 +167,7 @@ export default function Layout() {
                 >
                   <i className="nav-icon fas fa-home"></i>
                   <p>
-                    WEB/HOME
+                    Web/Home
                     <i className={`right fas fa-angle-${isHomeMenuOpen ? 'down' : 'left'}`} style={{ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)' }}></i>
                   </p>
                 </a>
@@ -154,12 +196,18 @@ export default function Layout() {
                       className={`nav-link ${isActive('/testimonials') ? 'active' : ''}`}
                     >
                       <i className="far fa-circle nav-icon"></i>
-                      <p>Testimonials</p>
+                      <p>Testimonial</p>
                     </Link>
                   </li>
                 </ul>
               </li>
               )}
+              <li className="nav-item">
+                <Link to="/feedback" className={`nav-link ${isActive('/feedback') ? 'active' : ''}`}>
+                  <i className="nav-icon fas fa-comments"></i>
+                  <p>Feedback</p>
+                </Link>
+              </li>
               <li className="nav-header">HỆ THỐNG</li>
               {user?.role === 'admin' && (user.permissions?.users ?? true) && (
                 <li className="nav-item">
@@ -213,7 +261,8 @@ export default function Layout() {
                   {location.pathname === '/languages' && 'Quản lý ngôn ngữ'}
                   {location.pathname === '/home-settings/slogan' && 'Quản lý Slogan'}
                   {location.pathname === '/home-settings/picture' && 'Quản lý Picture'}
-                  {location.pathname === '/testimonials' && 'Quản lý Testimonials'}
+                  {location.pathname === '/testimonials' && 'Quản lý Testimonial'}
+                  {location.pathname === '/feedback' && 'Quản lý Feedback'}
                 </h1>
               </div>
               <div className="col-sm-6">
@@ -229,7 +278,8 @@ export default function Layout() {
                     {location.pathname === '/languages' && 'Ngôn ngữ'}
                     {location.pathname === '/home-settings/slogan' && 'Slogan'}
                     {location.pathname === '/home-settings/picture' && 'Picture'}
-                    {location.pathname === '/testimonials' && 'Testimonials'}
+                    {location.pathname === '/testimonials' && 'Testimonial'}
+                    {location.pathname === '/feedback' && 'Feedback'}
                   </li>
                 </ol>
               </div>

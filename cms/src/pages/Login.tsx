@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../config/api';
 import { useAuthStore } from '../store/authStore';
+import logoSvg from '../assets/img/logo.svg';
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -37,7 +38,7 @@ export default function Login() {
     <div className="login-page" style={{ minHeight: '100vh' }}>
       <div className="login-box">
         <div className="login-logo">
-          <b>Goozi</b> CMS
+          <img src={logoSvg} alt="Goozi Logo" style={{ maxWidth: '250px', height: 'auto' }} />
         </div>
         <div className="card">
           <div className="card-body login-card-body">

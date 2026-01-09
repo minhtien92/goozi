@@ -12,6 +12,7 @@ interface Testimonial {
 export default function Testimonials() {
   const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showModal, setShowModal] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editName, setEditName] = useState('');
   const [editQuote, setEditQuote] = useState('');
@@ -88,6 +89,20 @@ export default function Testimonials() {
     }
   };
 
+  const handleCreate = () => {
+    setShowModal(true);
+    setNewName('');
+    setNewQuote('');
+    setNewOrder(0);
+  };
+
+  const handleCancelNew = () => {
+    setShowModal(false);
+    setNewName('');
+    setNewQuote('');
+    setNewOrder(0);
+  };
+
   const handleAddNew = async () => {
     if (!newName.trim() || !newQuote.trim()) {
       alert('Vui lòng nhập đầy đủ tên và quote');
@@ -102,6 +117,7 @@ export default function Testimonials() {
         isActive: true,
       });
       alert('Thêm testimonial thành công!');
+      setShowModal(false);
       setNewName('');
       setNewQuote('');
       setNewOrder(0);
@@ -123,12 +139,22 @@ export default function Testimonials() {
   }
 
   return (
-    <div className="d-flex" style={{ height: 'calc(100vh - 100px)', gap: '10px' }}>
+    <div className="d-flex" style={{ minHeight: 'calc(100vh - 200px)' }}>
       {/* Left Panel - Testimonials List */}
-      <div className="flex-fill" style={{ overflowY: 'auto' }}>
+      <div className="flex-fill" style={{ overflowY: 'auto', paddingRight: '10px' }}>
         <div className="card">
           <div className="card-header">
             <h3 className="card-title mb-0">Quản lý Testimonials</h3>
+            <div className="card-tools">
+              <button
+                type="button"
+                className="btn btn-primary btn-sm"
+                onClick={handleCreate}
+              >
+                <i className="fas fa-plus mr-1"></i>
+                Thêm Testimonial
+              </button>
+            </div>
           </div>
           <div className="card-body p-0">
             <div className="table-responsive">
@@ -238,54 +264,65 @@ export default function Testimonials() {
       </div>
 
       {/* Right Panel - Add New Form */}
-      <div className="card" style={{ width: '400px' }}>
-        <div className="card-header d-flex justify-content-between align-items-center">
-          <h4 className="card-title mb-0">
-            <i className="fas fa-plus mr-2"></i>
-            Thêm Testimonial
-          </h4>
-          <button
-            type="button"
-            className="btn btn-primary btn-sm"
-            onClick={handleAddNew}
-          >
-            <i className="fas fa-save mr-1"></i>
-            Save
-          </button>
+      {showModal && (
+        <div className="card" style={{ width: '800px', marginLeft: '10px', overflowY: 'auto' }}>
+          <div className="card-header d-flex align-items-center">
+            <h4 className="card-title mb-0" style={{ flex: 1 }}>
+              Thêm Testimonial mới
+            </h4>
+            <div className="d-flex" style={{ gap: '8px', marginLeft: 'auto' }}>
+              <button
+                type="button"
+                className="btn btn-sm btn-secondary"
+                onClick={handleCancelNew}
+              >
+                Hủy
+              </button>
+              <button
+                type="button"
+                className="btn btn-sm btn-primary"
+                onClick={handleAddNew}
+              >
+                Lưu
+              </button>
+            </div>
+          </div>
+          <div className="card-body">
+            <div className="form-group">
+              <label>Name *</label>
+              <input
+                type="text"
+                className="form-control"
+                placeholder="Nhập tên"
+                value={newName}
+                onChange={(e) => setNewName(e.target.value)}
+                required
+              />
+            </div>
+            <div className="form-group">
+              <label>Quote *</label>
+              <textarea
+                className="form-control"
+                placeholder="Nhập quote"
+                rows={4}
+                value={newQuote}
+                onChange={(e) => setNewQuote(e.target.value)}
+                required
+              />
+            </div>
+            <div className="form-group">
+              <label>Order</label>
+              <input
+                type="number"
+                className="form-control"
+                placeholder="Thứ tự hiển thị"
+                value={newOrder}
+                onChange={(e) => setNewOrder(parseInt(e.target.value) || 0)}
+              />
+            </div>
+          </div>
         </div>
-        <div className="card-body">
-          <div className="form-group">
-            <label>Name</label>
-            <input
-              type="text"
-              className="form-control"
-              placeholder="Nhập tên"
-              value={newName}
-              onChange={(e) => setNewName(e.target.value)}
-            />
-          </div>
-          <div className="form-group">
-            <label>Quote</label>
-            <textarea
-              className="form-control"
-              placeholder="Nhập quote"
-              rows={4}
-              value={newQuote}
-              onChange={(e) => setNewQuote(e.target.value)}
-            />
-          </div>
-          <div className="form-group">
-            <label>Order</label>
-            <input
-              type="number"
-              className="form-control"
-              placeholder="Thứ tự hiển thị"
-              value={newOrder}
-              onChange={(e) => setNewOrder(parseInt(e.target.value) || 0)}
-            />
-          </div>
-        </div>
-      </div>
+      )}
     </div>
   );
 }

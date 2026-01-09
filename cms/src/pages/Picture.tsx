@@ -154,7 +154,7 @@ export default function Picture() {
   }
 
   return (
-    <div className="d-flex" style={{ height: 'calc(100vh - 100px)', gap: '10px' }}>
+    <div className="d-flex" style={{ minHeight: 'calc(100vh - 200px)', gap: '10px' }}>
       {/* Left Panel - Picture List Table */}
       <div className="flex-fill" style={{ overflowY: 'auto' }}>
         <div className="card">
