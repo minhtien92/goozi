@@ -81,19 +81,7 @@ export default function Layout() {
         </Link>
 
         {/* Sidebar */}
-        <div className="sidebar">
-          {/* Sidebar user panel */}
-          <div className="user-panel mt-3 pb-3 mb-3 d-flex">
-            <div className="image">
-              <div className="img-circle elevation-2 bg-primary d-flex align-items-center justify-content-center" style={{ width: '40px', height: '40px' }}>
-                <i className="fas fa-user text-white"></i>
-              </div>
-            </div>
-            <div className="info">
-              <a href="#" className="d-block">{user?.name}</a>
-            </div>
-          </div>
-
+        <div className="sidebar d-flex flex-column" style={{ minHeight: '100%' }}>
           {/* Sidebar Menu */}
           <nav className="mt-2">
             <ul className="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
@@ -103,14 +91,6 @@ export default function Layout() {
                   <p>Dashboard</p>
                 </Link>
               </li>
-              {user?.role === 'admin' && (user.permissions?.users ?? true) && (
-                <li className="nav-item">
-                  <Link to="/users" className={`nav-link ${isActive('/users') ? 'active' : ''}`}>
-                    <i className="nav-icon fas fa-users"></i>
-                    <p>Người dùng</p>
-                  </Link>
-                </li>
-              )}
               {user?.role === 'admin' && (user.permissions?.topics ?? true) && (
                 <li className="nav-item">
                   <Link to="/topics" className={`nav-link ${isActive('/topics') ? 'active' : ''}`}>
@@ -181,6 +161,14 @@ export default function Layout() {
               </li>
               )}
               <li className="nav-header">HỆ THỐNG</li>
+              {user?.role === 'admin' && (user.permissions?.users ?? true) && (
+                <li className="nav-item">
+                  <Link to="/users" className={`nav-link ${isActive('/users') ? 'active' : ''}`}>
+                    <i className="nav-icon fas fa-users"></i>
+                    <p>Người dùng</p>
+                  </Link>
+                </li>
+              )}
               <li className="nav-item">
                 <a href="#" className="nav-link" onClick={handleLogout}>
                   <i className="nav-icon fas fa-sign-out-alt"></i>
@@ -189,6 +177,24 @@ export default function Layout() {
               </li>
             </ul>
           </nav>
+
+          {/* Sidebar user panel ở đáy */}
+          <div className="mt-auto border-top">
+            <div className="user-panel py-3 px-3 d-flex align-items-center">
+              <div className="image">
+                <div
+                  className="img-circle elevation-2 bg-primary d-flex align-items-center justify-content-center"
+                  style={{ width: '36px', height: '36px' }}
+                >
+                  <i className="fas fa-user text-white"></i>
+                </div>
+              </div>
+              <div className="info ml-2">
+                <span className="d-block text-sm text-light">{user?.name}</span>
+                <span className="d-block text-xs text-muted">{user?.email}</span>
+              </div>
+            </div>
+          </div>
         </div>
       </aside>
 

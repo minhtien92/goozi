@@ -46,8 +46,8 @@ export default function Vocabularies() {
   const [languages, setLanguages] = useState<Language[]>([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
-  const [showDetailModal, setShowDetailModal] = useState(false);
-  const [detailVocab, setDetailVocab] = useState<Vocabulary | null>(null);
+  // const [showDetailModal, setShowDetailModal] = useState(false);
+  // const [detailVocab, setDetailVocab] = useState<Vocabulary | null>(null);
   const [editingVocab, setEditingVocab] = useState<Vocabulary | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [formData, setFormData] = useState({
@@ -80,15 +80,15 @@ export default function Vocabularies() {
     }
   };
 
-  const fetchVocabularyDetail = async (id: string) => {
-    try {
-      const response = await api.get(`/vocabularies/${id}`);
-      return response.data.vocabulary;
-    } catch (error) {
-      console.error('Error fetching vocabulary detail:', error);
-      return null;
-    }
-  };
+  // const fetchVocabularyDetail = async (id: string) => {
+  //   try {
+  //     const response = await api.get(`/vocabularies/${id}`);
+  //     return response.data.vocabulary;
+  //   } catch (error) {
+  //     console.error('Error fetching vocabulary detail:', error);
+  //     return null;
+  //   }
+  // };
 
   const handleCreate = () => {
     if (topics.length === 0) {
@@ -338,7 +338,6 @@ export default function Vocabularies() {
                     <th style={{ width: '80px' }}>Avatar</th>
                     <th>English</th>
                     <th style={{ width: '160px' }}>Topic</th>
-                    <th style={{ width: '100px' }}>Detail</th>
                     <th style={{ width: '80px' }}>Edit</th>
                     <th style={{ width: '80px' }}>Delete</th>
                   </tr>
@@ -383,23 +382,6 @@ export default function Vocabularies() {
                       </td>
                       <td>
                         <button
-                          onClick={async () => {
-                            const detail = await fetchVocabularyDetail(vocab.id);
-                            if (detail) {
-                              setDetailVocab(detail);
-                              setShowDetailModal(true);
-                            } else {
-                              alert('Không thể tải chi tiết từ vựng');
-                            }
-                          }}
-                          className="btn btn-sm btn-info"
-                          title="Detail"
-                        >
-                          <i className="fas fa-eye"></i>
-                        </button>
-                      </td>
-                      <td>
-                        <button
                           onClick={() => handleEdit(vocab)}
                           className="btn btn-sm btn-success"
                           title="Edit"
@@ -425,7 +407,7 @@ export default function Vocabularies() {
         </div>
       </div>
 
-      {/* Right Panel - Form */}
+      {/* Right Panel - Form (inline card như cũ) */}
       {showModal && (
         <div className="card" style={{ width: '800px', marginLeft: '10px', overflowY: 'auto' }}>
           <div className="card-header d-flex align-items-center">
@@ -450,28 +432,28 @@ export default function Vocabularies() {
             <form id="vocab-form" onSubmit={handleSubmit}>
               <div className="form-row">
                 <div className="col-md-6">
-                  <div className="form-group">
-                    <label>Topic {!formData.topicId && <span className="text-danger">*</span>}</label>
-                    <select
-                      className="form-control"
-                      value={formData.topicId}
-                      onChange={(e) => setFormData({ ...formData, topicId: e.target.value })}
-                      required
-                    >
-                      <option value="">Chọn chủ đề</option>
-                      {topics.map((topic) => (
-                        <option key={topic.id} value={topic.id}>
-                          {topic.name}
-                        </option>
-                      ))}
-                    </select>
-                    {topics.length === 0 && (
-                      <small className="text-danger d-block mt-1">Chưa có chủ đề nào. Vui lòng tạo chủ đề trước.</small>
-                    )}
-                  </div>
+              <div className="form-group">
+                <label>Topic {!formData.topicId && <span className="text-danger">*</span>}</label>
+                <select
+                  className="form-control"
+                  value={formData.topicId}
+                  onChange={(e) => setFormData({ ...formData, topicId: e.target.value })}
+                  required
+                >
+                  <option value="">Chọn chủ đề</option>
+                  {topics.map((topic) => (
+                    <option key={topic.id} value={topic.id}>
+                      {topic.name}
+                    </option>
+                  ))}
+                </select>
+                {topics.length === 0 && (
+                  <small className="text-danger d-block mt-1">Chưa có chủ đề nào. Vui lòng tạo chủ đề trước.</small>
+                )}
+              </div>
                 </div>
                 <div className="col-md-6">
-                  <div className="form-group d-flex flex-column align-items-end">
+                  <div className="form-group d-flex flex-column align-items-center">
                     <label>Avatar</label>
                     <div
                       className="d-flex align-items-center justify-content-center"
@@ -483,14 +465,14 @@ export default function Vocabularies() {
                         backgroundSize: 'cover',
                         backgroundPosition: 'center',
                         border: '1px solid #ced4da',
-                        borderRadius: '0.375rem'
+                        borderRadius: '0.375rem',
                       }}
                       onClick={() => document.getElementById('avatar-file-input')?.click()}
                       title="Click to select image"
                     >
                       {!formData.avatar && <span className="text-muted">Select Image</span>}
                     </div>
-                    <input
+                <input
                       type="file"
                       accept="image/*"
                       className="d-none"
@@ -502,8 +484,8 @@ export default function Vocabularies() {
                         }
                         e.target.value = '';
                       }}
-                    />
-                  </div>
+                />
+              </div>
                 </div>
               </div>
 
@@ -530,11 +512,11 @@ export default function Vocabularies() {
                       formData.translations[lang.id]?.[3]?.meaning ||
                       formData.translations[lang.id]?.[4]?.meaning || '';
                     return (
-                      <div key={lang.id} className="mb-3 p-2 border rounded">
-                        <div className="d-flex align-items-center gap-2 mb-2">
-                          <span className="text-lg">{lang.flag}</span>
+                    <div key={lang.id} className="mb-3 p-2 border rounded">
+                      <div className="d-flex align-items-center gap-2 mb-2">
+                        <span className="text-lg">{lang.flag}</span>
                           <span className="text-muted">{lang.nativeName}</span>
-                        </div>
+                      </div>
                         <div className="d-flex align-items-start" style={{ gap: '8px' }}>
                           <input
                             type="text"
@@ -545,18 +527,30 @@ export default function Vocabularies() {
                             style={{ flex: 1, marginTop: '0px', marginBottom: '0px', height: '100%' }}
                           />
                           <div className="d-flex" style={{ gap: '8px' }}>
-                            {[1, 2, 3, 4].map((version) => {
+                      {[1, 2, 3, 4].map((version) => {
                               const trans = formData.translations[lang.id]?.[version] || { audioUrl: '' };
-                              return (
+                        return (
                                 <div key={version} className="d-flex" style={{ gap: '6px', alignItems: 'center' }}>
-                                  <label
-                                    htmlFor={`audio-upload-${lang.id}-${version}`}
-                                    className="btn btn-sm btn-outline-primary"
-                                    style={{ minWidth: '45px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', marginTop: '0px', marginBottom: '0px', height: '100%' }}
+                              <button
+                                type="button"
+                                className="btn btn-sm btn-outline-primary"
+                                    style={{
+                                      minWidth: '45px',
+                                      display: 'inline-flex',
+                                      alignItems: 'center',
+                                      justifyContent: 'center',
+                                      cursor: 'pointer',
+                                      marginTop: '0px',
+                                      marginBottom: '0px',
+                                      height: '100%',
+                                    }}
                                     title={`V${version}`}
-                                  >
-                                    V{version}
-                                  </label>
+                                    onClick={() =>
+                                      document.getElementById(`audio-upload-${lang.id}-${version}`)?.click()
+                                    }
+                              >
+                                V{version}
+                              </button>
                                   <audio
                                     id={`audio-player-${lang.id}-${version}`}
                                     src={trans.audioUrl || ''}
@@ -598,23 +592,23 @@ export default function Vocabularies() {
                                       <i className="fas fa-play"></i>
                                     </button>
                                   )}
-                                  <input
-                                    type="file"
-                                    accept="audio/*"
-                                    className="d-none"
-                                    id={`audio-upload-${lang.id}-${version}`}
-                                    onChange={async (e) => {
-                                      const file = e.target.files?.[0];
-                                      if (file) {
-                                        await handleAudioUpload(lang.id, version, file);
-                                      }
-                                      e.target.value = ''; // Reset input
-                                    }}
-                                  />
-                                </div>
-                              );
-                            })}
+                                <input
+                                  type="file"
+                                  accept="audio/*"
+                                  className="d-none"
+                                  id={`audio-upload-${lang.id}-${version}`}
+                                  onChange={async (e) => {
+                                    const file = e.target.files?.[0];
+                                    if (file) {
+                                      await handleAudioUpload(lang.id, version, file);
+                                    }
+                                    e.target.value = ''; // Reset input
+                                  }}
+                            />
                           </div>
+                        );
+                      })}
+                    </div>
                         </div>
                       </div>
                     );
@@ -636,157 +630,12 @@ export default function Vocabularies() {
                   </label>
                 </div>
               </div>
-
-              <div className="d-flex justify-content-between mt-3">
-                <button
-                  type="button"
-                  className="btn btn-default"
-                  onClick={() => setShowModal(false)}
-                >
-                  Hủy
-                </button>
-                <button type="submit" className="btn btn-primary">
-                  Lưu
-                </button>
-              </div>
             </form>
           </div>
         </div>
       )}
 
-      {/* Detail Modal */}
-      {showDetailModal && detailVocab && (
-        <div className="modal fade show" style={{ display: 'block' }} tabIndex={-1}>
-          <div className="modal-dialog modal-lg">
-            <div className="modal-content">
-              <div className="modal-header">
-                <h4 className="modal-title">Chi tiết từ vựng</h4>
-                <button
-                  type="button"
-                  className="close"
-                  onClick={() => setShowDetailModal(false)}
-                >
-                  <span>&times;</span>
-                </button>
-              </div>
-              <div className="modal-body">
-                <div className="row mb-3">
-                  <div className="col-md-6">
-                    <strong>Từ vựng:</strong>
-                    <p>{detailVocab.word}</p>
-                  </div>
-                  <div className="col-md-6">
-                    <strong>Chủ đề:</strong>
-                    <p>{detailVocab.topic?.name || 'N/A'}</p>
-                  </div>
-                </div>
-                <div className="row mb-3">
-                  <div className="col-md-6">
-                    <strong>No (Order):</strong>
-                    <p>{detailVocab.order || '-'}</p>
-                  </div>
-                  <div className="col-md-6">
-                    <strong>Trạng thái:</strong>
-                    <p>
-                      <span className={`badge ${detailVocab.isActive ? 'badge-success' : 'badge-secondary'}`}>
-                        {detailVocab.isActive ? 'Hoạt động' : 'Tạm dừng'}
-                      </span>
-                    </p>
-                  </div>
-                </div>
-                <div className="mb-3">
-                  <strong>Avatar:</strong>
-                  <div className="mt-2">
-                    <img
-                      src={detailVocab.avatar || DEFAULT_IMAGE}
-                      alt="Avatar"
-                      style={{ maxWidth: '200px', maxHeight: '200px', objectFit: 'cover', borderRadius: '4px' }}
-                      onError={(e) => {
-                        const target = e.target as HTMLImageElement;
-                        if (target.src !== DEFAULT_IMAGE) {
-                          target.src = DEFAULT_IMAGE;
-                        }
-                      }}
-                    />
-                  </div>
-                </div>
-                {detailVocab.translations && detailVocab.translations.length > 0 && (
-                  <div>
-                    <strong>Bản dịch:</strong>
-                    <div className="mt-2">
-                      {detailVocab.translations.map((trans, index) => (
-                        <div key={trans.id || index} className="card mb-2">
-                          <div className="card-body">
-                            <div className="d-flex align-items-center gap-2 mb-2">
-                              <span className="text-lg">{trans.language?.flag || '🌐'}</span>
-                              <strong>{trans.language?.nativeName || trans.language?.name || 'Unknown'}</strong>
-                              <span className="badge badge-primary">V{trans.version}</span>
-                            </div>
-                            <div className="mb-2">
-                              <strong>Nghĩa:</strong>
-                              <p className="mb-0">{trans.meaning}</p>
-                            </div>
-                            {trans.pronunciation && (
-                              <div className="mb-2">
-                                <strong>Phát âm:</strong>
-                                <p className="mb-0">{trans.pronunciation}</p>
-                              </div>
-                            )}
-                            {trans.example && (
-                              <div className="mb-2">
-                                <strong>Ví dụ:</strong>
-                                <p className="mb-0 italic">"{trans.example}"</p>
-                              </div>
-                            )}
-                            {trans.audioUrl && (
-                              <div>
-                                <strong>Audio:</strong>
-                                <div className="mt-1">
-                                  <audio controls src={trans.audioUrl} style={{ width: '100%' }}>
-                                    Your browser does not support the audio element.
-                                  </audio>
-                                </div>
-                                <a href={trans.audioUrl} target="_blank" rel="noopener noreferrer" className="text-sm">
-                                  {trans.audioUrl}
-                                </a>
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-                {(!detailVocab.translations || detailVocab.translations.length === 0) && (
-                  <div className="alert alert-info">
-                    Chưa có bản dịch nào cho từ vựng này.
-                  </div>
-                )}
-              </div>
-              <div className="modal-footer">
-                <button
-                  type="button"
-                  className="btn btn-default"
-                  onClick={() => setShowDetailModal(false)}
-                >
-                  Đóng
-                </button>
-                <button
-                  type="button"
-                  className="btn btn-primary"
-                  onClick={() => {
-                    setShowDetailModal(false);
-                    handleEdit(detailVocab);
-                  }}
-                >
-                  Sửa
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-      {showDetailModal && <div className="modal-backdrop fade show"></div>}
+      {/* Detail Modal đã được loại bỏ theo yêu cầu */}
     </div>
   );
 }
