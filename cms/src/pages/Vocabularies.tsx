@@ -377,7 +377,7 @@ export default function Vocabularies() {
     return (
       <div className="text-center py-12">
         <div className="spinner-border text-primary" role="status">
-          <span className="sr-only">Đang tải...</span>
+          <span className="sr-only">Loading...</span>
         </div>
       </div>
     );
@@ -491,7 +491,7 @@ export default function Vocabularies() {
       {showModal && (
         <div className="card" style={{ width: '800px', marginLeft: '10px', overflowY: 'auto' }}>
           <div className="card-header d-flex align-items-center">
-            <h4 className="card-title mb-0" style={{ flex: 1 }}>Add a new word</h4>
+            <h4 className="card-title mb-0" style={{ flex: 1 }}>{editingVocab ? 'Edit word' : 'Add a new word'}</h4>
             <div className="d-flex" style={{ gap: '8px', marginLeft: 'auto' }}>
               <button
                 type="button"
@@ -520,7 +520,7 @@ export default function Vocabularies() {
                   onChange={(e) => setFormData({ ...formData, topicId: e.target.value })}
                   required
                 >
-                  <option value="">Chọn chủ đề</option>
+                  <option value="">Select Topic</option>
                   {topics.map((topic) => (
                     <option key={topic.id} value={topic.id}>
                       {topic.name}
@@ -528,7 +528,7 @@ export default function Vocabularies() {
                   ))}
                 </select>
                 {topics.length === 0 && (
-                  <small className="text-danger d-block mt-1">Chưa có chủ đề nào. Vui lòng tạo chủ đề trước.</small>
+                  <small className="text-danger d-block mt-1">No topics available. Please create a topic first.</small>
                 )}
               </div>
                 </div>
@@ -706,7 +706,7 @@ export default function Vocabularies() {
                     onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
                   />
                   <label className="custom-control-label" htmlFor="vocabActiveSwitch">
-                    Hoạt động
+                    Active
                   </label>
                 </div>
               </div>

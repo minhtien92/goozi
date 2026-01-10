@@ -125,7 +125,7 @@ export default function Users() {
     return (
       <div className="text-center py-12">
         <div className="spinner-border text-primary" role="status">
-          <span className="sr-only">Đang tải...</span>
+          <span className="sr-only">Loading...</span>
         </div>
       </div>
     );
@@ -135,10 +135,10 @@ export default function Users() {
     <div>
       <div className="card">
         <div className="card-header">
-          <h3 className="card-title mb-0">Danh sách người dùng</h3>
+          <h3 className="card-title mb-0">User List</h3>
           <div className="card-tools">
             <button className="btn btn-primary btn-sm" onClick={handleCreate}>
-              <i className="fas fa-plus mr-1"></i> Thêm người dùng
+              <i className="fas fa-plus mr-1"></i> Add User
             </button>
           </div>
         </div>
@@ -147,12 +147,12 @@ export default function Users() {
             <thead>
               <tr>
                 <th style={{ width: '10px' }}>#</th>
-                <th>Tên</th>
+                <th>Name</th>
                 <th>Email</th>
-                <th>Vai trò</th>
-                <th>Ngày tạo</th>
-                <th>Quyền</th>
-                <th style={{ width: '150px' }}>Thao tác</th>
+                <th>Role</th>
+                <th>Created Date</th>
+                <th>Permissions</th>
+                <th style={{ width: '150px' }}>Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -205,7 +205,7 @@ export default function Users() {
           <div className="modal-dialog">
             <div className="modal-content">
               <div className="modal-header">
-                <h4 className="modal-title">{editingUser ? 'Sửa người dùng' : 'Thêm người dùng'}</h4>
+                <h4 className="modal-title">{editingUser ? 'Edit User' : 'Add User'}</h4>
                 <button
                   type="button"
                   className="close"
@@ -217,7 +217,7 @@ export default function Users() {
               <form onSubmit={handleSubmit}>
                 <div className="modal-body">
                   <div className="form-group">
-                    <label>Tên</label>
+                    <label>Name</label>
                     <input
                       type="text"
                       className="form-control"
@@ -238,7 +238,7 @@ export default function Users() {
                   </div>
                   {!editingUser && (
                     <div className="form-group">
-                      <label>Mật khẩu</label>
+                      <label>Password</label>
                       <input
                         type="password"
                         className="form-control"
@@ -249,7 +249,7 @@ export default function Users() {
                     </div>
                   )}
                   <div className="form-group">
-                    <label>Vai trò</label>
+                    <label>Role</label>
                     <select
                       className="form-control"
                       value={formData.role}
@@ -262,7 +262,7 @@ export default function Users() {
 
                   {formData.role === 'admin' && (
                     <div className="form-group">
-                      <label>Phân quyền cho Admin</label>
+                      <label>Admin Permissions</label>
                       <div className="d-flex flex-wrap" style={{ gap: '8px' }}>
                         <div className="custom-control custom-checkbox">
                           <input
@@ -278,7 +278,7 @@ export default function Users() {
                             }
                           />
                           <label className="custom-control-label" htmlFor="perm-topics">
-                            Chủ đề (Topics)
+                            Topics
                           </label>
                         </div>
                         <div className="custom-control custom-checkbox">
@@ -295,7 +295,7 @@ export default function Users() {
                             }
                           />
                           <label className="custom-control-label" htmlFor="perm-vocab">
-                            Từ vựng (Vocabulary)
+                            Vocabulary
                           </label>
                         </div>
                         <div className="custom-control custom-checkbox">
@@ -329,7 +329,7 @@ export default function Users() {
                             }
                           />
                           <label className="custom-control-label" htmlFor="perm-users">
-                            Người dùng
+                            Users
                           </label>
                         </div>
                       </div>
@@ -342,10 +342,10 @@ export default function Users() {
                     className="btn btn-default"
                     onClick={() => setShowModal(false)}
                   >
-                    Hủy
+                    Cancel
                   </button>
                   <button type="submit" className="btn btn-primary">
-                    Lưu
+                    Save
                   </button>
                 </div>
               </form>

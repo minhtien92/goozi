@@ -178,7 +178,7 @@ export default function Testimonials() {
     return (
       <div className="text-center py-12">
         <div className="spinner-border text-primary" role="status">
-          <span className="sr-only">Đang tải...</span>
+          <span className="sr-only">Loading...</span>
         </div>
       </div>
     );
@@ -190,7 +190,7 @@ export default function Testimonials() {
       <div className="flex-fill" style={{ overflowY: 'auto', paddingRight: '10px' }}>
         <div className="card">
           <div className="card-header">
-            <h3 className="card-title mb-0">Quản lý Testimonials</h3>
+            <h3 className="card-title mb-0">Testimonial Management</h3>
             <div className="card-tools">
               <button
                 type="button"
@@ -198,7 +198,7 @@ export default function Testimonials() {
                 onClick={handleCreate}
               >
                 <i className="fas fa-plus mr-1"></i>
-                Thêm Testimonial
+                Add Testimonial
               </button>
             </div>
           </div>
@@ -218,7 +218,7 @@ export default function Testimonials() {
                   {testimonials.length === 0 ? (
                     <tr>
                       <td colSpan={5} className="text-center text-muted">
-                        Chưa có testimonial nào
+                        No testimonials yet
                       </td>
                     </tr>
                   ) : (
@@ -314,7 +314,7 @@ export default function Testimonials() {
         <div className="card" style={{ width: '800px', marginLeft: '10px', overflowY: 'auto' }}>
           <div className="card-header d-flex align-items-center">
             <h4 className="card-title mb-0" style={{ flex: 1 }}>
-              Thêm Testimonial mới
+              Add New Testimonial
             </h4>
             <div className="d-flex" style={{ gap: '8px', marginLeft: 'auto' }}>
               <button
@@ -322,14 +322,14 @@ export default function Testimonials() {
                 className="btn btn-sm btn-secondary"
                 onClick={handleCancelNew}
               >
-                Hủy
+                Cancel
               </button>
               <button
                 type="button"
                 className="btn btn-sm btn-primary"
                 onClick={handleAddNew}
               >
-                Lưu
+                Save
               </button>
             </div>
           </div>
@@ -339,7 +339,7 @@ export default function Testimonials() {
               <input
                 type="text"
                 className="form-control"
-                placeholder="Nhập tên"
+                placeholder="Enter name"
                 value={newName}
                 onChange={(e) => setNewName(e.target.value)}
                 required
@@ -349,7 +349,7 @@ export default function Testimonials() {
               <label>Quote *</label>
               <textarea
                 className="form-control"
-                placeholder="Nhập quote"
+                placeholder="Enter quote"
                 rows={4}
                 value={newQuote}
                 onChange={(e) => setNewQuote(e.target.value)}
@@ -361,7 +361,7 @@ export default function Testimonials() {
               <input
                 type="number"
                 className="form-control"
-                placeholder="Thứ tự hiển thị"
+                placeholder="Display order"
                 value={newOrder}
                 onChange={(e) => setNewOrder(parseInt(e.target.value) || 0)}
               />

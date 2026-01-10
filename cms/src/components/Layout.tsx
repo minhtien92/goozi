@@ -70,7 +70,7 @@ export default function Layout() {
               </span>
               <div className="dropdown-divider"></div>
               <a href="#" className="dropdown-item" onClick={handleLogout}>
-                <i className="fas fa-sign-out-alt mr-2"></i> Đăng xuất
+                <i className="fas fa-sign-out-alt mr-2"></i> Logout
               </a>
             </div>
           </li>
@@ -208,19 +208,19 @@ export default function Layout() {
                   <p>Feedback</p>
                 </Link>
               </li>
-              <li className="nav-header">HỆ THỐNG</li>
+              <li className="nav-header">SYSTEM</li>
               {user?.role === 'admin' && (user.permissions?.users ?? true) && (
                 <li className="nav-item">
                   <Link to="/users" className={`nav-link ${isActive('/users') ? 'active' : ''}`}>
                     <i className="nav-icon fas fa-users"></i>
-                    <p>Người dùng</p>
+                    <p>Users</p>
                   </Link>
                 </li>
               )}
               <li className="nav-item">
                 <a href="#" className="nav-link" onClick={handleLogout}>
                   <i className="nav-icon fas fa-sign-out-alt"></i>
-                  <p>Đăng xuất</p>
+                  <p>Logout</p>
                 </a>
               </li>
             </ul>
@@ -255,14 +255,14 @@ export default function Layout() {
               <div className="col-sm-6">
                 <h1 className="m-0">
                   {location.pathname === '/' && 'Dashboard'}
-                  {location.pathname === '/users' && 'Quản lý người dùng'}
-                  {location.pathname === '/topics' && 'Quản lý chủ đề'}
-                  {location.pathname === '/vocabularies' && 'Quản lý từ vựng'}
-                  {location.pathname === '/languages' && 'Quản lý ngôn ngữ'}
-                  {location.pathname === '/home-settings/slogan' && 'Quản lý Slogan'}
-                  {location.pathname === '/home-settings/picture' && 'Quản lý Picture'}
-                  {location.pathname === '/testimonials' && 'Quản lý Testimonial'}
-                  {location.pathname === '/feedback' && 'Quản lý Feedback'}
+                  {location.pathname === '/users' && 'User Management'}
+                  {location.pathname === '/topics' && 'Topic Management'}
+                  {location.pathname === '/vocabularies' && 'Vocabulary Management'}
+                  {location.pathname === '/languages' && 'Language Management'}
+                  {location.pathname === '/home-settings/slogan' && 'Slogan Management'}
+                  {location.pathname === '/home-settings/picture' && 'Picture Management'}
+                  {location.pathname === '/testimonials' && 'Testimonial Management'}
+                  {location.pathname === '/feedback' && 'Feedback Management'}
                 </h1>
               </div>
               <div className="col-sm-6">
@@ -272,10 +272,10 @@ export default function Layout() {
                   </li>
                   <li className="breadcrumb-item active">
                     {location.pathname === '/' && 'Dashboard'}
-                    {location.pathname === '/users' && 'Người dùng'}
-                    {location.pathname === '/topics' && 'Chủ đề'}
-                    {location.pathname === '/vocabularies' && 'Từ vựng'}
-                    {location.pathname === '/languages' && 'Ngôn ngữ'}
+                    {location.pathname === '/users' && 'Users'}
+                    {location.pathname === '/topics' && 'Topics'}
+                    {location.pathname === '/vocabularies' && 'Vocabularies'}
+                    {location.pathname === '/languages' && 'Languages'}
                     {location.pathname === '/home-settings/slogan' && 'Slogan'}
                     {location.pathname === '/home-settings/picture' && 'Picture'}
                     {location.pathname === '/testimonials' && 'Testimonial'}

@@ -348,7 +348,7 @@ export default function Topics() {
     return (
       <div className="text-center py-12">
         <div className="spinner-border text-primary" role="status">
-          <span className="sr-only">Đang tải...</span>
+          <span className="sr-only">Loading...</span>
         </div>
       </div>
     );
@@ -458,14 +458,14 @@ export default function Topics() {
                   {topics.length === 0 && (
                     <tr>
                       <td colSpan={5} className="text-center py-4 text-muted">
-                        Chưa có chủ đề nào
+                        No topics yet
                       </td>
                     </tr>
                   )}
                   {topics.length > 0 && filteredTopics.length === 0 && (
                     <tr>
                       <td colSpan={5} className="text-center py-4 text-muted">
-                        Không tìm thấy chủ đề phù hợp
+                        No matching topics found
                       </td>
                     </tr>
                   )}
@@ -688,7 +688,7 @@ export default function Topics() {
                     onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
                   />
                   <label className="custom-control-label" htmlFor="isActiveSwitch">
-                    Hoạt động
+                    Active
                   </label>
                 </div>
               </div>

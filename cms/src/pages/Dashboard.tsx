@@ -41,7 +41,7 @@ export default function Dashboard() {
     return (
       <div className="text-center py-12">
         <div className="spinner-border text-primary" role="status">
-          <span className="sr-only">Đang tải...</span>
+          <span className="sr-only">Loading...</span>
         </div>
       </div>
     );
@@ -55,13 +55,13 @@ export default function Dashboard() {
           <div className="small-box bg-info">
             <div className="inner">
               <h3>{stats.users}</h3>
-              <p>Người dùng</p>
+              <p>Users</p>
             </div>
             <div className="icon">
               <i className="fas fa-users"></i>
             </div>
-            <Link to="/users" className="small-box-footer">
-              Xem chi tiết <i className="fas fa-arrow-circle-right"></i>
+              <Link to="/users" className="small-box-footer">
+              More info <i className="fas fa-arrow-circle-right"></i>
             </Link>
           </div>
         </div>
@@ -70,13 +70,13 @@ export default function Dashboard() {
           <div className="small-box bg-success">
             <div className="inner">
               <h3>{stats.topics}</h3>
-              <p>Chủ đề</p>
+              <p>Topics</p>
             </div>
             <div className="icon">
               <i className="fas fa-folder"></i>
             </div>
             <Link to="/topics" className="small-box-footer">
-              Xem chi tiết <i className="fas fa-arrow-circle-right"></i>
+              More info <i className="fas fa-arrow-circle-right"></i>
             </Link>
           </div>
         </div>
@@ -85,13 +85,13 @@ export default function Dashboard() {
           <div className="small-box bg-warning">
             <div className="inner">
               <h3>{stats.vocabularies}</h3>
-              <p>Từ vựng</p>
+              <p>Vocabularies</p>
             </div>
             <div className="icon">
               <i className="fas fa-book"></i>
             </div>
             <Link to="/vocabularies" className="small-box-footer">
-              Xem chi tiết <i className="fas fa-arrow-circle-right"></i>
+              More info <i className="fas fa-arrow-circle-right"></i>
             </Link>
           </div>
         </div>
@@ -100,13 +100,13 @@ export default function Dashboard() {
           <div className="small-box bg-danger">
             <div className="inner">
               <h3>{stats.languages}</h3>
-              <p>Ngôn ngữ</p>
+              <p>Languages</p>
             </div>
             <div className="icon">
               <i className="fas fa-globe"></i>
             </div>
             <Link to="/languages" className="small-box-footer">
-              Xem chi tiết <i className="fas fa-arrow-circle-right"></i>
+              More info <i className="fas fa-arrow-circle-right"></i>
             </Link>
           </div>
         </div>
@@ -119,7 +119,7 @@ export default function Dashboard() {
             <div className="card-header">
               <h3 className="card-title">
                 <i className="fas fa-bolt mr-1"></i>
-                Quản lý nhanh
+                Quick Management
               </h3>
             </div>
             <div className="card-body">
@@ -127,25 +127,25 @@ export default function Dashboard() {
                 <div className="col-md-3">
                   <Link to="/users" className="btn btn-primary btn-block mb-2">
                     <i className="fas fa-users mr-2"></i>
-                    Quản lý người dùng
+                    User Management
                   </Link>
                 </div>
                 <div className="col-md-3">
                   <Link to="/topics" className="btn btn-success btn-block mb-2">
                     <i className="fas fa-folder mr-2"></i>
-                    Quản lý chủ đề
+                    Topic Management
                   </Link>
                 </div>
                 <div className="col-md-3">
                   <Link to="/vocabularies" className="btn btn-warning btn-block mb-2">
                     <i className="fas fa-book mr-2"></i>
-                    Quản lý từ vựng
+                    Vocabulary Management
                   </Link>
                 </div>
                 <div className="col-md-3">
                   <Link to="/languages" className="btn btn-danger btn-block mb-2">
                     <i className="fas fa-globe mr-2"></i>
-                    Quản lý ngôn ngữ
+                    Language Management
                   </Link>
                 </div>
               </div>

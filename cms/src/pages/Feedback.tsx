@@ -38,7 +38,7 @@ export default function Feedback() {
     return (
       <div className="text-center py-12">
         <div className="spinner-border text-primary" role="status">
-          <span className="sr-only">Đang tải...</span>
+          <span className="sr-only">Loading...</span>
         </div>
       </div>
     );
@@ -48,7 +48,7 @@ export default function Feedback() {
     <div>
       <div className="card">
         <div className="card-header">
-          <h3 className="card-title mb-0">Danh sách Feedback</h3>
+          <h3 className="card-title mb-0">Feedback List</h3>
         </div>
         <div className="card-body p-0">
           <div className="table-responsive">
@@ -56,18 +56,18 @@ export default function Feedback() {
               <thead>
                 <tr>
                   <th style={{ width: '60px' }}>No</th>
-                  <th>Người dùng</th>
+                  <th>User</th>
                   <th>Email</th>
-                  <th>Nội dung</th>
-                  <th style={{ width: '100px' }}>Đánh giá</th>
-                  <th style={{ width: '150px' }}>Ngày tạo</th>
+                  <th>Content</th>
+                  <th style={{ width: '100px' }}>Rating</th>
+                  <th style={{ width: '150px' }}>Created Date</th>
                 </tr>
               </thead>
               <tbody>
                 {feedbacks.length === 0 ? (
                   <tr>
                     <td colSpan={6} className="text-center py-4 text-muted">
-                      Chưa có feedback nào
+                      No feedback yet
                     </td>
                   </tr>
                 ) : (

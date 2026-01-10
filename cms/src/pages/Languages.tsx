@@ -132,7 +132,7 @@ export default function Languages() {
     return (
       <div className="text-center py-12">
         <div className="spinner-border text-primary" role="status">
-          <span className="sr-only">Đang tải...</span>
+          <span className="sr-only">Loading...</span>
         </div>
       </div>
     );
@@ -144,7 +144,7 @@ export default function Languages() {
       <div className="flex-fill" style={{ overflowY: 'auto', paddingRight: '10px' }}>
         <div className="card">
           <div className="card-header">
-            <h3 className="card-title mb-0">Danh sách ngôn ngữ</h3>
+            <h3 className="card-title mb-0">Language List</h3>
             <div className="card-tools">
               <button
                 type="button"
@@ -152,7 +152,7 @@ export default function Languages() {
                 onClick={handleCreate}
               >
                 <i className="fas fa-plus mr-1"></i>
-                Thêm ngôn ngữ
+                Add Language
               </button>
             </div>
           </div>
@@ -164,10 +164,10 @@ export default function Languages() {
                     <th style={{ width: '10px' }}>#</th>
                     <th>Flag</th>
                     <th>Code</th>
-                    <th>Tên</th>
-                    <th>Tên bản địa</th>
-                    <th>Trạng thái</th>
-                    <th style={{ width: '150px' }}>Thao tác</th>
+                    <th>Name</th>
+                    <th>Native Name</th>
+                    <th>Status</th>
+                    <th style={{ width: '150px' }}>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -184,7 +184,7 @@ export default function Languages() {
                       <td>{language.nativeName}</td>
                       <td>
                         <span className={`badge ${language.isActive ? 'badge-success' : 'badge-secondary'}`}>
-                          {language.isActive ? 'Hoạt động' : 'Tạm dừng'}
+                          {language.isActive ? 'Active' : 'Inactive'}
                         </span>
                       </td>
                       <td>
@@ -217,7 +217,7 @@ export default function Languages() {
         <div className="card" style={{ width: '800px', marginLeft: '10px', overflowY: 'auto' }}>
           <div className="card-header d-flex align-items-center">
             <h4 className="card-title mb-0" style={{ flex: 1 }}>
-              {editingLanguage ? 'Sửa ngôn ngữ' : 'Thêm ngôn ngữ mới'}
+              {editingLanguage ? 'Edit Language' : 'Add New Language'}
             </h4>
             <div className="d-flex" style={{ gap: '8px', marginLeft: 'auto' }}>
               <button
@@ -228,10 +228,10 @@ export default function Languages() {
                   setEditingLanguage(null);
                 }}
               >
-                Hủy
+                Cancel
               </button>
               <button type="submit" form="language-form" className="btn btn-sm btn-primary">
-                Lưu
+                Save
               </button>
             </div>
           </div>
@@ -249,7 +249,7 @@ export default function Languages() {
                 />
               </div>
               <div className="form-group">
-                <label>Tên *</label>
+                <label>Name *</label>
                 <input
                   type="text"
                   className="form-control"
@@ -260,7 +260,7 @@ export default function Languages() {
                 />
               </div>
               <div className="form-group">
-                <label>Tên bản địa</label>
+                <label>Native Name</label>
                 <input
                   type="text"
                   className="form-control"
@@ -289,7 +289,7 @@ export default function Languages() {
                     onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
                   />
                   <label className="custom-control-label" htmlFor="langActiveSwitch">
-                    Hoạt động
+                    Active
                   </label>
                 </div>
               </div>
