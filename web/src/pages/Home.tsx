@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
 import LanguageSelector from '../components/LanguageSelector';
+import UserMenu from '../components/UserMenu';
 import api from '../config/api';
 
 const greetings = [
@@ -21,6 +22,7 @@ export default function Home() {
   const { user, logout } = useAuthStore();
   const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [slogans, setSlogans] = useState<string[]>([]);
   const [backgroundImage, setBackgroundImage] = useState<string>('');
   const [currentSloganIndex, setCurrentSloganIndex] = useState(0);
@@ -192,12 +194,15 @@ export default function Home() {
           </div>
           <div className={`flex items-center gap-4 ${backgroundImage ? 'text-white drop-shadow-lg' : 'text-white'}`}>
             <LanguageSelector />
-            <div className="flex items-center gap-2">
+            <button
+              onClick={() => setUserMenuOpen(true)}
+              className="flex items-center gap-2 hover:opacity-80 transition cursor-pointer"
+            >
+              <div className="w-10 h-10 rounded-full bg-white bg-opacity-20 flex items-center justify-center text-2xl">
+                {user?.nativeLanguage?.flag || '🇰🇷'}
+              </div>
               <span>{user?.name || 'Angelyna'}</span>
-              {user?.nativeLanguage?.flag && (
-                <span className="text-2xl">{user.nativeLanguage.flag}</span>
-              )}
-            </div>
+            </button>
           </div>
         </header>
 
@@ -272,6 +277,11 @@ export default function Home() {
           Copyright @ 2025 Goozi
         </footer>
       </div>
+
+      {/* User Menu */}
+      {userMenuOpen && (
+        <UserMenu onClose={() => setUserMenuOpen(false)} />
+      )}
     </div>
   );
 }
