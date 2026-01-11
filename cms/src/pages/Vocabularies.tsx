@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import api, { uploadFile } from '../config/api';
+import Pagination from '../components/Pagination';
 
 const DEFAULT_IMAGE =
   'data:image/svg+xml,%3Csvg xmlns=\"http://www.w3.org/2000/svg\" width=\"120\" height=\"80\"%3E%3Crect width=\"120\" height=\"80\" fill=\"%23f0f0f0\"/%3E%3Ctext x=\"50%25\" y=\"50%25\" text-anchor=\"middle\" dy=\".3em\" fill=\"%23999\" font-size=\"12\"%3ENo Image%3C/text%3E%3C/svg%3E';
@@ -50,6 +51,15 @@ export default function Vocabularies() {
   // const [detailVocab, setDetailVocab] = useState<Vocabulary | null>(null);
   const [editingVocab, setEditingVocab] = useState<Vocabulary | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const [selectedTopicId, setSelectedTopicId] = useState<string>('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pagination, setPagination] = useState({
+    totalItems: 0,
+    totalPages: 1,
+    currentPage: 1,
+    itemsPerPage: 10,
+  });
+  const [playingAudios, setPlayingAudios] = useState<Record<string, boolean>>({});
   const [formData, setFormData] = useState({
     word: '',
     topicId: '',
@@ -61,7 +71,7 @@ export default function Vocabularies() {
 
   useEffect(() => {
     fetchData();
-  }, []);
+  }, [currentPage, selectedTopicId]);
 
   // Auto open/close form based on screen size
   useEffect(() => {
@@ -72,8 +82,8 @@ export default function Vocabularies() {
 
     const handleResize = () => {
       const currentWidth = window.innerWidth;
-      const isLargeScreen = currentWidth >= 1200;
-      const wasLargeScreen = previousWidth >= 1200;
+      const isLargeScreen = currentWidth > 1500;
+      const wasLargeScreen = previousWidth > 1500;
 
       if (isInitialMount) {
         // On initial mount, only auto-open on large screens
@@ -145,12 +155,18 @@ export default function Vocabularies() {
 
   const fetchData = async () => {
     try {
+      const params: any = { page: currentPage, limit: 10 };
+      if (selectedTopicId) {
+        params.topicId = selectedTopicId;
+      }
+      
       const [vocabRes, topicsRes, languagesRes] = await Promise.all([
-        api.get('/vocabularies'),
+        api.get('/vocabularies', { params }),
         api.get('/topics'),
         api.get('/languages?isActive=true'),
       ]);
       setVocabularies(vocabRes.data.vocabularies);
+      setPagination(vocabRes.data.pagination);
       setTopics(topicsRes.data.topics);
       setLanguages(languagesRes.data.languages);
     } catch (error) {
@@ -172,7 +188,7 @@ export default function Vocabularies() {
 
   const handleCreate = () => {
     if (topics.length === 0) {
-      alert('Chưa có chủ đề nào. Vui lòng tạo chủ đề trước khi thêm từ vựng.');
+      alert('No topics available. Please create a topic first before adding vocabulary.');
       return;
     }
     
@@ -243,14 +259,14 @@ export default function Vocabularies() {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Bạn có chắc chắn muốn xóa từ vựng này?')) return;
+    if (!confirm('Are you sure you want to delete this vocabulary?')) return;
 
     try {
       await api.delete(`/vocabularies/${id}`);
       fetchData();
     } catch (error) {
       console.error('Error deleting vocabulary:', error);
-      alert('Xóa từ vựng thất bại');
+      alert('Failed to delete vocabulary');
     }
   };
 
@@ -303,7 +319,7 @@ export default function Vocabularies() {
       }
     } catch (error: any) {
       console.error('Error uploading audio:', error);
-      alert('Upload audio thất bại: ' + (error.response?.data?.message || error.message));
+      alert('Failed to upload audio: ' + (error.response?.data?.message || error.message));
     }
   };
 
@@ -319,7 +335,7 @@ export default function Vocabularies() {
       }
     } catch (error: any) {
       console.error('Error uploading avatar:', error);
-      alert('Upload avatar thất bại: ' + (error.response?.data?.message || error.message));
+      alert('Failed to upload avatar: ' + (error.response?.data?.message || error.message));
     }
   };
 
@@ -363,12 +379,12 @@ export default function Vocabularies() {
       fetchData();
     } catch (error: any) {
       console.error('Error saving vocabulary:', error);
-      const errorMessage = error.response?.data?.error || error.message || 'Lưu từ vựng thất bại';
-      alert(`Lưu từ vựng thất bại: ${errorMessage}`);
+      const errorMessage = error.response?.data?.error || error.message || 'Failed to save vocabulary';
+      alert(`Failed to save vocabulary: ${errorMessage}`);
       
       // If topic not found, suggest checking topic selection
       if (errorMessage.includes('Topic not found') || error.response?.status === 404) {
-        alert('Chủ đề không tồn tại. Vui lòng chọn lại chủ đề.');
+        alert('Topic does not exist. Please select a different topic.');
       }
     }
   };
@@ -391,6 +407,22 @@ export default function Vocabularies() {
           <div className="card-header">
             <h3 className="card-title mb-0">Word</h3>
             <div className="card-tools d-flex align-items-center" style={{ gap: '10px' }}>
+              <select
+                className="form-control form-control-sm"
+                style={{ width: '200px' }}
+                value={selectedTopicId}
+                onChange={(e) => {
+                  setSelectedTopicId(e.target.value);
+                  setCurrentPage(1);
+                }}
+              >
+                <option value="">All Topics</option>
+                {topics.map((topic) => (
+                  <option key={topic.id} value={topic.id}>
+                    {topic.name}
+                  </option>
+                ))}
+              </select>
               <input
                 type="text"
                 className="form-control form-control-sm"
@@ -425,12 +457,15 @@ export default function Vocabularies() {
                 <tbody>
                 {vocabularies
                   .filter((vocab) => {
-                    if (!searchTerm.trim()) return true;
-                    const keyword = searchTerm.trim().toLowerCase();
-                    return (
-                      vocab.word.toLowerCase().includes(keyword) ||
-                      (vocab.topic?.name || '').toLowerCase().includes(keyword)
-                    );
+                    // Filter by search term (topic filter is handled by API)
+                    if (searchTerm.trim()) {
+                      const keyword = searchTerm.trim().toLowerCase();
+                      return (
+                        vocab.word.toLowerCase().includes(keyword) ||
+                        (vocab.topic?.name || '').toLowerCase().includes(keyword)
+                      );
+                    }
+                    return true;
                   })
                   .map((vocab) => (
                     <tr key={vocab.id}>
@@ -482,6 +517,15 @@ export default function Vocabularies() {
                   ))}
                 </tbody>
               </table>
+            </div>
+            <div className="card-footer">
+              <Pagination
+                currentPage={pagination.currentPage}
+                totalPages={pagination.totalPages}
+                totalItems={pagination.totalItems}
+                itemsPerPage={pagination.itemsPerPage}
+                onPageChange={(page) => setCurrentPage(page)}
+              />
             </div>
           </div>
         </div>
@@ -613,7 +657,7 @@ export default function Vocabularies() {
                                 <div key={version} className="d-flex" style={{ gap: '6px', alignItems: 'center' }}>
                               <button
                                 type="button"
-                                className="btn btn-sm btn-outline-primary"
+                                className={`btn btn-sm ${trans.audioUrl ? 'btn-primary' : 'btn-outline-primary'}`}
                                     style={{
                                       minWidth: '45px',
                                       display: 'inline-flex',
@@ -635,12 +679,21 @@ export default function Vocabularies() {
                                     id={`audio-player-${lang.id}-${version}`}
                                     src={trans.audioUrl || ''}
                                     style={{ display: 'none' }}
+                                    onPlay={() => {
+                                      setPlayingAudios(prev => ({ ...prev, [`${lang.id}-${version}`]: true }));
+                                    }}
+                                    onPause={() => {
+                                      setPlayingAudios(prev => ({ ...prev, [`${lang.id}-${version}`]: false }));
+                                    }}
+                                    onEnded={() => {
+                                      setPlayingAudios(prev => ({ ...prev, [`${lang.id}-${version}`]: false }));
+                                    }}
                                   />
                                   {trans.audioUrl ? (
                                     <button
                                       type="button"
-                                      className="btn btn-sm btn-success mb-0"
-                                      title="Play / Stop audio"
+                                      className={`btn btn-sm mb-0 ${playingAudios[`${lang.id}-${version}`] ? 'btn-danger' : 'btn-success'}`}
+                                      title={playingAudios[`${lang.id}-${version}`] ? "Stop audio" : "Play audio"}
                                       style={{ marginTop: '0px', marginBottom: '0px', height: '100%' }}
                                       onClick={() => {
                                         const audioEl = document.getElementById(
@@ -659,7 +712,7 @@ export default function Vocabularies() {
                                         }
                                       }}
                                     >
-                                      <i className="fas fa-play"></i>
+                                      <i className={`fas ${playingAudios[`${lang.id}-${version}`] ? 'fa-stop' : 'fa-play'}`}></i>
                                     </button>
                                   ) : (
                                     <button
@@ -715,7 +768,7 @@ export default function Vocabularies() {
         </div>
       )}
 
-      {/* Detail Modal đã được loại bỏ theo yêu cầu */}
+      {/* Detail Modal has been removed as requested */}
     </div>
   );
 }

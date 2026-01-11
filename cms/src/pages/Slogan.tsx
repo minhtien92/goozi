@@ -59,13 +59,13 @@ export default function Slogan() {
         value: editValue.trim(),
         isActive: editValue.trim() !== '',
       });
-      alert('Cập nhật slogan thành công!');
+      alert('Slogan updated successfully!');
       setEditingIndex(null);
       setEditValue('');
       fetchSettings();
     } catch (error: any) {
       console.error('Error updating slogan:', error);
-      alert('Cập nhật slogan thất bại: ' + (error.response?.data?.message || error.message));
+      alert('Failed to update slogan: ' + (error.response?.data?.message || error.message));
     }
   };
 
@@ -75,15 +75,15 @@ export default function Slogan() {
   };
 
   const handleDeleteSlogan = async (id: string) => {
-    if (!confirm('Bạn có chắc chắn muốn xóa slogan này?')) return;
+    if (!confirm('Are you sure you want to delete this slogan?')) return;
 
     try {
       await api.delete(`/home-settings/${id}`);
-      alert('Xóa slogan thành công!');
+      alert('Slogan deleted successfully!');
       fetchSettings();
     } catch (error) {
       console.error('Error deleting slogan:', error);
-      alert('Xóa slogan thất bại');
+      alert('Failed to delete slogan');
     }
   };
 
@@ -98,7 +98,7 @@ export default function Slogan() {
     const englishValue = newSloganValues[0]?.trim();
     
     if (!englishValue) {
-      alert('Vui lòng nhập slogan (Language 1 - English)');
+      alert('Please enter slogan (Language 1 - English)');
       return;
     }
 
@@ -119,7 +119,7 @@ export default function Slogan() {
       });
 
       if (response.data) {
-        alert('Thêm slogan thành công!');
+        alert('Slogan added successfully!');
         // Reset form
         setNewSloganValues(Array(13).fill(''));
         setWordSearch('');
@@ -128,7 +128,7 @@ export default function Slogan() {
     } catch (error: any) {
       console.error('Error adding slogan:', error);
       const errorMessage = error.response?.data?.error || error.response?.data?.message || error.message || 'Lỗi không xác định';
-      alert('Thêm slogan thất bại: ' + errorMessage);
+      alert('Failed to add slogan: ' + errorMessage);
     }
   };
 
@@ -140,7 +140,7 @@ export default function Slogan() {
     return (
       <div className="text-center py-12">
         <div className="spinner-border text-primary" role="status">
-          <span className="sr-only">Đang tải...</span>
+          <span className="sr-only">Loading...</span>
         </div>
       </div>
     );
@@ -177,7 +177,7 @@ export default function Slogan() {
                   {filteredSlogans.length === 0 ? (
                     <tr>
                       <td colSpan={3} className="text-center text-muted">
-                        Không có slogan nào
+                        No slogans found
                       </td>
                     </tr>
                   ) : (

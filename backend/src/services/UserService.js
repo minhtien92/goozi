@@ -1,13 +1,31 @@
 import db from '../models/index.js';
 
 class UserService {
-  async getAllUsers() {
-    const users = await db.User.findAll({
+  async getAllUsers(filters = {}) {
+    const { page, limit } = filters;
+    const pageNum = parseInt(page) || 1;
+    const limitNum = parseInt(limit) || 10;
+    const offset = (pageNum - 1) * limitNum;
+
+    const { count, rows } = await db.User.findAndCountAll({
       attributes: { exclude: ['password'] },
       order: [['createdAt', 'DESC']],
+      limit: limitNum,
+      offset: offset,
     });
 
-    return users.map((u) => u.toJSON());
+    // Ensure count is a number
+    const totalCount = parseInt(count) || 0;
+
+    return {
+      users: rows.map((u) => u.toJSON()),
+      pagination: {
+        totalItems: totalCount,
+        totalPages: totalCount > 0 ? Math.ceil(totalCount / limitNum) : 1,
+        currentPage: pageNum,
+        itemsPerPage: limitNum,
+      },
+    };
   }
 
   async getUserById(id) {

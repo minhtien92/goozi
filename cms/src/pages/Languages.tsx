@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import api from '../config/api';
+import Pagination from '../components/Pagination';
 
 interface Language {
   id: string;
@@ -16,6 +17,14 @@ export default function Languages() {
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [editingLanguage, setEditingLanguage] = useState<Language | null>(null);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pagination, setPagination] = useState({
+    totalItems: 0,
+    totalPages: 1,
+    currentPage: 1,
+    itemsPerPage: 10,
+  });
   const [formData, setFormData] = useState({
     code: '',
     name: '',
@@ -26,7 +35,7 @@ export default function Languages() {
 
   useEffect(() => {
     fetchLanguages();
-  }, []);
+  }, [currentPage]);
 
   // Auto open/close form based on screen size
   useEffect(() => {
@@ -37,8 +46,8 @@ export default function Languages() {
 
     const handleResize = () => {
       const currentWidth = window.innerWidth;
-      const isLargeScreen = currentWidth >= 1200;
-      const wasLargeScreen = previousWidth >= 1200;
+      const isLargeScreen = currentWidth > 1500;
+      const wasLargeScreen = previousWidth > 1500;
 
       if (isInitialMount) {
         // On initial mount, only auto-open on large screens
@@ -72,8 +81,11 @@ export default function Languages() {
 
   const fetchLanguages = async () => {
     try {
-      const response = await api.get('/languages');
+      const response = await api.get('/languages', {
+        params: { page: currentPage, limit: 10 },
+      });
       setLanguages(response.data.languages);
+      setPagination(response.data.pagination);
     } catch (error) {
       console.error('Error fetching languages:', error);
     } finally {
@@ -100,14 +112,14 @@ export default function Languages() {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Bạn có chắc chắn muốn xóa ngôn ngữ này?')) return;
+    if (!confirm('Are you sure you want to delete this language?')) return;
 
     try {
       await api.delete(`/languages/${id}`);
       fetchLanguages();
     } catch (error) {
       console.error('Error deleting language:', error);
-      alert('Xóa ngôn ngữ thất bại');
+      alert('Failed to delete language');
     }
   };
 
@@ -124,7 +136,7 @@ export default function Languages() {
       fetchLanguages();
     } catch (error) {
       console.error('Error saving language:', error);
-      alert('Lưu ngôn ngữ thất bại');
+      alert('Failed to save language');
     }
   };
 
@@ -145,7 +157,15 @@ export default function Languages() {
         <div className="card">
           <div className="card-header">
             <h3 className="card-title mb-0">Language List</h3>
-            <div className="card-tools">
+            <div className="card-tools d-flex align-items-center" style={{ gap: '10px' }}>
+              <input
+                type="text"
+                className="form-control form-control-sm"
+                placeholder="Search..."
+                style={{ width: '200px' }}
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
               <button
                 type="button"
                 className="btn btn-primary btn-sm"
@@ -171,7 +191,17 @@ export default function Languages() {
                   </tr>
                 </thead>
                 <tbody>
-                  {languages.map((language, index) => (
+                  {languages
+                    .filter((language) => {
+                      if (!searchTerm.trim()) return true;
+                      const keyword = searchTerm.trim().toLowerCase();
+                      return (
+                        language.code.toLowerCase().includes(keyword) ||
+                        language.name.toLowerCase().includes(keyword) ||
+                        (language.nativeName && language.nativeName.toLowerCase().includes(keyword))
+                      );
+                    })
+                    .map((language, index) => (
                     <tr key={language.id}>
                       <td>{index + 1}</td>
                       <td className="text-center" style={{ fontSize: '24px' }}>
@@ -207,6 +237,15 @@ export default function Languages() {
                   ))}
                 </tbody>
               </table>
+            </div>
+            <div className="card-footer">
+              <Pagination
+                currentPage={pagination.currentPage}
+                totalPages={pagination.totalPages}
+                totalItems={pagination.totalItems}
+                itemsPerPage={pagination.itemsPerPage}
+                onPageChange={(page) => setCurrentPage(page)}
+              />
             </div>
           </div>
         </div>

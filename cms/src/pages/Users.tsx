@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import api from '../config/api';
+import Pagination from '../components/Pagination';
 
 interface Permissions {
   topics?: boolean;
@@ -22,6 +23,13 @@ export default function Users() {
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [editingUser, setEditingUser] = useState<User | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pagination, setPagination] = useState({
+    totalItems: 0,
+    totalPages: 1,
+    currentPage: 1,
+    itemsPerPage: 10,
+  });
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -37,12 +45,15 @@ export default function Users() {
 
   useEffect(() => {
     fetchUsers();
-  }, []);
+  }, [currentPage]);
 
   const fetchUsers = async () => {
     try {
-      const response = await api.get('/users');
+      const response = await api.get('/users', {
+        params: { page: currentPage, limit: 10 },
+      });
       setUsers(response.data.users);
+      setPagination(response.data.pagination);
     } catch (error) {
       console.error('Error fetching users:', error);
     } finally {
@@ -85,14 +96,14 @@ export default function Users() {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Bạn có chắc chắn muốn xóa người dùng này?')) return;
+    if (!confirm('Are you sure you want to delete this user?')) return;
 
     try {
       await api.delete(`/users/${id}`);
       fetchUsers();
     } catch (error) {
       console.error('Error deleting user:', error);
-      alert('Xóa người dùng thất bại');
+      alert('Failed to delete user');
     }
   };
 
@@ -117,7 +128,7 @@ export default function Users() {
       fetchUsers();
     } catch (error) {
       console.error('Error saving user:', error);
-      alert('Lưu người dùng thất bại');
+      alert('Failed to save user');
     }
   };
 
@@ -197,6 +208,15 @@ export default function Users() {
               ))}
             </tbody>
           </table>
+          <div className="card-footer">
+            <Pagination
+              currentPage={pagination.currentPage}
+              totalPages={pagination.totalPages}
+              totalItems={pagination.totalItems}
+              itemsPerPage={pagination.itemsPerPage}
+              onPageChange={(page) => setCurrentPage(page)}
+            />
+          </div>
         </div>
       </div>
 

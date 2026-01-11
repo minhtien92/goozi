@@ -2,14 +2,21 @@ import db from '../models/index.js';
 
 class TopicService {
   async getAllTopics(filters = {}) {
-    const { isActive } = filters;
+    const { isActive, page, limit } = filters;
     const where = {};
 
     if (isActive !== undefined) {
       where.isActive = isActive === 'true';
     }
 
-    const topics = await db.Topic.findAll({
+    const pageNum = parseInt(page) || 1;
+    const limitNum = parseInt(limit) || 10;
+    const offset = (pageNum - 1) * limitNum;
+
+    // Count total items separately to avoid issues with distinct and includes
+    const totalCount = await db.Topic.count({ where });
+
+    const rows = await db.Topic.findAll({
       where,
       include: [
         {
@@ -26,11 +33,13 @@ class TopicService {
         },
       ],
       order: [['order', 'ASC'], ['createdAt', 'DESC']],
+      limit: limitNum,
+      offset: offset,
     });
 
     // Get vocabulary counts separately to avoid filtering issues
     const topicsWithCount = await Promise.all(
-      topics.map(async (topic) => {
+      rows.map(async (topic) => {
         const vocabCount = await db.Vocabulary.count({
           where: {
             topicId: topic.id,
@@ -44,7 +53,15 @@ class TopicService {
       })
     );
 
-    return topicsWithCount;
+    return {
+      topics: topicsWithCount,
+      pagination: {
+        totalItems: totalCount,
+        totalPages: totalCount > 0 ? Math.ceil(totalCount / limitNum) : 1,
+        currentPage: pageNum,
+        itemsPerPage: limitNum,
+      },
+    };
   }
 
   async getTopicById(id, includeVocabularies = false) {

@@ -3,10 +3,10 @@ import VocabularyService from '../services/VocabularyService.js';
 class VocabularyController {
   async getAllVocabularies(request, reply) {
     try {
-      const { topicId, isActive } = request.query;
-      const vocabularies = await VocabularyService.getAllVocabularies({ topicId, isActive });
+      const { topicId, isActive, page, limit } = request.query;
+      const result = await VocabularyService.getAllVocabularies({ topicId, isActive, page, limit });
 
-      return reply.send({ vocabularies });
+      return reply.send(result);
     } catch (error) {
       return reply.code(500).send({
         error: 'Internal server error',

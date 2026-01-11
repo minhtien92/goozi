@@ -21,14 +21,14 @@ export default function Login() {
       const response = await api.post('/auth/login', { email, password });
       
       if (response.data.user.role !== 'admin') {
-        setError('Chỉ có quyền admin mới được truy cập CMS');
+        setError('Only admin users can access CMS');
         return;
       }
       
       setAuth(response.data.user, response.data.token);
       navigate('/');
     } catch (err: any) {
-      setError(err.response?.data?.error || 'Đăng nhập thất bại');
+      setError(err.response?.data?.error || 'Login failed');
     } finally {
       setLoading(false);
     }
@@ -42,7 +42,7 @@ export default function Login() {
         </div>
         <div className="card">
           <div className="card-body login-card-body">
-            <p className="login-box-msg">Đăng nhập để bắt đầu phiên làm việc</p>
+            <p className="login-box-msg">Sign in to start your session</p>
 
             {error && (
               <div className="alert alert-danger alert-dismissible">
@@ -77,7 +77,7 @@ export default function Login() {
                 <input
                   type="password"
                   className="form-control"
-                  placeholder="Mật khẩu"
+                  placeholder="Password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
@@ -98,10 +98,10 @@ export default function Login() {
                     {loading ? (
                       <>
                         <span className="spinner-border spinner-border-sm mr-2" role="status"></span>
-                        Đang đăng nhập...
+                        Logging in...
                       </>
                     ) : (
-                      'Đăng nhập'
+                      'Login'
                     )}
                   </button>
                 </div>
@@ -111,7 +111,7 @@ export default function Login() {
             <p className="mb-1 mt-3">
               <small className="text-muted">
                 <i className="fas fa-info-circle mr-1"></i>
-                Chỉ dành cho quản trị viên
+                Admin only
               </small>
             </p>
           </div>

@@ -66,7 +66,7 @@ export default function Picture() {
 
   const handleUpload = async () => {
     if (!selectedFile) {
-      alert('Vui lòng chọn ảnh để upload');
+      alert('Please select an image to upload');
       return;
     }
 
@@ -97,7 +97,7 @@ export default function Picture() {
           isActive: true,
         });
 
-        alert('Upload ảnh thành công!');
+        alert('Image uploaded successfully!');
         setPreviewImage(null);
         setSelectedFile(null);
         // Reset file input
@@ -109,7 +109,7 @@ export default function Picture() {
       }
     } catch (error: any) {
       console.error('Error uploading picture:', error);
-      alert('Upload ảnh thất bại: ' + (error.response?.data?.message || error.message));
+      alert('Failed to upload image: ' + (error.response?.data?.message || error.message));
     } finally {
       setUploading(false);
     }
@@ -123,23 +123,23 @@ export default function Picture() {
         order: 0,
         isActive: true,
       });
-      alert('Đã đặt làm ảnh nền!');
+      alert('Set as background image successfully!');
     } catch (error: any) {
       console.error('Error setting background:', error);
-      alert('Đặt ảnh nền thất bại: ' + (error.response?.data?.message || error.message));
+      alert('Failed to set background image: ' + (error.response?.data?.message || error.message));
     }
   };
 
   const handleDeletePicture = async (id: string) => {
-    if (!confirm('Bạn có chắc chắn muốn xóa ảnh này?')) return;
+    if (!confirm('Are you sure you want to delete this image?')) return;
 
     try {
       await api.delete(`/home-settings/${id}`);
-      alert('Xóa ảnh thành công!');
+      alert('Image deleted successfully!');
       fetchPictures();
     } catch (error) {
       console.error('Error deleting picture:', error);
-      alert('Xóa ảnh thất bại');
+      alert('Failed to delete image');
     }
   };
 
@@ -147,7 +147,7 @@ export default function Picture() {
     return (
       <div className="text-center py-12">
         <div className="spinner-border text-primary" role="status">
-          <span className="sr-only">Đang tải...</span>
+          <span className="sr-only">Loading...</span>
         </div>
       </div>
     );
@@ -161,7 +161,7 @@ export default function Picture() {
           <div className="card-body p-0">
             {pictures.length === 0 ? (
               <div className="text-center py-5 text-muted">
-                Chưa có ảnh nào được upload
+                No images uploaded yet
               </div>
             ) : (
               <div className="table-responsive">
@@ -279,7 +279,7 @@ export default function Picture() {
                     backgroundColor: '#f8f9fa',
                   }}
                 >
-                  <span className="text-muted">Chưa chọn ảnh</span>
+                  <span className="text-muted">No image selected</span>
                 </div>
               )}
               <input
@@ -307,12 +307,12 @@ export default function Picture() {
                   {uploading ? (
                     <>
                       <span className="spinner-border spinner-border-sm mr-2" role="status"></span>
-                      Đang upload...
+                      Uploading...
                     </>
                   ) : (
                     <>
                       <i className="fas fa-save mr-1"></i>
-                      Lưu ảnh
+                      Save Image
                     </>
                   )}
                 </button>

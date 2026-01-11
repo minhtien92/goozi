@@ -2,7 +2,7 @@ import db from '../models/index.js';
 
 class VocabularyService {
   async getAllVocabularies(filters = {}) {
-    const { topicId, isActive } = filters;
+    const { topicId, isActive, page, limit } = filters;
     const where = {};
 
     if (topicId) {
@@ -13,7 +13,14 @@ class VocabularyService {
       where.isActive = isActive === 'true';
     }
 
-    const vocabularies = await db.Vocabulary.findAll({
+    const pageNum = parseInt(page) || 1;
+    const limitNum = parseInt(limit) || 10;
+    const offset = (pageNum - 1) * limitNum;
+
+    // Count total items separately to avoid issues with distinct and includes
+    const totalCount = await db.Vocabulary.count({ where });
+
+    const rows = await db.Vocabulary.findAll({
       where,
       include: [
         {
@@ -34,9 +41,19 @@ class VocabularyService {
         },
       ],
       order: [['order', 'ASC'], ['createdAt', 'ASC']],
+      limit: limitNum,
+      offset: offset,
     });
 
-    return vocabularies.map((v) => v.toJSON());
+    return {
+      vocabularies: rows.map((v) => v.toJSON()),
+      pagination: {
+        totalItems: totalCount,
+        totalPages: totalCount > 0 ? Math.ceil(totalCount / limitNum) : 1,
+        currentPage: pageNum,
+        itemsPerPage: limitNum,
+      },
+    };
   }
 
   async getVocabularyById(id) {

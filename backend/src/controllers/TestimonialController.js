@@ -3,8 +3,9 @@ import TestimonialService from '../services/TestimonialService.js';
 class TestimonialController {
   async getAllTestimonials(request, reply) {
     try {
-      const testimonials = await TestimonialService.getAllTestimonials();
-      return reply.send({ testimonials });
+      const { page, limit } = request.query;
+      const result = await TestimonialService.getAllTestimonials({ page, limit });
+      return reply.send(result);
     } catch (error) {
       return reply.code(500).send({
         error: 'Internal server error',

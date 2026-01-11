@@ -3,14 +3,16 @@ import TopicService from '../services/TopicService.js';
 class TopicController {
   async getAllTopics(request, reply) {
     try {
-      const { isActive, sourceLanguageId, targetLanguageId } = request.query;
-      const topics = await TopicService.getAllTopics({ 
+      const { isActive, sourceLanguageId, targetLanguageId, page, limit } = request.query;
+      const result = await TopicService.getAllTopics({ 
         isActive, 
         sourceLanguageId, 
-        targetLanguageId 
+        targetLanguageId,
+        page,
+        limit,
       });
 
-      return reply.send({ topics });
+      return reply.send(result);
     } catch (error) {
       return reply.code(500).send({
         error: 'Internal server error',

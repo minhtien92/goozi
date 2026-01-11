@@ -81,7 +81,7 @@ export default function Layout() {
       <aside className="main-sidebar sidebar-dark-primary elevation-4">
         {/* Brand Logo */}
         <Link to="/" className="brand-link" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0.8rem 0.5rem' }}>
-          <img src={logoSvg} alt="Goozi Logo" style={{ maxWidth: '140px', height: 'auto' }} />
+          <img src={logoSvg} alt="Goozi Logo" style={{ maxWidth: '240px', height: 'auto' }} />
         </Link>
 
         {/* Sidebar */}
@@ -297,7 +297,7 @@ export default function Layout() {
 
       {/* Footer */}
       <footer className="main-footer">
-        <strong>Copyright &copy; 2024 <a href="#">Goozi</a>.</strong>
+        <strong>Copyright &copy; 2026 <a href="#">Goozi</a>.</strong>
         All rights reserved.
         <div className="float-right d-none d-sm-inline-block">
           <b>Version</b> 1.0.0

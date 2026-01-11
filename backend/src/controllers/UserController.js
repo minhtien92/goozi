@@ -3,8 +3,9 @@ import UserService from '../services/UserService.js';
 class UserController {
   async getAllUsers(request, reply) {
     try {
-      const users = await UserService.getAllUsers();
-      return reply.send({ users });
+      const { page, limit } = request.query;
+      const result = await UserService.getAllUsers({ page, limit });
+      return reply.send(result);
     } catch (error) {
       return reply.code(500).send({
         error: 'Internal server error',

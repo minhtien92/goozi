@@ -3,10 +3,10 @@ import LanguageService from '../services/LanguageService.js';
 class LanguageController {
   async getAllLanguages(request, reply) {
     try {
-      const { isActive } = request.query;
-      const languages = await LanguageService.getAllLanguages({ isActive });
+      const { isActive, page, limit } = request.query;
+      const result = await LanguageService.getAllLanguages({ isActive, page, limit });
 
-      return reply.send({ languages });
+      return reply.send(result);
     } catch (error) {
       return reply.code(500).send({
         error: 'Internal server error',

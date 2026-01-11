@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import api from '../config/api';
+import Pagination from '../components/Pagination';
 
 interface Testimonial {
   id: string;
@@ -14,6 +15,13 @@ export default function Testimonials() {
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pagination, setPagination] = useState({
+    totalItems: 0,
+    totalPages: 1,
+    currentPage: 1,
+    itemsPerPage: 10,
+  });
   const [editName, setEditName] = useState('');
   const [editQuote, setEditQuote] = useState('');
   const [editOrder, setEditOrder] = useState(0);
@@ -25,7 +33,7 @@ export default function Testimonials() {
 
   useEffect(() => {
     fetchTestimonials();
-  }, []);
+  }, [currentPage]);
 
   // Auto open/close form based on screen size
   useEffect(() => {
@@ -36,8 +44,8 @@ export default function Testimonials() {
 
     const handleResize = () => {
       const currentWidth = window.innerWidth;
-      const isLargeScreen = currentWidth >= 1200;
-      const wasLargeScreen = previousWidth >= 1200;
+      const isLargeScreen = currentWidth > 1500;
+      const wasLargeScreen = previousWidth > 1500;
 
       if (isInitialMount) {
         // On initial mount, only auto-open on large screens
@@ -75,11 +83,14 @@ export default function Testimonials() {
 
   const fetchTestimonials = async () => {
     try {
-      const response = await api.get('/testimonials');
+      const response = await api.get('/testimonials', {
+        params: { page: currentPage, limit: 10 },
+      });
       const sorted = response.data.testimonials.sort((a: Testimonial, b: Testimonial) => 
         a.order - b.order
       );
       setTestimonials(sorted);
+      setPagination(response.data.pagination);
     } catch (error) {
       console.error('Error fetching testimonials:', error);
     } finally {
@@ -103,7 +114,7 @@ export default function Testimonials() {
         quote: editQuote.trim(),
         order: editOrder,
       });
-      alert('Cập nhật testimonial thành công!');
+      alert('Testimonial updated successfully!');
       setEditingId(null);
       setEditName('');
       setEditQuote('');
@@ -111,7 +122,7 @@ export default function Testimonials() {
       fetchTestimonials();
     } catch (error: any) {
       console.error('Error updating testimonial:', error);
-      alert('Cập nhật testimonial thất bại: ' + (error.response?.data?.message || error.message));
+      alert('Failed to update testimonial: ' + (error.response?.data?.message || error.message));
     }
   };
 
@@ -123,15 +134,15 @@ export default function Testimonials() {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Bạn có chắc chắn muốn xóa testimonial này?')) return;
+    if (!confirm('Are you sure you want to delete this testimonial?')) return;
 
     try {
       await api.delete(`/testimonials/${id}`);
-      alert('Xóa testimonial thành công!');
+      alert('Testimonial deleted successfully!');
       fetchTestimonials();
     } catch (error) {
       console.error('Error deleting testimonial:', error);
-      alert('Xóa testimonial thất bại');
+      alert('Failed to delete testimonial');
     }
   };
 
@@ -151,7 +162,7 @@ export default function Testimonials() {
 
   const handleAddNew = async () => {
     if (!newName.trim() || !newQuote.trim()) {
-      alert('Vui lòng nhập đầy đủ tên và quote');
+      alert('Please enter both name and quote');
       return;
     }
 
@@ -162,7 +173,7 @@ export default function Testimonials() {
         order: newOrder,
         isActive: true,
       });
-      alert('Thêm testimonial thành công!');
+      alert('Testimonial added successfully!');
       setShowModal(false);
       setNewName('');
       setNewQuote('');
@@ -170,7 +181,7 @@ export default function Testimonials() {
       fetchTestimonials();
     } catch (error: any) {
       console.error('Error adding testimonial:', error);
-      alert('Thêm testimonial thất bại: ' + (error.response?.data?.message || error.message));
+      alert('Failed to add testimonial: ' + (error.response?.data?.message || error.message));
     }
   };
 
@@ -304,6 +315,15 @@ export default function Testimonials() {
                   )}
                 </tbody>
               </table>
+            </div>
+            <div className="card-footer">
+              <Pagination
+                currentPage={pagination.currentPage}
+                totalPages={pagination.totalPages}
+                totalItems={pagination.totalItems}
+                itemsPerPage={pagination.itemsPerPage}
+                onPageChange={(page) => setCurrentPage(page)}
+              />
             </div>
           </div>
         </div>

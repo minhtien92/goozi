@@ -72,11 +72,11 @@ export default function HomeSettings() {
         .filter((s) => s.value !== '');
 
       await api.post('/home-settings/slogans/bulk', { slogans: slogansToSave });
-      alert('Lưu slogan thành công!');
+      alert('Slogan saved successfully!');
       fetchSettings();
     } catch (error: any) {
       console.error('Error saving slogans:', error);
-      alert('Lưu slogan thất bại: ' + (error.response?.data?.message || error.message));
+      alert('Failed to save slogan: ' + (error.response?.data?.message || error.message));
     }
   };
 
@@ -95,16 +95,16 @@ export default function HomeSettings() {
         });
         
         setBackgroundImage(fullUrl);
-        alert('Upload ảnh nền thành công!');
+        alert('Background image uploaded successfully!');
       }
     } catch (error: any) {
       console.error('Error uploading background image:', error);
-      alert('Upload ảnh nền thất bại: ' + (error.response?.data?.message || error.message));
+      alert('Failed to upload background image: ' + (error.response?.data?.message || error.message));
     }
   };
 
   const handleDeleteSlogan = async (id: string, index: number) => {
-    if (!confirm('Bạn có chắc chắn muốn xóa slogan này?')) return;
+    if (!confirm('Are you sure you want to delete this slogan?')) return;
 
     try {
       await api.delete(`/home-settings/${id}`);
@@ -114,7 +114,7 @@ export default function HomeSettings() {
       fetchSettings();
     } catch (error) {
       console.error('Error deleting slogan:', error);
-      alert('Xóa slogan thất bại');
+      alert('Failed to delete slogan');
     }
   };
 
@@ -122,7 +122,7 @@ export default function HomeSettings() {
     return (
       <div className="text-center py-12">
         <div className="spinner-border text-primary" role="status">
-          <span className="sr-only">Đang tải...</span>
+          <span className="sr-only">Loading...</span>
         </div>
       </div>
     );

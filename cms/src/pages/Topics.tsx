@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import api, { uploadFile } from '../config/api';
+import Pagination from '../components/Pagination';
 
 interface Language {
   id: string;
@@ -39,6 +40,13 @@ export default function Topics() {
   const [showModal, setShowModal] = useState(false);
   const [editingTopic, setEditingTopic] = useState<Topic | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pagination, setPagination] = useState({
+    totalItems: 0,
+    totalPages: 1,
+    currentPage: 1,
+    itemsPerPage: 10,
+  });
   const [formData, setFormData] = useState({
     name: '',
     description: '',
@@ -50,8 +58,11 @@ export default function Topics() {
 
   useEffect(() => {
     fetchLanguages();
-    fetchTopics();
   }, []);
+
+  useEffect(() => {
+    fetchTopics();
+  }, [currentPage]);
 
   // Auto open/close form based on screen size
   useEffect(() => {
@@ -62,8 +73,8 @@ export default function Topics() {
 
     const handleResize = () => {
       const currentWidth = window.innerWidth;
-      const isLargeScreen = currentWidth >= 1200;
-      const wasLargeScreen = previousWidth >= 1200;
+      const isLargeScreen = currentWidth > 1500;
+      const wasLargeScreen = previousWidth > 1500;
 
       if (isInitialMount) {
         // On initial mount, only auto-open on large screens
@@ -144,8 +155,11 @@ export default function Topics() {
 
   const fetchTopics = async () => {
     try {
-      const response = await api.get('/topics');
+      const response = await api.get('/topics', {
+        params: { page: currentPage, limit: 10 },
+      });
       setTopics(response.data.topics);
+      setPagination(response.data.pagination);
     } catch (error) {
       console.error('Error fetching topics:', error);
     } finally {
@@ -221,14 +235,14 @@ export default function Topics() {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Bạn có chắc chắn muốn xóa chủ đề này?')) return;
+    if (!confirm('Are you sure you want to delete this topic?')) return;
 
     try {
       await api.delete(`/topics/${id}`);
       fetchTopics();
     } catch (error) {
       console.error('Error deleting topic:', error);
-      alert('Xóa chủ đề thất bại');
+      alert('Failed to delete topic');
     }
   };
 
@@ -281,7 +295,7 @@ export default function Topics() {
       }
     } catch (error: any) {
       console.error('Error uploading audio:', error);
-      alert('Upload audio thất bại: ' + (error.response?.data?.message || error.message));
+      alert('Failed to upload audio: ' + (error.response?.data?.message || error.message));
     }
   };
 
@@ -297,7 +311,7 @@ export default function Topics() {
       }
     } catch (error: any) {
       console.error('Error uploading image:', error);
-      alert('Upload ảnh thất bại: ' + (error.response?.data?.message || error.message));
+      alert('Failed to upload image: ' + (error.response?.data?.message || error.message));
     }
   };
 
@@ -339,7 +353,7 @@ export default function Topics() {
       fetchTopics();
     } catch (error: any) {
       console.error('Error saving topic:', error);
-      const errorMessage = error.response?.data?.message || error.message || 'Lưu chủ đề thất bại';
+      const errorMessage = error.response?.data?.message || error.message || 'Failed to save topic';
       alert(errorMessage);
     }
   };
@@ -471,6 +485,15 @@ export default function Topics() {
                   )}
                 </tbody>
               </table>
+            </div>
+            <div className="card-footer">
+              <Pagination
+                currentPage={pagination.currentPage}
+                totalPages={pagination.totalPages}
+                totalItems={pagination.totalItems}
+                itemsPerPage={pagination.itemsPerPage}
+                onPageChange={(page) => setCurrentPage(page)}
+              />
             </div>
           </div>
         </div>
