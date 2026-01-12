@@ -20,7 +20,13 @@ export default function (sequelize) {
       },
       password: {
         type: DataTypes.STRING,
-        allowNull: false,
+        allowNull: true, // Nullable for Google OAuth users
+      },
+      googleId: {
+        type: DataTypes.STRING,
+        allowNull: true,
+        unique: true,
+        comment: 'Google OAuth ID',
       },
       name: {
         type: DataTypes.STRING,
@@ -50,12 +56,14 @@ export default function (sequelize) {
       timestamps: true,
       hooks: {
         beforeCreate: async (user) => {
-          if (user.password) {
+          // Only hash password if provided (not for Google OAuth users)
+          if (user.password && !user.googleId) {
             user.password = await bcrypt.hash(user.password, 10);
           }
         },
         beforeUpdate: async (user) => {
-          if (user.changed('password')) {
+          // Only hash password if changed and provided
+          if (user.changed('password') && user.password && !user.googleId) {
             user.password = await bcrypt.hash(user.password, 10);
           }
         },

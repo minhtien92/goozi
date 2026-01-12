@@ -80,6 +80,37 @@ class AuthController {
       });
     }
   }
+
+  async loginWithGoogle(request, reply) {
+    try {
+      const { idToken } = request.body;
+
+      if (!idToken) {
+        return reply.code(400).send({
+          error: 'Google ID token is required',
+        });
+      }
+
+      const user = await AuthService.loginWithGoogle(idToken);
+      const token = AuthService.generateToken(request.server, user);
+
+      return reply.send({
+        message: 'Google login successful',
+        token,
+        user: user.toJSON(),
+      });
+    } catch (error) {
+      if (error.message.includes('Google authentication failed')) {
+        return reply.code(401).send({
+          error: error.message,
+        });
+      }
+      return reply.code(500).send({
+        error: 'Internal server error',
+        message: error.message,
+      });
+    }
+  }
 }
 
 export default new AuthController();

@@ -51,13 +51,36 @@ export async function up(queryInterface, Sequelize) {
     },
   });
 
-  // Add indexes
-  await queryInterface.addIndex('topic_translations', ['topicId']);
-  await queryInterface.addIndex('topic_translations', ['languageId']);
-  await queryInterface.addIndex('topic_translations', ['topicId', 'languageId', 'version'], {
-    unique: true,
-    name: 'topic_translations_unique_idx',
-  });
+  // Add indexes (check if they exist first)
+  const tableName = 'topic_translations';
+  const indexes = [
+    { columns: ['topicId'], name: 'topic_translations_topic_id' },
+    { columns: ['languageId'], name: 'topic_translations_language_id' },
+    { columns: ['topicId', 'languageId', 'version'], name: 'topic_translations_unique_idx', unique: true },
+  ];
+
+  for (const index of indexes) {
+    const [results] = await queryInterface.sequelize.query(`
+      SELECT EXISTS (
+        SELECT 1 FROM pg_indexes 
+        WHERE tablename = '${tableName}' 
+        AND indexname = '${index.name}'
+      );
+    `);
+    
+    if (!results[0].exists) {
+      if (index.unique) {
+        await queryInterface.addIndex(tableName, index.columns, {
+          unique: true,
+          name: index.name,
+        });
+      } else {
+        await queryInterface.addIndex(tableName, index.columns, {
+          name: index.name,
+        });
+      }
+    }
+  }
 }
 
 export async function down(queryInterface, Sequelize) {

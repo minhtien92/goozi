@@ -19,6 +19,9 @@ function App() {
       <Routes>
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+        {/* Home page - accessible without login */}
+        <Route path="/" element={<Home />} />
+        {/* Protected routes - require login */}
         <Route
           path="/"
           element={
@@ -27,7 +30,6 @@ function App() {
             </PrivateRoute>
           }
         >
-          <Route index element={<Home />} />
           <Route path="topics" element={<Topics />} />
           <Route path="topics/:id" element={<TopicDetail />} />
           <Route path="topics/:id/flashcard" element={<Flashcard />} />

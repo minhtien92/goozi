@@ -1,4 +1,8 @@
 import db from '../models/index.js';
+import { OAuth2Client } from 'google-auth-library';
+import { Op } from 'sequelize';
+
+const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 class AuthService {
   async register(email, password, name, nativeLanguageId = null) {
@@ -37,9 +41,12 @@ class AuthService {
   }
 
   async login(email, password) {
-    // Find user
+    // Find user (exclude Google OAuth users)
     const user = await db.User.findOne({ 
-      where: { email },
+      where: { 
+        email,
+        password: { [Op.ne]: null }, // Must have password (not Google OAuth user)
+      },
       include: [
         {
           model: db.Language,
@@ -77,6 +84,93 @@ class AuthService {
       throw new Error('User not found');
     }
     return user;
+  }
+
+  async loginWithGoogle(idToken) {
+    try {
+      // Verify Google token
+      const ticket = await client.verifyIdToken({
+        idToken,
+        audience: process.env.GOOGLE_CLIENT_ID,
+      });
+      const payload = ticket.getPayload();
+      
+      if (!payload) {
+        throw new Error('Invalid Google token');
+      }
+
+      const { sub: googleId, email, name, picture } = payload;
+
+      if (!email) {
+        throw new Error('Email not provided by Google');
+      }
+
+      // Find user by googleId first, then by email
+      let user = await db.User.findOne({
+        where: { googleId },
+        include: [
+          {
+            model: db.Language,
+            as: 'nativeLanguage',
+            attributes: ['id', 'code', 'name', 'nativeName', 'flag'],
+            required: false,
+          },
+        ],
+      });
+
+      // If not found by googleId, try email
+      if (!user) {
+        user = await db.User.findOne({
+          where: { email },
+          include: [
+            {
+              model: db.Language,
+              as: 'nativeLanguage',
+              attributes: ['id', 'code', 'name', 'nativeName', 'flag'],
+              required: false,
+            },
+          ],
+        });
+      }
+
+      if (user) {
+        // Update user if they already exist but don't have googleId
+        if (!user.googleId) {
+          user.googleId = googleId;
+          await user.save();
+        }
+        // Update name if needed
+        if (name && user.name !== name) {
+          user.name = name;
+          await user.save();
+        }
+      } else {
+        // Create new user
+        user = await db.User.create({
+          email,
+          name: name || email.split('@')[0],
+          googleId,
+          password: null, // No password for Google OAuth users
+        });
+
+        // Load with language relation
+        user = await db.User.findByPk(user.id, {
+          include: [
+            {
+              model: db.Language,
+              as: 'nativeLanguage',
+              attributes: ['id', 'code', 'name', 'nativeName', 'flag'],
+              required: false,
+            },
+          ],
+        });
+      }
+
+      return user;
+    } catch (error) {
+      console.error('Google OAuth error:', error);
+      throw new Error('Google authentication failed: ' + error.message);
+    }
   }
 
   generateToken(fastify, user) {

@@ -28,6 +28,7 @@ goozi/
 - Sequelize ORM
 - PostgreSQL
 - JWT Authentication
+- Swagger/OpenAPI (API Documentation)
 
 ### Frontend (Web & CMS)
 - React + TypeScript
@@ -391,3 +392,33 @@ docker-compose exec -T postgres psql -U postgres goozi_db < backup.sql
 
 
 docker-compose exec backend npm run migrate
+
+
+Hướng dẫn lấy Google Client ID:
+Truy cập Google Cloud Console
+Tạo project mới hoặc chọn project hiện có
+Enable Google+ API hoặc Google Identity Services
+Tạo OAuth 2.0 Client ID:
+Credentials → Create Credentials → OAuth client ID
+Application type: Web application
+Authorized JavaScript origins: http://localhost:3000 (dev), domain production (prod)
+Authorized redirect URIs: không cần (vì dùng Google Identity Services)
+Copy Client ID vào .env files
+
+⚠️ QUAN TRỌNG: Nếu gặp lỗi 403 "The given origin is not allowed", xem chi tiết trong docs/GOOGLE_OAUTH_SETUP.md
+
+## 📚 API Documentation
+
+API documentation được tự động generate và có thể truy cập tại:
+
+- **Swagger UI**: http://localhost:3001/api-docs
+- **OpenAPI JSON**: http://localhost:3001/api-docs/json
+
+Xem hướng dẫn chi tiết trong [docs/API.md](docs/API.md)
+
+### Tính năng:
+- ✅ Tự động generate từ code
+- ✅ Test API trực tiếp trên browser
+- ✅ Xem request/response schemas
+- ✅ Examples và descriptions đầy đủ
+- ✅ Import vào Postman/Insomnia

@@ -2,6 +2,8 @@ import Fastify from 'fastify';
 import cors from '@fastify/cors';
 import jwt from '@fastify/jwt';
 import multipart from '@fastify/multipart';
+import swagger from '@fastify/swagger';
+import swaggerUi from '@fastify/swagger-ui';
 import dotenv from 'dotenv';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
@@ -44,6 +46,53 @@ await fastify.register(multipart, {
   limits: {
     fileSize: 10 * 1024 * 1024, // 10MB
   },
+});
+
+// Register Swagger
+await fastify.register(swagger, {
+  swagger: {
+    info: {
+      title: 'Goozi API Documentation',
+      description: 'API documentation for Goozi language learning platform',
+      version: '1.0.0',
+      contact: {
+        name: 'Goozi Support',
+        email: 'support@goozi.com',
+      },
+    },
+    host: process.env.FRONTEND_URL?.replace('http://', '').replace(':3000', ':3001') || 'localhost:3001',
+    schemes: ['http', 'https'],
+    consumes: ['application/json'],
+    produces: ['application/json'],
+    securityDefinitions: {
+      bearerAuth: {
+        type: 'apiKey',
+        name: 'Authorization',
+        in: 'header',
+        description: 'JWT Authorization header using the Bearer scheme. Example: "Authorization: Bearer {token}"',
+      },
+    },
+    tags: [
+      { name: 'auth', description: 'Authentication endpoints' },
+      { name: 'topics', description: 'Topics management' },
+      { name: 'vocabularies', description: 'Vocabularies management' },
+      { name: 'users', description: 'User management' },
+      { name: 'languages', description: 'Languages management' },
+      { name: 'upload', description: 'File upload' },
+      { name: 'home-settings', description: 'Home page settings' },
+      { name: 'testimonials', description: 'Testimonials management' },
+    ],
+  },
+});
+
+await fastify.register(swaggerUi, {
+  routePrefix: '/api-docs',
+  uiConfig: {
+    docExpansion: 'list',
+    deepLinking: false,
+  },
+  staticCSP: true,
+  transformStaticCSP: (header) => header,
 });
 
 await fastify.register(authPlugin);

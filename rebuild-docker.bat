@@ -12,6 +12,26 @@ set MODE=%2
 if "%SERVICE%"=="" set SERVICE=all
 if "%MODE%"=="" set MODE=dev
 
+:: Check if Docker is available and running
+where docker >nul 2>&1
+if errorlevel 1 (
+    echo [ERROR] Docker is not installed or not in PATH!
+    echo.
+    echo Please install Docker Desktop from: https://www.docker.com/products/docker-desktop
+    pause
+    exit /b 1
+)
+
+docker ps >nul 2>&1
+if errorlevel 1 (
+    echo [ERROR] Docker is not running!
+    echo.
+    echo Please start Docker Desktop and wait for it to fully initialize.
+    echo Look for the Docker icon in the system tray.
+    pause
+    exit /b 1
+)
+
 if "%MODE%"=="dev" (
     set COMPOSE_FILE=docker-compose.dev.yml
     set COMPOSE_PREFIX=dev

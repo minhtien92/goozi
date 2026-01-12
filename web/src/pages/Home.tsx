@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
 import LanguageSelector from '../components/LanguageSelector';
 import UserMenu from '../components/UserMenu';
+import LoginModal from '../components/LoginModal';
 import api from '../config/api';
 
 const greetings = [
@@ -23,6 +24,7 @@ export default function Home() {
   const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const [loginModalOpen, setLoginModalOpen] = useState(false);
   const [slogans, setSlogans] = useState<string[]>([]);
   const [backgroundImage, setBackgroundImage] = useState<string>('');
   const [currentSloganIndex, setCurrentSloganIndex] = useState(0);
@@ -131,13 +133,19 @@ export default function Home() {
             >
               Home
             </Link>
-            <Link
-              to="/topics"
-              className="block text-gray-700 hover:text-blue-600 font-medium"
-              onClick={() => setSidebarOpen(false)}
+            <button
+              onClick={() => {
+                setSidebarOpen(false);
+                if (user) {
+                  navigate('/topics');
+                } else {
+                  setLoginModalOpen(true);
+                }
+              }}
+              className="block w-full text-left text-gray-700 hover:text-blue-600 font-medium"
             >
               Vocabulary
-            </Link>
+            </button>
             <Link
               to="/"
               className="block text-gray-700 hover:text-blue-600 font-medium"
@@ -153,16 +161,30 @@ export default function Home() {
               Sentence
             </Link>
           </nav>
-          <div className="mt-8 pt-8 border-t border-gray-300">
-            <div className="text-sm text-gray-600">{user?.name || 'User Name'}</div>
-            <div className="text-sm text-gray-500">{user?.email || 'user@email.com'}</div>
-            <button
-              onClick={handleLogout}
-              className="mt-4 text-sm text-gray-700 hover:text-red-600"
-            >
-              Sign out
-            </button>
-          </div>
+          {user ? (
+            <div className="mt-8 pt-8 border-t border-gray-300">
+              <div className="text-sm text-gray-600">{user?.name || 'User Name'}</div>
+              <div className="text-sm text-gray-500">{user?.email || 'user@email.com'}</div>
+              <button
+                onClick={handleLogout}
+                className="mt-4 text-sm text-gray-700 hover:text-red-600"
+              >
+                Sign out
+              </button>
+            </div>
+          ) : (
+            <div className="mt-8 pt-8 border-t border-gray-300">
+              <button
+                onClick={() => {
+                  setSidebarOpen(false);
+                  setLoginModalOpen(true);
+                }}
+                className="w-full px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition"
+              >
+                Đăng nhập
+              </button>
+            </div>
+          )}
         </div>
       </div>
 
@@ -193,16 +215,27 @@ export default function Home() {
             <h1 className={`text-4xl font-bold tracking-wider ${backgroundImage ? 'text-white drop-shadow-lg' : 'text-white'}`}>GOOZI</h1>
           </div>
           <div className={`flex items-center gap-4 ${backgroundImage ? 'text-white drop-shadow-lg' : 'text-white'}`}>
-            <LanguageSelector />
-            <button
-              onClick={() => setUserMenuOpen(true)}
-              className="flex items-center gap-2 hover:opacity-80 transition cursor-pointer"
-            >
-              <div className="w-10 h-10 rounded-full bg-white bg-opacity-20 flex items-center justify-center text-2xl">
-                {user?.nativeLanguage?.flag || '🇰🇷'}
-              </div>
-              <span>{user?.name || 'Angelyna'}</span>
-            </button>
+            {user ? (
+              <>
+                <LanguageSelector />
+                <button
+                  onClick={() => setUserMenuOpen(true)}
+                  className="flex items-center gap-2 hover:opacity-80 transition cursor-pointer"
+                >
+                  <div className="w-10 h-10 rounded-full bg-white bg-opacity-20 flex items-center justify-center text-2xl">
+                    {user?.nativeLanguage?.flag || '🇰🇷'}
+                  </div>
+                  <span>{user?.name || 'User'}</span>
+                </button>
+              </>
+            ) : (
+              <button
+                onClick={() => setLoginModalOpen(true)}
+                className="px-4 py-2 bg-white bg-opacity-20 hover:bg-opacity-30 rounded-lg transition font-medium"
+              >
+                Đăng nhập
+              </button>
+            )}
           </div>
         </header>
 
@@ -256,18 +289,58 @@ export default function Home() {
           )}
         </div>
 
+        {/* Left Ad Banner - Hidden */}
+        {/* <div className="fixed left-0 top-0 bottom-0 w-16 bg-yellow-400 flex items-center justify-center z-20">
+          <div className="transform -rotate-90 text-sm font-medium text-gray-800 whitespace-nowrap">
+            ADS - LEFT
+          </div>
+        </div> */}
+
+        {/* Right Ad Banner - Hidden */}
+        {/* <div className="fixed right-0 top-0 bottom-0 w-16 bg-yellow-400 flex items-center justify-center z-20">
+          <div className="transform -rotate-90 text-sm font-medium text-gray-800 whitespace-nowrap">
+            ADS - RIGHT
+          </div>
+        </div> */}
+
         {/* Navigation Buttons (Right Side) */}
-        <div className="fixed right-6 top-1/2 transform -translate-y-1/2 z-20 space-y-3">
-          <Link
-            to="/topics"
+        <div className="fixed right-20 top-1/2 transform -translate-y-1/2 z-30 space-y-3">
+          <button
+            onClick={() => {
+              if (user) {
+                navigate('/topics');
+              } else {
+                setLoginModalOpen(true);
+              }
+            }}
             className="block w-32 bg-blue-400 hover:bg-blue-500 text-white font-medium py-3 px-6 rounded-lg shadow-lg transition text-center"
           >
             Vocabulary
-          </Link>
-          <button className="block w-32 bg-blue-400 hover:bg-blue-500 text-white font-medium py-3 px-6 rounded-lg shadow-lg transition">
+          </button>
+          <button 
+            onClick={() => {
+              if (user) {
+                // Navigate to phrase page when implemented
+                navigate('/');
+              } else {
+                setLoginModalOpen(true);
+              }
+            }}
+            className="block w-32 bg-blue-400 hover:bg-blue-500 text-white font-medium py-3 px-6 rounded-lg shadow-lg transition"
+          >
             Phrase
           </button>
-          <button className="block w-32 bg-blue-400 hover:bg-blue-500 text-white font-medium py-3 px-6 rounded-lg shadow-lg transition">
+          <button 
+            onClick={() => {
+              if (user) {
+                // Navigate to sentence page when implemented
+                navigate('/');
+              } else {
+                setLoginModalOpen(true);
+              }
+            }}
+            className="block w-32 bg-blue-400 hover:bg-blue-500 text-white font-medium py-3 px-6 rounded-lg shadow-lg transition"
+          >
             Sentence
           </button>
         </div>
@@ -282,6 +355,16 @@ export default function Home() {
       {userMenuOpen && (
         <UserMenu onClose={() => setUserMenuOpen(false)} />
       )}
+
+      {/* Login Modal */}
+      <LoginModal 
+        isOpen={loginModalOpen}
+        onClose={() => setLoginModalOpen(false)}
+        onSuccess={() => {
+          // Refresh page or update state after successful login
+          window.location.reload();
+        }}
+      />
     </div>
   );
 }

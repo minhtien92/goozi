@@ -8,6 +8,22 @@
 SERVICE=${1:-all}
 MODE=${2:-dev}
 
+# Check if Docker is available and running
+if ! command -v docker &> /dev/null; then
+    echo "[ERROR] Docker is not installed or not in PATH!"
+    echo ""
+    echo "Please install Docker Desktop from: https://www.docker.com/products/docker-desktop"
+    exit 1
+fi
+
+if ! docker ps &> /dev/null; then
+    echo "[ERROR] Docker is not running!"
+    echo ""
+    echo "Please start Docker Desktop and wait for it to fully initialize."
+    echo "On Windows, look for the Docker icon in the system tray."
+    exit 1
+fi
+
 if [ "$MODE" = "dev" ]; then
     COMPOSE_FILE="docker-compose.dev.yml"
     COMPOSE_PREFIX="dev"

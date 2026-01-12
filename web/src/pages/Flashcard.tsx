@@ -118,39 +118,38 @@ export default function Flashcard() {
 
   const playAudio = (() => {
     let currentAudio: HTMLAudioElement | null = null;
-    return () => {
-    const currentVocab = vocabularies[currentIndex];
-    if (!currentVocab) return;
-
-    // Get target translation for audio
-    const targetTranslation = getTargetTranslation(currentVocab);
-    
-    if (targetTranslation?.audioUrl) {
-        if (currentAudio) {
-          if (!currentAudio.paused && currentAudio.src === targetTranslation.audioUrl) {
-            currentAudio.pause();
-            currentAudio.currentTime = 0;
-            currentAudio = null;
-            return;
-          } else {
-            currentAudio.pause();
-            currentAudio.currentTime = 0;
-          }
+    return (text: string, langCode?: string) => {
+      if (currentAudio) {
+        if (!currentAudio.paused) {
+          currentAudio.pause();
+          currentAudio.currentTime = 0;
         }
-        const audio = new Audio(targetTranslation.audioUrl);
-        currentAudio = audio;
-        audio.play().catch((err) => console.error('Error playing audio:', err));
-        audio.onended = () => {
-          currentAudio = null;
-        };
-    } else if (currentVocab.word) {
-      // Fallback to browser TTS if no audio URL
-      const utterance = new SpeechSynthesisUtterance(currentVocab.word);
-      utterance.lang = 'en-US';
-      window.speechSynthesis.speak(utterance);
-    }
+        currentAudio = null;
+      }
+      
+      if (text) {
+        // Use browser TTS
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = langCode || 'en-US';
+        window.speechSynthesis.speak(utterance);
+      }
     };
   })();
+
+  const getSourceTranslation = (vocab: Vocabulary) => {
+    if (!vocab.translations || vocab.translations.length === 0) return null;
+    
+    // Try to find translation for source language
+    if (topic?.sourceLanguage?.id) {
+      const sourceTrans = vocab.translations.find(
+        (t) => t.languageId === topic.sourceLanguage?.id
+      );
+      if (sourceTrans) return sourceTrans;
+    }
+    
+    // Fallback to first translation
+    return vocab.translations[0];
+  };
 
   const getTargetTranslation = (vocab: Vocabulary) => {
     if (!vocab.translations || vocab.translations.length === 0) return null;
@@ -163,30 +162,14 @@ export default function Flashcard() {
       if (targetTrans) return targetTrans;
     }
     
+    // If we have source translation, try to get a different one
+    const sourceTrans = getSourceTranslation(vocab);
+    if (sourceTrans && vocab.translations.length > 1) {
+      return vocab.translations.find(t => t.id !== sourceTrans.id) || vocab.translations[0];
+    }
+    
     // Fallback to first translation
     return vocab.translations[0];
-  };
-
-  const getMeaning = (vocab: Vocabulary) => {
-    const translation = getTargetTranslation(vocab);
-    if (translation?.meaning) {
-      return translation.meaning;
-    }
-    // Check if vocab has any translations at all
-    if (vocab.translations && vocab.translations.length > 0) {
-      return vocab.translations[0].meaning || 'Chưa có bản dịch';
-    }
-    return 'Chưa có bản dịch';
-  };
-
-  const getPronunciation = (vocab: Vocabulary) => {
-    const translation = getTargetTranslation(vocab);
-    return translation?.pronunciation || null;
-  };
-
-  const getExample = (vocab: Vocabulary) => {
-    const translation = getTargetTranslation(vocab);
-    return translation?.example || null;
   };
 
   if (loading) {
@@ -236,113 +219,185 @@ export default function Flashcard() {
   }
 
   const currentVocab = vocabularies[currentIndex];
+  const sourceTranslation = getSourceTranslation(currentVocab);
+  const targetTranslation = getTargetTranslation(currentVocab);
+  const sourceLang = topic?.sourceLanguage || sourceTranslation?.language;
+  const targetLang = topic?.targetLanguage || targetTranslation?.language;
 
   const handleClose = () => {
     navigate('/');
   };
 
+  const speakWord = (text: string, langCode?: string) => {
+    playAudio(text, langCode);
+  };
+
   console.log('Flashcard: Rendering flashcard UI with', vocabularies.length, 'vocabularies');
 
   return (
-    <div 
-      className="min-h-screen bg-gradient-to-r from-blue-400 via-blue-300 to-gray-200 flex items-center justify-center p-4 fixed inset-0 z-50"
-      onClick={handleClose}
-    >
-      <div 
-        className="w-full max-w-2xl"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="mb-4 flex items-center justify-between">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl overflow-hidden flex flex-col max-h-[90vh]">
+        {/* Header */}
+        <div className="flex items-center justify-between p-6 border-b border-gray-200">
           <button
-            onClick={() => navigate('/')}
-            className="text-white hover:text-gray-200 font-medium"
-            title="Đóng và quay về Home"
+            onClick={() => navigate(`/topics/${id}`)}
+            className="text-gray-600 hover:text-gray-800"
+            title="Quay lại"
           >
-            ✕ Đóng
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            </svg>
           </button>
-          <span className="text-sm text-white bg-blue-500 bg-opacity-50 px-3 py-1 rounded-full">
-            {currentIndex + 1} / {vocabularies.length}
-          </span>
-        </div>
-
-      <div
-        className="relative h-96 cursor-pointer"
-        onClick={() => setIsFlipped(!isFlipped)}
-      >
-        <div
-          className={`absolute inset-0 transition-transform duration-500 ${
-            isFlipped ? 'rotate-y-180' : ''
-          }`}
-          style={{
-            transformStyle: 'preserve-3d',
-            transform: isFlipped ? 'rotateY(180deg)' : 'rotateY(0deg)',
-          }}
-        >
-          {/* Front side */}
-          <div
-            className={`absolute inset-0 backface-hidden ${
-              isFlipped ? 'hidden' : ''
-            }`}
-            style={{ backfaceVisibility: 'hidden' }}
-          >
-            <div className="bg-white rounded-lg shadow-xl p-8 h-full flex flex-col items-center justify-center">
-              <h2 className="text-4xl font-bold text-gray-900 mb-4">{currentVocab.word}</h2>
-              {getPronunciation(currentVocab) && (
-                <p className="text-xl text-gray-500 italic mb-4">{getPronunciation(currentVocab)}</p>
-              )}
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  playAudio();
-                }}
-                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
-              >
-                🔊 Phát âm
-              </button>
-              <p className="text-sm text-gray-500 mt-4">Nhấn để xem nghĩa</p>
-            </div>
+          <div className="flex-1 text-center">
+            <h2 className="text-xl font-bold text-gray-800">
+              {currentVocab.word || `Name of word ${currentIndex + 1}`}
+            </h2>
+            <p className="text-sm text-gray-500 mt-1">
+              {currentIndex + 1} / {vocabularies.length}
+            </p>
           </div>
-
-          {/* Back side */}
-          <div
-            className={`absolute inset-0 backface-hidden ${
-              !isFlipped ? 'hidden' : ''
-            }`}
-            style={{
-              backfaceVisibility: 'hidden',
-              transform: 'rotateY(180deg)',
-            }}
-          >
-            <div className="bg-blue-600 rounded-lg shadow-xl p-8 h-full flex flex-col items-center justify-center text-white">
-              <h3 className="text-2xl font-semibold mb-4">Nghĩa:</h3>
-              <p className="text-xl mb-4">{getMeaning(currentVocab)}</p>
-              {getExample(currentVocab) && (
-                <div className="mt-4">
-                  <p className="text-sm opacity-90 mb-2">Ví dụ:</p>
-                  <p className="text-lg italic">"{getExample(currentVocab)}"</p>
-                </div>
-              )}
-              <p className="text-sm opacity-75 mt-4">Nhấn để xem từ</p>
-            </div>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => speakWord(currentVocab.word, sourceLang?.code || 'en-US')}
+              className="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center"
+              title="Phát âm"
+            >
+              <svg className="w-4 h-4 text-gray-600" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M18 3a1 1 0 00-1.196-.98l-10 2A1 1 0 006 5v9.114A4.369 4.369 0 005 14c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V7.82l8-1.6v5.894A4.37 4.37 0 0015 12c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V3z" />
+              </svg>
+            </button>
+            <button className="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center" title="Cài đặt">
+              <svg className="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
+              </svg>
+            </button>
           </div>
         </div>
-      </div>
 
-        <div className="flex justify-between mt-8">
+        {/* Avatar Section */}
+        <div className="relative bg-gray-200 h-64 flex items-center justify-center">
+          {currentVocab.avatar ? (
+            <img 
+              src={currentVocab.avatar.startsWith('http') ? currentVocab.avatar : `${import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:3001'}${currentVocab.avatar}`} 
+              alt={currentVocab.word} 
+              className="w-full h-full object-cover" 
+            />
+          ) : (
+            <div className="text-gray-500 text-sm">Avatar</div>
+          )}
+          {/* Left Arrow */}
           <button
             onClick={handlePrevious}
             disabled={currentIndex === 0}
-            className="px-6 py-2 bg-white bg-opacity-20 text-white rounded-lg hover:bg-opacity-30 disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+            className="absolute left-4 w-10 h-10 bg-white rounded-full shadow-lg flex items-center justify-center hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            ← Trước
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            </svg>
           </button>
+          {/* Right Arrow */}
           <button
             onClick={handleNext}
-            disabled={currentIndex === vocabularies.length - 1}
-            className="px-6 py-2 bg-white bg-opacity-20 text-white rounded-lg hover:bg-opacity-30 disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+            disabled={currentIndex >= vocabularies.length - 1}
+            className="absolute right-4 w-10 h-10 bg-white rounded-full shadow-lg flex items-center justify-center hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Sau →
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+            </svg>
           </button>
+        </div>
+
+        {/* Translations */}
+        <div className="p-6 space-y-4 flex-1 overflow-y-auto">
+          {/* Source Language (English) */}
+          {sourceLang && (
+            <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-lg">
+              <span className="text-3xl">{sourceLang.flag || '🇬🇧'}</span>
+              <div className="flex-1">
+                <div className="font-semibold text-lg text-gray-800">{currentVocab.word}</div>
+                {sourceTranslation?.pronunciation && (
+                  <div className="text-sm text-gray-600 italic mt-1">{sourceTranslation.pronunciation}</div>
+                )}
+              </div>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => speakWord(currentVocab.word, sourceLang.code || 'en-US')}
+                  className="w-8 h-8 rounded-full bg-gray-200 hover:bg-gray-300 flex items-center justify-center"
+                  title="Phát âm"
+                >
+                  <svg className="w-4 h-4 text-gray-600" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M18 3a1 1 0 00-1.196-.98l-10 2A1 1 0 006 5v9.114A4.369 4.369 0 005 14c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V7.82l8-1.6v5.894A4.37 4.37 0 0015 12c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V3z" />
+                  </svg>
+                </button>
+                <button className="w-8 h-8 rounded-full bg-gray-200 hover:bg-gray-300 flex items-center justify-center" title="Cài đặt">
+                  <svg className="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Target Language */}
+          {targetTranslation && targetLang && (
+            <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-lg">
+              <span className="text-3xl">{targetLang.flag || '🌐'}</span>
+              <div className="flex-1">
+                <div className="font-semibold text-lg text-gray-800">{targetTranslation.meaning}</div>
+                {targetTranslation.pronunciation && (
+                  <div className="text-sm text-gray-600 italic mt-1">{targetTranslation.pronunciation}</div>
+                )}
+              </div>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => speakWord(targetTranslation.meaning, targetLang.code || 'en-US')}
+                  className="w-8 h-8 rounded-full bg-gray-200 hover:bg-gray-300 flex items-center justify-center"
+                  title="Phát âm"
+                >
+                  <svg className="w-4 h-4 text-gray-600" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M18 3a1 1 0 00-1.196-.98l-10 2A1 1 0 006 5v9.114A4.369 4.369 0 005 14c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V7.82l8-1.6v5.894A4.37 4.37 0 0015 12c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V3z" />
+                  </svg>
+                </button>
+                <button className="w-8 h-8 rounded-full bg-gray-200 hover:bg-gray-300 flex items-center justify-center" title="Cài đặt">
+                  <svg className="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Footer - Unlock Bar */}
+        <div className="p-6 border-t border-gray-200 bg-gray-50 flex items-center justify-between">
+          <div className="w-6 h-6 border-2 border-gray-300 rounded"></div>
+          <button className="flex items-center gap-2 bg-teal-500 hover:bg-teal-600 text-white px-6 py-3 rounded-lg font-medium transition">
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+            </svg>
+            Unlock
+          </button>
+          <div className="flex gap-2">
+            <button
+              onClick={() => speakWord(currentVocab.word, sourceLang?.code || 'en-US')}
+              className="w-8 h-8 rounded-full bg-gray-200 hover:bg-gray-300 flex items-center justify-center"
+              title="Phát âm"
+            >
+              <svg className="w-4 h-4 text-gray-600" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M18 3a1 1 0 00-1.196-.98l-10 2A1 1 0 006 5v9.114A4.369 4.369 0 005 14c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V7.82l8-1.6v5.894A4.37 4.37 0 0015 12c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V3z" />
+              </svg>
+            </button>
+            <button className="w-8 h-8 rounded-full bg-gray-200 hover:bg-gray-300 flex items-center justify-center" title="Cài đặt">
+              <svg className="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        {/* Bottom Ad Banner */}
+        <div className="bg-lime-400 text-center py-2 text-sm font-medium">
+          ADS - BOTTOM
         </div>
       </div>
     </div>

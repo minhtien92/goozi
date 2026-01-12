@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import api from '../config/api';
 import { useAuthStore } from '../store/authStore';
 
@@ -17,17 +17,22 @@ declare global {
   }
 }
 
-export default function Login() {
+interface LoginModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onSuccess?: () => void;
+}
+
+export default function LoginModal({ isOpen, onClose, onSuccess }: LoginModalProps) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [googleScriptLoaded, setGoogleScriptLoaded] = useState(false);
-  const navigate = useNavigate();
   const setAuth = useAuthStore((state) => state.setAuth);
 
   const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || '';
-  
+
   // Debug: Log Google Client ID and current origin (remove in production)
   useEffect(() => {
     if (GOOGLE_CLIENT_ID) {
@@ -49,7 +54,10 @@ export default function Login() {
         idToken: response.credential,
       });
       setAuth(authResponse.data.user, authResponse.data.token);
-      navigate('/');
+      onClose();
+      if (onSuccess) {
+        onSuccess();
+      }
     } catch (err: any) {
       setError(err.response?.data?.error || 'Đăng nhập Google thất bại');
     } finally {
@@ -58,6 +66,8 @@ export default function Login() {
   };
 
   useEffect(() => {
+    if (!isOpen) return;
+
     // Load Google Identity Services script
     if (GOOGLE_CLIENT_ID && !window.google) {
       const script = document.createElement('script');
@@ -83,7 +93,7 @@ export default function Login() {
     return () => {
       // Cleanup if needed
     };
-  }, [GOOGLE_CLIENT_ID]);
+  }, [GOOGLE_CLIENT_ID, isOpen]);
 
   const initializeGoogleSignIn = () => {
     if (!window.google || !GOOGLE_CLIENT_ID) {
@@ -102,7 +112,7 @@ export default function Login() {
 
       // Render button with a small delay to ensure DOM is ready
       setTimeout(() => {
-        const buttonContainer = document.getElementById('google-signin-button');
+        const buttonContainer = document.getElementById('google-signin-button-modal');
         if (buttonContainer && window.google?.accounts?.id?.renderButton) {
           // Clear container first
           buttonContainer.innerHTML = '';
@@ -126,7 +136,7 @@ export default function Login() {
           });
           // Retry after a longer delay
           setTimeout(() => {
-            const retryContainer = document.getElementById('google-signin-button');
+            const retryContainer = document.getElementById('google-signin-button-modal');
             if (retryContainer && window.google?.accounts?.id?.renderButton) {
               retryContainer.innerHTML = '';
               window.google.accounts.id.renderButton(retryContainer, {
@@ -153,7 +163,10 @@ export default function Login() {
     try {
       const response = await api.post('/auth/login', { email, password });
       setAuth(response.data.user, response.data.token);
-      navigate('/');
+      onClose();
+      if (onSuccess) {
+        onSuccess();
+      }
     } catch (err: any) {
       setError(err.response?.data?.error || 'Đăng nhập thất bại');
     } finally {
@@ -161,95 +174,115 @@ export default function Login() {
     }
   };
 
+  if (!isOpen) return null;
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8">
-        <div>
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-            Đăng nhập vào Goozi
-          </h2>
-        </div>
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-          {error && (
-            <div className="rounded-md bg-red-50 p-4">
-              <p className="text-sm text-red-800">{error}</p>
-            </div>
-          )}
-          <div className="rounded-md shadow-sm -space-y-px">
-            <div>
-              <label htmlFor="email" className="sr-only">
-                Email
-              </label>
-              <input
-                id="email"
-                name="email"
-                type="email"
-                required
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
-                placeholder="Email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-              />
-            </div>
-            <div>
-              <label htmlFor="password" className="sr-only">
-                Mật khẩu
-              </label>
-              <input
-                id="password"
-                name="password"
-                type="password"
-                required
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
-                placeholder="Mật khẩu"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-              />
-            </div>
-          </div>
+    <div className="fixed inset-0 z-50 flex items-center justify-center">
+      {/* Overlay */}
+      <div 
+        className="fixed inset-0 bg-black bg-opacity-50"
+        onClick={onClose}
+      />
+      
+      {/* Modal */}
+      <div className="relative bg-white rounded-lg shadow-xl max-w-md w-full mx-4 z-50 max-h-[90vh] overflow-y-auto">
+        {/* Close button */}
+        <button
+          onClick={onClose}
+          className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition"
+        >
+          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
 
+        <div className="p-8">
           <div>
-            <button
-              type="submit"
-              disabled={loading}
-              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
-            >
-              {loading ? 'Đang đăng nhập...' : 'Đăng nhập'}
-            </button>
+            <h2 className="text-center text-3xl font-extrabold text-gray-900 mb-8">
+              Đăng nhập vào Goozi
+            </h2>
           </div>
-
-          {GOOGLE_CLIENT_ID ? (
-            <>
-              <div className="relative">
-                <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-gray-300"></div>
-                </div>
-                <div className="relative flex justify-center text-sm">
-                  <span className="px-2 bg-gray-50 text-gray-500">Hoặc</span>
-                </div>
+          <form className="space-y-6" onSubmit={handleSubmit}>
+            {error && (
+              <div className="rounded-md bg-red-50 p-4">
+                <p className="text-sm text-red-800">{error}</p>
               </div>
-
-              <div className="w-full flex justify-center">
-                <div id="google-signin-button" className="min-h-[40px] flex items-center justify-center"></div>
-                {!googleScriptLoaded && (
-                  <div className="text-gray-500 text-sm">Đang tải Google Sign In...</div>
-                )}
+            )}
+            <div className="rounded-md shadow-sm -space-y-px">
+              <div>
+                <label htmlFor="email-modal" className="sr-only">
+                  Email
+                </label>
+                <input
+                  id="email-modal"
+                  name="email"
+                  type="email"
+                  required
+                  className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
+                  placeholder="Email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                />
               </div>
-            </>
-          ) : (
-            <div className="text-center text-sm text-gray-500">
-              Google Sign In không khả dụng. Vui lòng kiểm tra cấu hình.
+              <div>
+                <label htmlFor="password-modal" className="sr-only">
+                  Mật khẩu
+                </label>
+                <input
+                  id="password-modal"
+                  name="password"
+                  type="password"
+                  required
+                  className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
+                  placeholder="Mật khẩu"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                />
+              </div>
             </div>
-          )}
 
-          <div className="text-center">
-            <Link to="/register" className="text-sm text-blue-600 hover:text-blue-500">
-              Chưa có tài khoản? Đăng ký ngay
-            </Link>
-          </div>
-        </form>
+            <div>
+              <button
+                type="submit"
+                disabled={loading}
+                className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
+              >
+                {loading ? 'Đang đăng nhập...' : 'Đăng nhập'}
+              </button>
+            </div>
+
+            {GOOGLE_CLIENT_ID ? (
+              <>
+                <div className="relative">
+                  <div className="absolute inset-0 flex items-center">
+                    <div className="w-full border-t border-gray-300"></div>
+                  </div>
+                  <div className="relative flex justify-center text-sm">
+                    <span className="px-2 bg-white text-gray-500">Hoặc</span>
+                  </div>
+                </div>
+
+                <div className="w-full flex justify-center">
+                  <div id="google-signin-button-modal" className="min-h-[40px] flex items-center justify-center"></div>
+                  {!googleScriptLoaded && (
+                    <div className="text-gray-500 text-sm">Đang tải Google Sign In...</div>
+                  )}
+                </div>
+              </>
+            ) : (
+              <div className="text-center text-sm text-gray-500">
+                Google Sign In không khả dụng. Vui lòng kiểm tra cấu hình.
+              </div>
+            )}
+
+            <div className="text-center">
+              <Link to="/register" className="text-sm text-blue-600 hover:text-blue-500">
+                Chưa có tài khoản? Đăng ký ngay
+              </Link>
+            </div>
+          </form>
+        </div>
       </div>
     </div>
   );
 }
-
