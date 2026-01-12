@@ -86,7 +86,7 @@ export default function Topics() {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4" onClick={handleClose}>
+    <div className="fixed inset-0 z-40 flex items-center justify-center p-4" onClick={handleClose}>
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-6xl max-h-[90vh] overflow-hidden flex flex-col" onClick={(e) => e.stopPropagation()}>
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-200">

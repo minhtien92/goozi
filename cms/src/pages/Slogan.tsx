@@ -9,20 +9,40 @@ interface HomeSetting {
   isActive: boolean;
 }
 
+interface Language {
+  id: string;
+  code: string;
+  name: string;
+  nativeName: string;
+  flag: string;
+  isActive: boolean;
+}
+
 export default function Slogan() {
   const [slogans, setSlogans] = useState<HomeSetting[]>([]);
+  const [languages, setLanguages] = useState<Language[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
-  const [editingIndex, setEditingIndex] = useState<number | null>(null);
-  const [editValue, setEditValue] = useState('');
+  const [editingSloganId, setEditingSloganId] = useState<string | null>(null);
   
-  // Form thêm mới
-  const [newSloganValues, setNewSloganValues] = useState<string[]>(Array(13).fill(''));
-  const [wordSearch, setWordSearch] = useState('');
+  // Form thêm mới / edit
+  const [sloganValues, setSloganValues] = useState<Record<string, string>>({});
+  const [wordValue, setWordValue] = useState('');
 
   useEffect(() => {
+    fetchLanguages();
     fetchSettings();
   }, []);
+
+  const fetchLanguages = async () => {
+    try {
+      const response = await api.get('/languages?isActive=true');
+      const activeLanguages = response.data.languages || response.data || [];
+      setLanguages(activeLanguages.sort((a: Language, b: Language) => a.name.localeCompare(b.name)));
+    } catch (error) {
+      console.error('Error fetching languages:', error);
+    }
+  };
 
   const fetchSettings = async () => {
     try {
@@ -40,38 +60,25 @@ export default function Slogan() {
     }
   };
 
-  const handleEdit = (index: number) => {
-    const slogan = slogans[index];
+  const handleEdit = (sloganId: string) => {
+    const slogan = slogans.find(s => s.id === sloganId);
     if (slogan) {
-      setEditingIndex(index);
-      setEditValue(slogan.value);
-    }
-  };
-
-  const handleSaveEdit = async () => {
-    if (editingIndex === null) return;
-    
-    const slogan = slogans[editingIndex];
-    if (!slogan) return;
-
-    try {
-      await api.put(`/home-settings/${slogan.id}`, {
-        value: editValue.trim(),
-        isActive: editValue.trim() !== '',
+      setEditingSloganId(sloganId);
+      setWordValue(slogan.value); // Set word value from slogan
+      // Initialize values with current slogan value for all languages
+      const initialValues: Record<string, string> = {};
+      languages.forEach(lang => {
+        // For now, use the same value for all languages (can be enhanced later to support multi-language slogans)
+        initialValues[lang.id] = slogan.value;
       });
-      alert('Slogan updated successfully!');
-      setEditingIndex(null);
-      setEditValue('');
-      fetchSettings();
-    } catch (error: any) {
-      console.error('Error updating slogan:', error);
-      alert('Failed to update slogan: ' + (error.response?.data?.message || error.message));
+      setSloganValues(initialValues);
     }
   };
 
   const handleCancelEdit = () => {
-    setEditingIndex(null);
-    setEditValue('');
+    setEditingSloganId(null);
+    setSloganValues({});
+    setWordValue('');
   };
 
   const handleDeleteSlogan = async (id: string) => {
@@ -87,48 +94,62 @@ export default function Slogan() {
     }
   };
 
-  const handleNewSloganChange = (index: number, value: string) => {
-    const newValues = [...newSloganValues];
-    newValues[index] = value;
-    setNewSloganValues(newValues);
+  const handleSloganValueChange = (languageId: string, value: string) => {
+    setSloganValues(prev => ({
+      ...prev,
+      [languageId]: value
+    }));
   };
 
-  const handleAddNewSlogan = async () => {
-    // Lấy giá trị từ Language 1 (English) làm giá trị chính
-    const englishValue = newSloganValues[0]?.trim();
+  const handleSaveSlogan = async () => {
+    // Use wordValue if available, otherwise get the first non-empty value from languages
+    const firstLanguage = languages[0];
+    const sloganValue = wordValue.trim() || sloganValues[firstLanguage?.id]?.trim() || Object.values(sloganValues).find(v => v?.trim()) || '';
     
-    if (!englishValue) {
-      alert('Please enter slogan (Language 1 - English)');
+    if (!sloganValue) {
+      alert(`Please enter word or slogan in at least one language`);
       return;
     }
 
     try {
-      // Tìm order tiếp theo
-      let maxOrder = 0;
-      if (slogans.length > 0) {
-        const orders = slogans.map(s => s.order || 0);
-        maxOrder = Math.max(...orders) + 1;
-      }
+      if (editingSloganId) {
+        // Update existing slogan
+        const slogan = slogans.find(s => s.id === editingSloganId);
+        if (!slogan) return;
 
-      // Tạo slogan mới với giá trị English (luôn tạo mới, không update)
-      const response = await api.post('/home-settings/create', {
-        key: 'slogan',
-        value: englishValue,
-        order: maxOrder,
-        isActive: true,
-      });
+        await api.put(`/home-settings/${slogan.id}`, {
+          key: slogan.key,
+          value: sloganValue,
+          order: slogan.order,
+          isActive: true,
+        });
+        alert('Slogan updated successfully!');
+      } else {
+        // Create new slogan
+        let maxOrder = 0;
+        if (slogans.length > 0) {
+          const orders = slogans.map(s => s.order || 0);
+          maxOrder = Math.max(...orders) + 1;
+        }
 
-      if (response.data) {
+        await api.post('/home-settings/create', {
+          key: 'slogan',
+          value: sloganValue,
+          order: maxOrder,
+          isActive: true,
+        });
         alert('Slogan added successfully!');
-        // Reset form
-        setNewSloganValues(Array(13).fill(''));
-        setWordSearch('');
-        fetchSettings();
       }
+
+      // Reset form
+      setEditingSloganId(null);
+      setSloganValues({});
+      setWordValue('');
+      fetchSettings();
     } catch (error: any) {
-      console.error('Error adding slogan:', error);
+      console.error('Error saving slogan:', error);
       const errorMessage = error.response?.data?.error || error.response?.data?.message || error.message || 'Lỗi không xác định';
-      alert('Failed to add slogan: ' + errorMessage);
+      alert('Failed to save slogan: ' + errorMessage);
     }
   };
 
@@ -185,59 +206,25 @@ export default function Slogan() {
                       <tr key={slogan.id}>
                         <td>{index + 1}</td>
                         <td>
-                          {editingIndex === index ? (
-                            <input
-                              type="text"
-                              className="form-control"
-                              value={editValue}
-                              onChange={(e) => setEditValue(e.target.value)}
-                              onKeyPress={(e) => {
-                                if (e.key === 'Enter') {
-                                  handleSaveEdit();
-                                }
-                              }}
-                              autoFocus
-                            />
-                          ) : (
-                            <span>{slogan.value}</span>
-                          )}
+                          <span>{slogan.value}</span>
                         </td>
                         <td>
-                          {editingIndex === index ? (
-                            <div className="d-flex" style={{ gap: '5px' }}>
-                              <button
-                                onClick={handleSaveEdit}
-                                className="btn btn-sm btn-success"
-                                title="Save"
-                              >
-                                <i className="fas fa-check"></i>
-                              </button>
-                              <button
-                                onClick={handleCancelEdit}
-                                className="btn btn-sm btn-secondary"
-                                title="Cancel"
-                              >
-                                <i className="fas fa-times"></i>
-                              </button>
-                            </div>
-                          ) : (
-                            <div className="d-flex" style={{ gap: '5px' }}>
-                              <button
-                                onClick={() => handleEdit(index)}
-                                className="btn btn-sm btn-primary"
-                                title="Edit"
-                              >
-                                <i className="fas fa-edit"></i>
-                              </button>
-                              <button
-                                onClick={() => handleDeleteSlogan(slogan.id)}
-                                className="btn btn-sm btn-danger"
-                                title="Delete"
-                              >
-                                <i className="fas fa-trash"></i>
-                              </button>
-                            </div>
-                          )}
+                          <div className="d-flex" style={{ gap: '5px' }}>
+                            <button
+                              onClick={() => handleEdit(slogan.id)}
+                              className="btn btn-sm btn-primary"
+                              title="Edit"
+                            >
+                              <i className="fas fa-edit"></i>
+                            </button>
+                            <button
+                              onClick={() => handleDeleteSlogan(slogan.id)}
+                              className="btn btn-sm btn-danger"
+                              title="Delete"
+                            >
+                              <i className="fas fa-trash"></i>
+                            </button>
+                          </div>
                         </td>
                       </tr>
                     ))
@@ -249,49 +236,68 @@ export default function Slogan() {
         </div>
       </div>
 
-      {/* Right Panel - Add New Slogan Form */}
+      {/* Right Panel - Add/Edit Slogan Form */}
       <div className="card" style={{ width: '400px' }}>
         <div className="card-header d-flex justify-content-between align-items-center">
           <h4 className="card-title mb-0">
-            <i className="fas fa-plus mr-2"></i>
-            Add a new slogan
+            <i className={editingSloganId ? "fas fa-edit mr-2" : "fas fa-plus mr-2"}></i>
+            {editingSloganId ? 'Edit Slogan' : 'Add a new slogan'}
           </h4>
-          <button
-            type="button"
-            className="btn btn-primary btn-sm"
-            onClick={handleAddNewSlogan}
-          >
-            <i className="fas fa-save mr-1"></i>
-            Save
-          </button>
+          <div className="d-flex" style={{ gap: '5px' }}>
+            {editingSloganId && (
+              <button
+                type="button"
+                className="btn btn-secondary btn-sm"
+                onClick={handleCancelEdit}
+              >
+                <i className="fas fa-times mr-1"></i>
+                Cancel
+              </button>
+            )}
+            <button
+              type="button"
+              className="btn btn-primary btn-sm"
+              onClick={handleSaveSlogan}
+            >
+              <i className={editingSloganId ? "fas fa-save mr-1" : "fas fa-save mr-1"}></i>
+              {editingSloganId ? 'Update' : 'Save'}
+            </button>
+          </div>
         </div>
         <div className="card-body" style={{ maxHeight: 'calc(100vh - 250px)', overflowY: 'auto' }}>
           <div className="form-group">
             <label>Word</label>
-            <div className="d-flex align-items-center gap-2 mb-3">
-              <input
-                type="text"
-                className="form-control"
-                placeholder="Search..."
-                value={wordSearch}
-                onChange={(e) => setWordSearch(e.target.value)}
-              />
-            </div>
+            <input
+              type="text"
+              className="form-control"
+              placeholder="Enter word"
+              value={wordValue}
+              onChange={(e) => setWordValue(e.target.value)}
+            />
           </div>
           
-          {/* Language inputs - 13 languages */}
-          {Array.from({ length: 13 }, (_, i) => (
-            <div key={i} className="form-group">
-              <label>Language {i + 1}</label>
-              <input
-                type="text"
-                className="form-control"
-                placeholder={`Enter slogan in language ${i + 1}`}
-                value={newSloganValues[i]}
-                onChange={(e) => handleNewSloganChange(i, e.target.value)}
-              />
+          {/* Language inputs - mapped to actual languages */}
+          {languages.length === 0 ? (
+            <div className="text-muted text-center py-3">
+              <div className="spinner-border spinner-border-sm mr-2" role="status"></div>
+              Loading languages...
             </div>
-          ))}
+          ) : (
+            languages.map((lang) => (
+              <div key={lang.id} className="form-group">
+                <label>
+                  {lang.flag} {lang.nativeName} ({lang.name})
+                </label>
+                <input
+                  type="text"
+                  className="form-control"
+                  placeholder={`Enter slogan in ${lang.nativeName}`}
+                  value={sloganValues[lang.id] || ''}
+                  onChange={(e) => handleSloganValueChange(lang.id, e.target.value)}
+                />
+              </div>
+            ))
+          )}
         </div>
       </div>
     </div>

@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
-import LanguageSelector from '../components/LanguageSelector';
 import UserMenu from '../components/UserMenu';
 import LoginModal from '../components/LoginModal';
 import api from '../config/api';
@@ -15,6 +14,7 @@ export default function Home() {
   const [loginModalOpen, setLoginModalOpen] = useState(false);
   const [slogans, setSlogans] = useState<string[]>([]);
   const [heroImage, setHeroImage] = useState<string>('');
+  const [heroImageError, setHeroImageError] = useState(false);
   const [currentSloganIndex, setCurrentSloganIndex] = useState(0);
   const [testimonials, setTestimonials] = useState<any[]>([]);
 
@@ -87,14 +87,21 @@ export default function Home() {
     background: 'linear-gradient(to right, #60a5fa, #4fd1c7, #e5e7eb)',
   };
 
+  // Check if we're being used as background (via parent class or prop)
+  const isBackground = window.location.pathname !== '/';
+  
   return (
-    <div className="min-h-screen relative overflow-hidden" style={backgroundStyle}>
+    <div 
+      className={`min-h-screen relative overflow-hidden w-full h-full ${isBackground ? 'pointer-events-none' : ''}`} 
+      style={{ ...backgroundStyle, ...(isBackground ? { zIndex: 0 } : {}) }}
+    >
       {/* Sidebar */}
-      <div
-        className={`fixed left-0 top-0 h-full w-64 bg-green-100 transform transition-transform duration-300 z-50 ${
-          sidebarOpen ? 'translate-x-0' : '-translate-x-full'
-        }`}
-      >
+      {!isBackground && (
+        <div
+          className={`fixed left-0 top-0 h-full w-64 bg-green-100 transform transition-transform duration-300 z-50 ${
+            sidebarOpen ? 'translate-x-0' : '-translate-x-full'
+          }`}
+        >
         <div className="p-6">
           <div className="text-2xl font-bold text-blue-600 mb-8">GOOZI</div>
           <nav className="space-y-4">
@@ -158,10 +165,11 @@ export default function Home() {
             </div>
           )}
         </div>
-      </div>
+        </div>
+      )}
 
       {/* Overlay */}
-      {sidebarOpen && (
+      {!isBackground && sidebarOpen && (
         <div
           className="fixed inset-0 bg-black bg-opacity-50 z-40"
           onClick={() => setSidebarOpen(false)}
@@ -169,9 +177,10 @@ export default function Home() {
       )}
 
       {/* Main Content */}
-      <div className="relative z-10" style={{ position: 'relative' }}>
+      <div className={`relative ${isBackground ? 'z-0' : 'z-10'}`} style={{ position: 'relative' }}>
         {/* Header */}
-        <header className="relative flex justify-between items-center p-6">
+        {!isBackground && (
+          <header className="relative flex justify-between items-center p-6">
           {/* Left: menu + circle icon */}
           <div className="flex items-center gap-3">
             <button
@@ -195,18 +204,12 @@ export default function Home() {
           {/* Right: user / login */}
           <div className="flex items-center gap-4 text-white drop-shadow-lg">
             {user ? (
-              <>
-                <LanguageSelector />
-                <button
-                  onClick={() => setUserMenuOpen(true)}
-                  className="flex items-center gap-2 hover:opacity-80 transition cursor-pointer"
-                >
-                  <div className="w-10 h-10 rounded-full bg-white bg-opacity-20 flex items-center justify-center text-2xl">
-                    {user?.nativeLanguage?.flag || '🇰🇷'}
-                  </div>
-                  <span>{user?.name || 'User'}</span>
-                </button>
-              </>
+              <button
+                onClick={() => setUserMenuOpen(true)}
+                className="flex items-center gap-2 hover:opacity-80 transition cursor-pointer"
+              >
+                <span>{user?.name || 'User'}</span>
+              </button>
             ) : (
               <button
                 onClick={() => setLoginModalOpen(true)}
@@ -216,7 +219,8 @@ export default function Home() {
               </button>
             )}
           </div>
-        </header>
+          </header>
+        )}
 
         {/* Main Content Area */}
         <div className="px-6 pb-16 flex flex-col gap-6">
@@ -234,12 +238,13 @@ export default function Home() {
           </div>
 
           {/* Hero picture from settings */}
-          {heroImage && (
+          {heroImage && !heroImageError && (
             <div className="flex justify-center mb-6">
               <img
                 src={heroImage}
                 alt="Hero"
                 className="max-w-4xl w-full max-h-[360px] object-contain"
+                onError={() => setHeroImageError(true)}
               />
             </div>
           )}
@@ -276,41 +281,47 @@ export default function Home() {
         </div> */}
 
         {/* Navigation CTA (Bottom Right) */}
-        <div className="fixed bottom-20 right-6 z-30">
-          <button
-            onClick={() => {
-              if (user) {
-                navigate('/topics');
-              } else {
-                setLoginModalOpen(true);
-              }
-            }}
-            className="w-28 h-28 rounded-full bg-gradient-to-br from-cyan-300 to-sky-500 text-white font-semibold shadow-xl border border-white/50 hover:scale-105 active:scale-95 transition transform flex items-center justify-center text-center text-sm"
-          >
-            Let&apos;s study!
-          </button>
-        </div>
+        {!isBackground && (
+          <div className="fixed bottom-20 right-6 z-30">
+            <button
+              onClick={() => {
+                if (user) {
+                  navigate('/topics');
+                } else {
+                  setLoginModalOpen(true);
+                }
+              }}
+              className="w-28 h-28 rounded-full bg-gradient-to-br from-cyan-300 to-sky-500 text-white font-semibold shadow-xl border border-white/50 hover:scale-105 active:scale-95 transition transform flex items-center justify-center text-center text-sm"
+            >
+              Let&apos;s study!
+            </button>
+          </div>
+        )}
 
         {/* Footer */}
-        <footer className="fixed bottom-0 left-0 right-0 text-center py-4 text-sm text-gray-700 bg-white bg-opacity-60">
-          Copyright @ 2025 Goozi
-        </footer>
+        {!isBackground && (
+          <footer className="fixed bottom-0 left-0 right-0 text-center py-4 text-sm text-gray-700 bg-white bg-opacity-60">
+            Copyright @ 2025 Goozi
+          </footer>
+        )}
       </div>
 
       {/* User Menu */}
-      {userMenuOpen && (
+      {!isBackground && userMenuOpen && (
         <UserMenu onClose={() => setUserMenuOpen(false)} />
       )}
 
       {/* Login Modal */}
-      <LoginModal 
-        isOpen={loginModalOpen}
-        onClose={() => setLoginModalOpen(false)}
-        onSuccess={() => {
-          // Refresh page or update state after successful login
-          window.location.reload();
-        }}
-      />
+      {!isBackground && (
+        <LoginModal 
+          isOpen={loginModalOpen}
+          onClose={() => setLoginModalOpen(false)}
+          onSuccess={() => {
+            // Refresh page or update state after successful login
+            window.location.reload();
+          }}
+        />
+      )}
     </div>
   );
 }

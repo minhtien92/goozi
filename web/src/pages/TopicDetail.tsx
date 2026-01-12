@@ -46,6 +46,7 @@ export default function TopicDetail() {
   const [topic, setTopic] = useState<Topic | null>(null);
   const [currentVocabIndex, setCurrentVocabIndex] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [imageErrors, setImageErrors] = useState<Set<string>>(new Set());
   
   // Get voice accent version from user preference (default to 1)
   const voiceAccentVersion = user?.voiceAccentVersion || 1;
@@ -230,7 +231,7 @@ export default function TopicDetail() {
 
   return (
     <div 
-      className="min-h-screen bg-gradient-to-r from-blue-400 via-blue-300 to-gray-200 flex items-center justify-center p-4"
+      className="min-h-screen flex items-center justify-center p-4"
       onClick={handleClose}
     >
       <div 
@@ -279,18 +280,21 @@ export default function TopicDetail() {
                   key={vocab.id}
                   onClick={(e) => {
                     e.stopPropagation();
-                    navigate(`/topics/${id}/flashcard`);
+                    navigate(`/topics/${id}/flashcard?index=${index}`);
                   }}
                   className={`bg-gray-100 border-2 rounded-lg p-4 hover:bg-blue-50 transition cursor-pointer ${
                     currentVocabIndex === index ? 'border-blue-500 bg-blue-50' : 'border-blue-300'
                   }`}
                 >
                   <div className="w-full h-24 bg-gray-300 rounded mb-3 flex items-center justify-center text-xs text-gray-500 relative">
-                    {vocab.avatar ? (
+                    {vocab.avatar && !imageErrors.has(vocab.id) ? (
                       <img 
                         src={vocab.avatar.startsWith('http') ? vocab.avatar : `${import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:3001'}${vocab.avatar}`} 
                         alt={vocab.word} 
                         className="w-full h-full object-cover rounded" 
+                        onError={() => {
+                          setImageErrors(prev => new Set(prev).add(vocab.id));
+                        }}
                       />
                     ) : (
                       <span>Avatar</span>

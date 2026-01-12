@@ -89,14 +89,6 @@ export default function Picture() {
           isActive: true,
         });
 
-        // Also update background_image to use the latest picture
-        await api.post('/home-settings', {
-          key: 'background_image',
-          value: uploadResponse.data.url,
-          order: 0,
-          isActive: true,
-        });
-
         alert('Image uploaded successfully!');
         setPreviewImage(null);
         setSelectedFile(null);
@@ -255,6 +247,13 @@ export default function Picture() {
           <div className="form-group">
             <label>Picture</label>
             <div className="mt-2">
+              <input
+                type="file"
+                accept="image/*"
+                className="d-none"
+                id="picture-upload"
+                onChange={handleFileSelect}
+              />
               {previewImage ? (
                 <div className="mb-3">
                   <img
@@ -265,54 +264,63 @@ export default function Picture() {
                       maxHeight: '300px', 
                       objectFit: 'cover', 
                       borderRadius: '4px',
-                      border: '1px solid #dee2e6'
+                      border: '1px solid #dee2e6',
+                      cursor: 'pointer'
                     }}
+                    onClick={() => {
+                      const fileInput = document.getElementById('picture-upload') as HTMLInputElement;
+                      if (fileInput) {
+                        fileInput.click();
+                      }
+                    }}
+                    title="Click to change image"
                   />
                 </div>
               ) : (
-                <div
-                  className="border border-primary d-flex align-items-center justify-content-center"
-                  style={{
-                    width: '100%',
-                    height: '200px',
-                    borderRadius: '4px',
-                    backgroundColor: '#f8f9fa',
-                  }}
+                <label
+                  htmlFor="picture-upload"
+                  className="d-block"
+                  style={{ cursor: 'pointer' }}
                 >
-                  <span className="text-muted">No image selected</span>
-                </div>
+                  <div
+                    className="border border-primary d-flex align-items-center justify-content-center"
+                    style={{
+                      width: '100%',
+                      height: '200px',
+                      borderRadius: '4px',
+                      backgroundColor: '#f8f9fa',
+                    }}
+                  >
+                    <span className="text-muted">No image selected</span>
+                  </div>
+                </label>
               )}
-              <input
-                type="file"
-                accept="image/*"
-                className="d-none"
-                id="picture-upload"
-                onChange={handleFileSelect}
-              />
-              <label
-                htmlFor="picture-upload"
-                className="btn btn-primary btn-block mt-2"
-                style={{ cursor: 'pointer' }}
-              >
-                <i className="fas fa-upload mr-1"></i>
-                Upload
-              </label>
+              {!previewImage && (
+                <label
+                  htmlFor="picture-upload"
+                  className="btn btn-outline-primary btn-block mt-2"
+                  style={{ cursor: 'pointer' }}
+                >
+                  <i className="fas fa-folder-open mr-1"></i>
+                  Chọn ảnh
+                </label>
+              )}
               {previewImage && (
                 <button
                   type="button"
-                  className="btn btn-success btn-block mt-2"
+                  className="btn btn-primary btn-block mt-2"
                   onClick={handleUpload}
                   disabled={uploading}
                 >
                   {uploading ? (
                     <>
                       <span className="spinner-border spinner-border-sm mr-2" role="status"></span>
-                      Uploading...
+                      Đang upload...
                     </>
                   ) : (
                     <>
-                      <i className="fas fa-save mr-1"></i>
-                      Save Image
+                      <i className="fas fa-upload mr-1"></i>
+                      Upload
                     </>
                   )}
                 </button>

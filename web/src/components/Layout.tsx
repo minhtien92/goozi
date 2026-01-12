@@ -19,10 +19,16 @@ export default function Layout() {
       )}
       {(isTopicsPage || isTopicDetailPage || isFlashcardPage) && (
         <>
-          <div className="opacity-30 blur-sm pointer-events-none fixed inset-0">
-            <Home />
+          {/* Home background - must be rendered first and behind everything */}
+          <div className="fixed inset-0 z-0 pointer-events-none" style={{ zIndex: 0 }}>
+            <div className="opacity-30 blur-sm w-full h-full overflow-hidden" style={{ zIndex: 0 }}>
+              <div style={{ position: 'relative', zIndex: 0 }}>
+                <Home />
+              </div>
+            </div>
           </div>
-          <div className="relative z-50">
+          {/* Overlay content */}
+          <div className="fixed inset-0" style={{ zIndex: 40 }}>
             <Outlet />
           </div>
         </>

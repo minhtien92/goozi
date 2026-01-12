@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef, useCallback } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import api from '../config/api';
 import { useAuthStore } from '../store/authStore';
 
@@ -41,14 +41,18 @@ interface Topic {
 export default function Flashcard() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { user } = useAuthStore();
   const [vocabularies, setVocabularies] = useState<Vocabulary[]>([]);
-  const [currentIndex, setCurrentIndex] = useState(0);
+  // Get initial index from URL params, default to 0
+  const initialIndex = parseInt(searchParams.get('index') || '0', 10);
+  const [currentIndex, setCurrentIndex] = useState(initialIndex);
   const [isFlipped, setIsFlipped] = useState(false);
   const [loading, setLoading] = useState(true);
   const [topic, setTopic] = useState<Topic | null>(null);
   const [languages, setLanguages] = useState<Language[]>([]);
   const [playingKey, setPlayingKey] = useState<string | null>(null);
+  const [imageError, setImageError] = useState(false);
   
   // Use refs to persist audio state across renders
   const currentAudioRef = useRef<HTMLAudioElement | null>(null);
@@ -113,6 +117,26 @@ export default function Flashcard() {
       
       setVocabularies(vocabulariesToShow);
       
+      // Set currentIndex based on URL param after vocabularies are loaded
+      // The index from URL is from the filtered list in TopicDetail (vocabulariesWithTranslations)
+      // We need to find the corresponding vocabulary in our filtered list
+      const urlIndex = parseInt(searchParams.get('index') || '0', 10);
+      
+      if (urlIndex >= 0 && urlIndex < vocabulariesWithTranslations.length) {
+        const targetVocabId = vocabulariesWithTranslations[urlIndex]?.id;
+        // Find the index in our filtered list
+        const foundIndex = vocabulariesToShow.findIndex((v: Vocabulary) => v.id === targetVocabId);
+        if (foundIndex >= 0) {
+          setCurrentIndex(foundIndex);
+        } else if (vocabulariesToShow.length > 0) {
+          // If not found, default to 0
+          setCurrentIndex(0);
+        }
+      } else if (vocabulariesToShow.length > 0) {
+        // If index is out of bounds, set to 0
+        setCurrentIndex(0);
+      }
+      
       if (vocabulariesWithTranslations.length === 0 && allVocabularies.length > 0) {
         console.warn('No vocabularies with translations found, but showing vocabularies without translations');
         console.warn('All vocabularies:', allVocabularies);
@@ -150,6 +174,8 @@ export default function Flashcard() {
   useEffect(() => {
     // Stop audio when card changes
     stopAllAudio();
+    // Reset image error state when card changes
+    setImageError(false);
     
     // Cleanup on unmount
     return () => {
@@ -321,7 +347,7 @@ export default function Flashcard() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-r from-blue-400 via-blue-300 to-gray-200 flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center">
         <div className="text-white text-xl">Đang tải...</div>
       </div>
     );
@@ -334,7 +360,7 @@ export default function Flashcard() {
     console.log('Flashcard: No vocabularies to show, hasVocabulariesWithoutTranslations:', hasVocabulariesWithoutTranslations);
     
     return (
-      <div className="min-h-screen bg-gradient-to-r from-blue-400 via-blue-300 to-gray-200 flex items-center justify-center p-4 fixed inset-0 z-50">
+      <div className="min-h-screen flex items-center justify-center p-4 fixed inset-0 z-50">
         <div className="bg-white rounded-2xl shadow-2xl p-8 text-center max-w-md">
           <p className="text-xl mb-4 text-gray-800">
             {hasVocabulariesWithoutTranslations 
@@ -432,7 +458,7 @@ export default function Flashcard() {
   console.log('Flashcard: Rendering flashcard UI with', vocabularies.length, 'vocabularies');
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-40 backdrop-blur-sm">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl overflow-hidden flex flex-col max-h-[90vh] relative">
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-gray-200 bg-gray-50">
@@ -510,11 +536,12 @@ export default function Flashcard() {
 
         {/* Avatar Section */}
         <div className="relative bg-gray-200 h-64 flex items-center justify-center">
-          {currentVocab.avatar ? (
+          {currentVocab.avatar && !imageError ? (
             <img 
               src={currentVocab.avatar.startsWith('http') ? currentVocab.avatar : `${import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:3001'}${currentVocab.avatar}`} 
               alt={currentVocab.word} 
               className="w-full h-full object-cover" 
+              onError={() => setImageError(true)}
             />
           ) : (
             <div className="text-gray-500 text-sm">Avatar</div>
