@@ -9,6 +9,7 @@ export default function Layout() {
   const location = useLocation();
   const [isHomeMenuOpen, setIsHomeMenuOpen] = useState(false);
   const [isVocabularyMenuOpen, setIsVocabularyMenuOpen] = useState(false);
+  const [isSidebarUserOpen, setIsSidebarUserOpen] = useState(false);
 
   useEffect(() => {
     // Auto-open menu if on home-settings or testimonials page
@@ -227,20 +228,46 @@ export default function Layout() {
           </nav>
 
           {/* Sidebar user panel ở đáy */}
-          <div className="mt-auto border-top">
-            <div className="user-panel py-3 px-3 d-flex align-items-center">
-              <div className="image">
-                <div
-                  className="img-circle elevation-2 bg-primary d-flex align-items-center justify-content-center"
-                  style={{ width: '36px', height: '36px' }}
-                >
-                  <i className="fas fa-user text-white"></i>
+          <div className="mt-auto sidebar-user-wrapper">
+            <div
+              className="sidebar-user-card"
+              onClick={() => setIsSidebarUserOpen((prev) => !prev)}
+            >
+              <div className="sidebar-user-avatar">
+                <i className="fas fa-user text-white"></i>
+              </div>
+              <div className="sidebar-user-info">
+                <div className="sidebar-user-name">{user?.name}</div>
+                <div className="sidebar-user-email">{user?.email}</div>
+              </div>
+              <div className="sidebar-user-arrow">
+                <i className={`fas fa-chevron-${isSidebarUserOpen ? 'down' : 'right'}`}></i>
+              </div>
+
+              {isSidebarUserOpen && (
+                <div className="sidebar-user-menu">
+                  <button
+                    type="button"
+                    className="sidebar-user-menu-item text-danger"
+                    onClick={handleLogout}
+                  >
+                    <i className="fas fa-sign-out-alt mr-2"></i>
+                    Đăng xuất
+                  </button>
+                  <button
+                    type="button"
+                    className="sidebar-user-menu-item"
+                    onClick={() => {
+                      if (user?.role === 'admin') {
+                        navigate('/users');
+                      }
+                    }}
+                  >
+                    <i className="fas fa-user mr-2"></i>
+                    Hồ sơ cá nhân
+                  </button>
                 </div>
-              </div>
-              <div className="info ml-2">
-                <span className="d-block text-sm text-light">{user?.name}</span>
-                <span className="d-block text-xs text-muted">{user?.email}</span>
-              </div>
+              )}
             </div>
           </div>
         </div>
