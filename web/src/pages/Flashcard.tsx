@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import api from '../config/api';
 import { useAuthStore } from '../store/authStore';
@@ -49,6 +49,11 @@ export default function Flashcard() {
   const [topic, setTopic] = useState<Topic | null>(null);
   const [languages, setLanguages] = useState<Language[]>([]);
   const [playingKey, setPlayingKey] = useState<string | null>(null);
+  
+  // Use refs to persist audio state across renders
+  const currentAudioRef = useRef<HTMLAudioElement | null>(null);
+  const currentKeyRef = useRef<string | null>(null);
+  const currentUtteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
   
   // Get voice accent version from user preference (default to 1)
   const voiceAccentVersion = user?.voiceAccentVersion || 1;
@@ -119,8 +124,42 @@ export default function Flashcard() {
     }
   };
 
+  // Function to stop all audio - use useCallback to memoize
+  const stopAllAudio = useCallback(() => {
+    // Stop HTMLAudioElement
+    if (currentAudioRef.current) {
+      currentAudioRef.current.pause();
+      currentAudioRef.current.currentTime = 0;
+      currentAudioRef.current = null;
+    }
+    
+    // Stop SpeechSynthesis
+    if (window.speechSynthesis.speaking) {
+      window.speechSynthesis.cancel();
+    }
+    if (currentUtteranceRef.current) {
+      currentUtteranceRef.current = null;
+    }
+    
+    // Reset state
+    currentKeyRef.current = null;
+    setPlayingKey(null);
+  }, []);
+  
+  // Cleanup on unmount and when card changes - MUST be before any early returns
+  useEffect(() => {
+    // Stop audio when card changes
+    stopAllAudio();
+    
+    // Cleanup on unmount
+    return () => {
+      stopAllAudio();
+    };
+  }, [currentIndex, stopAllAudio]);
+
   const handleNext = () => {
     if (currentIndex < vocabularies.length - 1) {
+      stopAllAudio();
       setCurrentIndex(currentIndex + 1);
       setIsFlipped(false);
     }
@@ -128,77 +167,115 @@ export default function Flashcard() {
 
   const handlePrevious = () => {
     if (currentIndex > 0) {
+      stopAllAudio();
       setCurrentIndex(currentIndex - 1);
       setIsFlipped(false);
     }
   };
 
-  const playAudio = (() => {
-    let currentAudio: HTMLAudioElement | null = null;
-    let currentKey: string | null = null;
-    return (audioUrl: string | null, text: string, langCode?: string, key?: string) => {
-      // Nếu đang có audio, xử lý toggle / dừng trước
-      if (currentAudio) {
-        // Nếu đang phát và cùng key -> toggle stop
-        if (!currentAudio.paused && currentKey && key && currentKey === key) {
-          currentAudio.pause();
-          currentAudio.currentTime = 0;
-          currentAudio = null;
-          currentKey = null;
-          setPlayingKey(null);
-          return;
-        }
-
-        // Nếu khác key hoặc đã dừng thì reset để phát audio mới
-        currentAudio.pause();
-        currentAudio.currentTime = 0;
-        currentAudio = null;
-        currentKey = null;
+  const playAudio = (audioUrl: string | null, text: string, langCode?: string, key?: string) => {
+    // Kiểm tra nếu đang phát cùng key -> toggle pause
+    if (currentKeyRef.current && key && currentKeyRef.current === key) {
+      // Nếu đang có audio đang phát
+      if (currentAudioRef.current && !currentAudioRef.current.paused) {
+        currentAudioRef.current.pause();
+        currentAudioRef.current.currentTime = 0;
+        currentAudioRef.current = null;
+        currentKeyRef.current = null;
         setPlayingKey(null);
+        return;
       }
       
-      // Prefer audioUrl from translation if available
-      if (audioUrl) {
-        // Chuẩn hoá URL giống như ở TopicDetail
-        let normalizedUrl = audioUrl;
-        if (!audioUrl.startsWith('http')) {
-          const baseUrl = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:3001';
-          normalizedUrl = `${baseUrl}${audioUrl.startsWith('/') ? audioUrl : '/' + audioUrl}`;
-        }
-
-        const audio = new Audio(normalizedUrl);
-        currentAudio = audio;
-        currentKey = key || null;
-        setPlayingKey(key || null);
-        audio
-          .play()
-          .catch((err) => {
-            console.error('Error playing audio:', err);
-            console.error('Audio URL:', normalizedUrl);
-            // Nếu lỗi thì reset trạng thái nút để không bị kẹt ở trạng thái pause
-            currentAudio = null;
-            currentKey = null;
-            setPlayingKey(null);
-            // Fallback to TTS if audio fails
-            if (text) {
-              const utterance = new SpeechSynthesisUtterance(text);
-              utterance.lang = langCode || 'en-US';
-              window.speechSynthesis.speak(utterance);
-            }
-          });
-        audio.onended = () => {
-          currentAudio = null;
-          currentKey = null;
-          setPlayingKey(null);
-        };
-      } else if (text) {
-        // Fallback to browser TTS if no audioUrl
-        const utterance = new SpeechSynthesisUtterance(text);
-        utterance.lang = langCode || 'en-US';
-        window.speechSynthesis.speak(utterance);
+      // Nếu đang có SpeechSynthesis đang phát
+      if (window.speechSynthesis.speaking && currentUtteranceRef.current) {
+        window.speechSynthesis.cancel();
+        currentUtteranceRef.current = null;
+        currentKeyRef.current = null;
+        setPlayingKey(null);
+        return;
       }
-    };
-  })();
+    }
+    
+    // Nếu đang có audio khác, dừng nó trước
+    if (currentAudioRef.current) {
+      currentAudioRef.current.pause();
+      currentAudioRef.current.currentTime = 0;
+      currentAudioRef.current = null;
+    }
+    
+    // Dừng SpeechSynthesis nếu đang phát
+    if (window.speechSynthesis.speaking) {
+      window.speechSynthesis.cancel();
+    }
+    currentUtteranceRef.current = null;
+    currentKeyRef.current = null;
+    setPlayingKey(null);
+    
+    // Prefer audioUrl from translation if available
+    if (audioUrl) {
+      // Chuẩn hoá URL giống như ở TopicDetail
+      let normalizedUrl = audioUrl;
+      if (!audioUrl.startsWith('http')) {
+        const baseUrl = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:3001';
+        normalizedUrl = `${baseUrl}${audioUrl.startsWith('/') ? audioUrl : '/' + audioUrl}`;
+      }
+
+      const audio = new Audio(normalizedUrl);
+      currentAudioRef.current = audio;
+      currentKeyRef.current = key || null;
+      setPlayingKey(key || null);
+      
+      audio
+        .play()
+        .catch((err) => {
+          console.error('Error playing audio:', err);
+          console.error('Audio URL:', normalizedUrl);
+          // Nếu lỗi thì reset trạng thái nút để không bị kẹt ở trạng thái pause
+          currentAudioRef.current = null;
+          currentKeyRef.current = null;
+          setPlayingKey(null);
+          // Fallback to TTS if audio fails
+          if (text) {
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = langCode || 'en-US';
+            currentUtteranceRef.current = utterance;
+            window.speechSynthesis.speak(utterance);
+            
+            utterance.onend = () => {
+              currentUtteranceRef.current = null;
+              setPlayingKey(null);
+            };
+          }
+        });
+      
+      audio.onended = () => {
+        currentAudioRef.current = null;
+        currentKeyRef.current = null;
+        setPlayingKey(null);
+      };
+      
+      audio.onerror = () => {
+        currentAudioRef.current = null;
+        currentKeyRef.current = null;
+        setPlayingKey(null);
+      };
+    } else if (text) {
+      // Fallback to browser TTS if no audioUrl
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = langCode || 'en-US';
+      currentUtteranceRef.current = utterance;
+      currentKeyRef.current = key || null;
+      setPlayingKey(key || null);
+      
+      utterance.onend = () => {
+        currentUtteranceRef.current = null;
+        currentKeyRef.current = null;
+        setPlayingKey(null);
+      };
+      
+      window.speechSynthesis.speak(utterance);
+    }
+  };
   
   // Helper function to get translation with preferred voice accent version for a specific language
   const getTranslationWithVoiceAccent = (translations: VocabularyTranslation[] | undefined, languageId: string) => {
@@ -344,6 +421,7 @@ export default function Flashcard() {
   const learningLanguageTranslations = getTranslationsForLearningLanguages();
 
   const handleClose = () => {
+    stopAllAudio();
     navigate('/');
   };
 

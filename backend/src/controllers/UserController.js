@@ -37,6 +37,14 @@ class UserController {
     try {
       const { id } = request.params;
       const currentUser = request.user;
+      
+      // Check if user is authenticated
+      if (!currentUser) {
+        return reply.code(401).send({
+          error: 'Unauthorized',
+        });
+      }
+      
       const isSelfUpdate = currentUser.id === id;
       
       // Check permissions: user can only update themselves, admin can update anyone

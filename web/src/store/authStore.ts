@@ -48,3 +48,6 @@ export const useAuthStore = create<AuthState>()(
   )
 );
 
+// Export store instance for getState() access
+export const authStore = useAuthStore;
+

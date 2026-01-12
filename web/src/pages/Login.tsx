@@ -35,6 +35,7 @@ export default function Login() {
       console.log('Current origin:', window.location.origin);
       console.log('Full URL:', window.location.href);
       console.log('⚠️ Đảm bảo origin "' + window.location.origin + '" đã được thêm vào Google Cloud Console');
+      console.log('📖 Hướng dẫn chi tiết: Xem file docs/GOOGLE_OAUTH_SETUP.md');
     } else {
       console.warn('Google Client ID not found in environment variables');
     }
@@ -114,9 +115,20 @@ export default function Login() {
               text: 'signin_with',
             });
             console.log('Google Sign In button rendered successfully');
-          } catch (renderError) {
+          } catch (renderError: any) {
             console.error('Error rendering Google button:', renderError);
-            buttonContainer.innerHTML = '<div class="text-red-500 text-sm">Lỗi khi tải nút Google Sign In</div>';
+            const errorMessage = renderError?.message || '';
+            if (errorMessage.includes('origin is not allowed') || errorMessage.includes('403')) {
+              buttonContainer.innerHTML = `
+                <div class="text-red-500 text-sm p-2 border border-red-300 rounded bg-red-50">
+                  <p class="font-semibold mb-1">⚠️ Lỗi cấu hình Google OAuth</p>
+                  <p class="text-xs mb-1">Origin "${window.location.origin}" chưa được thêm vào Google Cloud Console.</p>
+                  <p class="text-xs">Xem hướng dẫn: docs/GOOGLE_OAUTH_SETUP.md</p>
+                </div>
+              `;
+            } else {
+              buttonContainer.innerHTML = '<div class="text-red-500 text-sm">Lỗi khi tải nút Google Sign In</div>';
+            }
           }
         } else {
           console.warn('Button container not found or renderButton not available', {
@@ -129,13 +141,27 @@ export default function Login() {
             const retryContainer = document.getElementById('google-signin-button');
             if (retryContainer && window.google?.accounts?.id?.renderButton) {
               retryContainer.innerHTML = '';
-              window.google.accounts.id.renderButton(retryContainer, {
-                type: 'standard',
-                theme: 'outline',
-                size: 'large',
-                text: 'signin_with',
-              });
-              console.log('Google Sign In button rendered on retry');
+              try {
+                window.google.accounts.id.renderButton(retryContainer, {
+                  type: 'standard',
+                  theme: 'outline',
+                  size: 'large',
+                  text: 'signin_with',
+                });
+                console.log('Google Sign In button rendered on retry');
+              } catch (retryError: any) {
+                console.error('Error rendering Google button on retry:', retryError);
+                const errorMessage = retryError?.message || '';
+                if (errorMessage.includes('origin is not allowed') || errorMessage.includes('403')) {
+                  retryContainer.innerHTML = `
+                    <div class="text-red-500 text-sm p-2 border border-red-300 rounded bg-red-50">
+                      <p class="font-semibold mb-1">⚠️ Lỗi cấu hình Google OAuth</p>
+                      <p class="text-xs mb-1">Origin "${window.location.origin}" chưa được thêm vào Google Cloud Console.</p>
+                      <p class="text-xs">Xem hướng dẫn: docs/GOOGLE_OAUTH_SETUP.md</p>
+                    </div>
+                  `;
+                }
+              }
             }
           }, 1000);
         }

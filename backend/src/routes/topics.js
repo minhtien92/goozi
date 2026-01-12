@@ -93,7 +93,10 @@ async function topicsRoutes(fastify, options) {
         properties: {
           name: { type: 'string' },
           description: { type: 'string' },
-          image: { type: 'string', format: 'uri', description: 'Topic image URL' },
+          image: { 
+            type: ['string', 'null'],
+            description: 'Topic image URL' 
+          },
           order: { type: 'integer', description: 'Display order' },
           isActive: { type: 'boolean', default: true },
         },
@@ -142,7 +145,9 @@ async function topicsRoutes(fastify, options) {
         properties: {
           name: { type: 'string' },
           description: { type: 'string' },
-          image: { type: 'string', format: 'uri' },
+          image: { 
+            type: ['string', 'null']
+          },
           order: { type: 'integer' },
           isActive: { type: 'boolean' },
         },

@@ -339,7 +339,7 @@ export default function Topics() {
         name: formData.name,
         description: formData.description,
         order: formData.order ? parseInt(formData.order) : null,
-        image: formData.image || null,
+        image: formData.image && formData.image.trim() ? formData.image.trim() : null,
         isActive: formData.isActive,
         translations: translationsArray,
       };

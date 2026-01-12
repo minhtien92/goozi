@@ -459,11 +459,11 @@ export default function Vocabularies() {
                   .filter((vocab) => {
                     // Filter by search term (topic filter is handled by API)
                     if (searchTerm.trim()) {
-                      const keyword = searchTerm.trim().toLowerCase();
-                      return (
-                        vocab.word.toLowerCase().includes(keyword) ||
-                        (vocab.topic?.name || '').toLowerCase().includes(keyword)
-                      );
+                    const keyword = searchTerm.trim().toLowerCase();
+                    return (
+                      vocab.word.toLowerCase().includes(keyword) ||
+                      (vocab.topic?.name || '').toLowerCase().includes(keyword)
+                    );
                     }
                     return true;
                   })

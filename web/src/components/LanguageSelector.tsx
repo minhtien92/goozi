@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import api from '../config/api';
-import { useAuthStore } from '../store/authStore';
+import { useAuthStore, authStore } from '../store/authStore';
 
 interface Language {
   id: string;
@@ -11,7 +11,7 @@ interface Language {
 }
 
 export default function LanguageSelector() {
-  const { user, setAuth } = useAuthStore();
+  const { user, token, setAuth } = useAuthStore();
   const [languages, setLanguages] = useState<Language[]>([]);
   const [showSelector, setShowSelector] = useState(false);
   const [selectedSourceLang, setSelectedSourceLang] = useState<Language | null>(null);
@@ -39,33 +39,37 @@ export default function LanguageSelector() {
   };
 
   const handleUpdateNativeLanguage = async (languageId: string) => {
-    if (!user?.id) {
+    // Use token and user from hook to ensure they're synced with persisted state
+    const currentToken = token;
+    const currentUser = user;
+    
+    if (!currentUser?.id || !currentToken) {
+      console.error('Auth state:', { hasUser: !!currentUser, hasToken: !!currentToken, userId: currentUser?.id });
       alert('Vui lòng đăng nhập để thay đổi ngôn ngữ');
       return;
     }
     
     try {
-      const response = await api.put(`/users/${user.id}`, {
+      const response = await api.put(`/users/${currentUser.id}`, {
         nativeLanguageId: languageId,
       });
       // Update auth store with new user data
-      if (response.data.user) {
-        const authStorage = localStorage.getItem('auth-storage');
-        if (authStorage) {
-          const parsed = JSON.parse(authStorage);
-          const token = parsed?.state?.token;
-          if (token) {
-            setAuth(response.data.user, token);
-          }
-        }
+      if (response.data.user && currentToken) {
+        // Merge with existing user data to preserve all fields
+        const updatedUser = {
+          ...currentUser,
+          ...response.data.user,
+        };
+        // Always use the current token from store
+        setAuth(updatedUser, currentToken);
       }
       setShowSelector(false);
     } catch (error: any) {
       console.error('Error updating native language:', error);
-      if (error.response?.status === 403) {
+      if (error.response?.status === 401) {
+        alert('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.');
+      } else if (error.response?.status === 403) {
         alert('Bạn không có quyền cập nhật thông tin này');
-      } else if (error.response?.status === 401) {
-        alert('Vui lòng đăng nhập lại');
       } else {
         alert('Cập nhật ngôn ngữ thất bại: ' + (error.response?.data?.message || error.message));
       }
