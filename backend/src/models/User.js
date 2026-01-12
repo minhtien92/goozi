@@ -50,6 +50,18 @@ export default function (sequelize) {
           key: 'id',
         },
       },
+      voiceAccentVersion: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+        defaultValue: 1,
+        comment: 'Voice accent version preference (1-4)',
+      },
+      learningLanguageIds: {
+        type: DataTypes.JSONB,
+        allowNull: true,
+        defaultValue: null,
+        comment: 'Array of language IDs that user is learning',
+      },
     },
     {
       tableName: 'users',

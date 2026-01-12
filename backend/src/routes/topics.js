@@ -21,17 +21,25 @@ async function topicsRoutes(fastify, options) {
         200: {
           type: 'object',
           properties: {
-            topics: { type: 'array', items: { type: 'object' } },
+            topics: { 
+              type: 'array', 
+              items: { 
+                type: 'object',
+                additionalProperties: true,
+              } 
+            },
             pagination: {
               type: 'object',
               properties: {
-                page: { type: 'integer' },
-                limit: { type: 'integer' },
-                total: { type: 'integer' },
+                totalItems: { type: 'integer' },
                 totalPages: { type: 'integer' },
+                currentPage: { type: 'integer' },
+                itemsPerPage: { type: 'integer' },
               },
+              additionalProperties: true,
             },
           },
+          additionalProperties: true,
         },
       },
     },
@@ -54,8 +62,12 @@ async function topicsRoutes(fastify, options) {
         200: {
           type: 'object',
           properties: {
-            topic: { type: 'object' },
+            topic: { 
+              type: 'object',
+              additionalProperties: true,
+            },
           },
+          additionalProperties: true,
         },
         404: {
           type: 'object',

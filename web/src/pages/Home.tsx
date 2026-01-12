@@ -5,19 +5,7 @@ import LanguageSelector from '../components/LanguageSelector';
 import UserMenu from '../components/UserMenu';
 import LoginModal from '../components/LoginModal';
 import api from '../config/api';
-
-const greetings = [
-  { text: 'Salut!', color: 'bg-orange-400', lang: 'French' },
-  { text: 'Hi!', color: 'bg-amber-800', lang: 'English' },
-  { text: 'Hallo!', color: 'bg-orange-400', lang: 'German' },
-  { text: 'Hello!', color: 'bg-amber-800', lang: 'English' },
-  { text: 'नमस्ते', color: 'bg-red-500', lang: 'Hindi' },
-  { text: 'Bonjour!', color: 'bg-orange-400', lang: 'French' },
-  { text: 'Olá!', color: 'bg-red-500', lang: 'Portuguese' },
-  { text: 'Ciao!', color: 'bg-amber-800', lang: 'Italian' },
-  { text: '你好', color: 'bg-red-500', lang: 'Chinese' },
-  { text: 'مرحبا', color: 'bg-orange-400', lang: 'Arabic' },
-];
+import logo from '../assets/img/logo.svg';
 
 export default function Home() {
   const { user, logout } = useAuthStore();
@@ -26,7 +14,7 @@ export default function Home() {
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [loginModalOpen, setLoginModalOpen] = useState(false);
   const [slogans, setSlogans] = useState<string[]>([]);
-  const [backgroundImage, setBackgroundImage] = useState<string>('');
+  const [heroImage, setHeroImage] = useState<string>('');
   const [currentSloganIndex, setCurrentSloganIndex] = useState(0);
   const [testimonials, setTestimonials] = useState<any[]>([]);
 
@@ -56,24 +44,18 @@ export default function Home() {
         setSlogans(sloganValues);
       }
 
-      // Get background image - check both 'background_image' and 'picture' keys
-      // Priority: background_image > picture (latest by order)
-      let bgSetting = settings.find((s: any) => s.key === 'background_image');
-      
-      // If no background_image, get the latest picture
-      if (!bgSetting) {
-        const pictureSettings = settings.filter((s: any) => s.key === 'picture');
-        if (pictureSettings.length > 0) {
-          // Sort by order descending to get the latest
-          pictureSettings.sort((a: any, b: any) => (b.order || 0) - (a.order || 0));
-          bgSetting = pictureSettings[0];
-        }
-      }
-      
-      if (bgSetting && bgSetting.value) {
-        const baseUrl = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:3001';
-        const bgUrl = bgSetting.value.startsWith('http') ? bgSetting.value : `${baseUrl}${bgSetting.value}`;
-        setBackgroundImage(bgUrl);
+      // Get hero image from 'picture'
+      const baseUrl = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:3001';
+      const pictureSettings = settings.filter((s: any) => s.key === 'picture');
+      if (pictureSettings.length > 0) {
+        const sorted = [...pictureSettings].sort((a: any, b: any) => (a.order || 0) - (b.order || 0));
+        const heroUrl = sorted
+          .map((s: any) => {
+            if (!s.value) return null;
+            return s.value.startsWith('http') ? s.value : `${baseUrl}${s.value}`;
+          })
+          .filter(Boolean)[0] as string | undefined;
+        if (heroUrl) setHeroImage(heroUrl);
       }
     } catch (error) {
       console.error('Error fetching home settings:', error);
@@ -101,22 +83,12 @@ export default function Home() {
     navigate('/login');
   };
 
-  const backgroundStyle = backgroundImage
-    ? {
-        backgroundImage: `url(${backgroundImage})`,
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        backgroundRepeat: 'no-repeat',
-      }
-    : {
-        background: 'linear-gradient(to right, #60a5fa, #4fd1c7, #e5e7eb)',
-      };
+  const backgroundStyle = {
+    background: 'linear-gradient(to right, #60a5fa, #4fd1c7, #e5e7eb)',
+  };
 
   return (
     <div className="min-h-screen relative overflow-hidden" style={backgroundStyle}>
-      {backgroundImage && (
-        <div className="absolute inset-0 bg-black bg-opacity-30"></div>
-      )}
       {/* Sidebar */}
       <div
         className={`fixed left-0 top-0 h-full w-64 bg-green-100 transform transition-transform duration-300 z-50 ${
@@ -199,22 +171,29 @@ export default function Home() {
       {/* Main Content */}
       <div className="relative z-10" style={{ position: 'relative' }}>
         {/* Header */}
-        <header className="flex justify-between items-center p-6">
-          <div className="flex items-center gap-4">
+        <header className="relative flex justify-between items-center p-6">
+          {/* Left: menu + circle icon */}
+          <div className="flex items-center gap-3">
             <button
               onClick={() => setSidebarOpen(true)}
-              className={`${backgroundImage ? 'text-white drop-shadow-lg' : 'text-white'} hover:text-gray-200`}
+              className="text-white hover:text-gray-200"
             >
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
               </svg>
             </button>
-            <div className="w-12 h-12 bg-blue-200 rounded-full flex items-center justify-center">
-              <span className="text-blue-600 font-bold text-xl">G</span>
+            <div className="w-10 h-10 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
+              <span className="text-white font-bold text-lg">G</span>
             </div>
-            <h1 className={`text-4xl font-bold tracking-wider ${backgroundImage ? 'text-white drop-shadow-lg' : 'text-white'}`}>GOOZI</h1>
           </div>
-          <div className={`flex items-center gap-4 ${backgroundImage ? 'text-white drop-shadow-lg' : 'text-white'}`}>
+
+          {/* Center: logo image - absolutely positioned */}
+          <div className="absolute left-1/2 transform -translate-x-1/2 pointer-events-none">
+            <img src={logo} alt="Goozi logo" className="h-10 md:h-12" />
+          </div>
+
+          {/* Right: user / login */}
+          <div className="flex items-center gap-4 text-white drop-shadow-lg">
             {user ? (
               <>
                 <LanguageSelector />
@@ -240,41 +219,34 @@ export default function Home() {
         </header>
 
         {/* Main Content Area */}
-        <div className="px-6 pb-20">
+        <div className="px-6 pb-16 flex flex-col gap-6">
           {/* Tagline */}
-          <div className="text-center mb-12">
+          <div className="text-center mb-4">
             {slogans.length > 0 ? (
-              <div className="bg-red-500 text-white px-6 py-3 rounded-lg inline-block shadow-lg">
-                <p className="text-2xl md:text-3xl font-medium">
-                  {slogans[currentSloganIndex]}
-                </p>
-              </div>
+              <p className="text-2xl md:text-3xl font-medium text-gray-900">
+                {slogans[currentSloganIndex]}
+              </p>
             ) : (
-              <p className={`text-2xl md:text-3xl font-medium ${backgroundImage ? 'text-white drop-shadow-lg' : 'text-gray-800'}`}>
+              <p className="text-2xl md:text-3xl font-medium text-gray-900">
                 The more languages you learn, the easier it becomes
               </p>
             )}
           </div>
 
-          {/* Greetings with Characters */}
-          <div className="flex flex-wrap justify-center gap-8 mb-12">
-            {greetings.map((greeting, index) => (
-              <div key={index} className="flex flex-col items-center">
-                <div
-                  className={`${greeting.color} rounded-full px-4 py-2 mb-2 text-white font-semibold text-lg shadow-lg`}
-                >
-                  {greeting.text}
-                </div>
-                <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-md">
-                  <div className="w-12 h-12 bg-gradient-to-br from-blue-300 to-purple-300 rounded-full"></div>
-                </div>
-              </div>
-            ))}
-          </div>
+          {/* Hero picture from settings */}
+          {heroImage && (
+            <div className="flex justify-center mb-6">
+              <img
+                src={heroImage}
+                alt="Hero"
+                className="max-w-4xl w-full max-h-[360px] object-contain"
+              />
+            </div>
+          )}
 
           {/* Testimonials */}
           {testimonials.length > 0 && (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12 max-w-5xl mx-auto">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8 max-w-5xl mx-auto max-h-[320px] overflow-auto">
               {testimonials.map((testimonial) => (
                 <div key={testimonial.id} className="bg-gray-100 rounded-lg p-6 shadow-md">
                   <p className="text-gray-600 text-sm mb-4 italic">
@@ -303,8 +275,8 @@ export default function Home() {
           </div>
         </div> */}
 
-        {/* Navigation Buttons (Right Side) */}
-        <div className="fixed right-20 top-1/2 transform -translate-y-1/2 z-30 space-y-3">
+        {/* Navigation CTA (Bottom Right) */}
+        <div className="fixed bottom-20 right-6 z-30">
           <button
             onClick={() => {
               if (user) {
@@ -313,40 +285,14 @@ export default function Home() {
                 setLoginModalOpen(true);
               }
             }}
-            className="block w-32 bg-blue-400 hover:bg-blue-500 text-white font-medium py-3 px-6 rounded-lg shadow-lg transition text-center"
+            className="w-28 h-28 rounded-full bg-gradient-to-br from-cyan-300 to-sky-500 text-white font-semibold shadow-xl border border-white/50 hover:scale-105 active:scale-95 transition transform flex items-center justify-center text-center text-sm"
           >
-            Vocabulary
-          </button>
-          <button 
-            onClick={() => {
-              if (user) {
-                // Navigate to phrase page when implemented
-                navigate('/');
-              } else {
-                setLoginModalOpen(true);
-              }
-            }}
-            className="block w-32 bg-blue-400 hover:bg-blue-500 text-white font-medium py-3 px-6 rounded-lg shadow-lg transition"
-          >
-            Phrase
-          </button>
-          <button 
-            onClick={() => {
-              if (user) {
-                // Navigate to sentence page when implemented
-                navigate('/');
-              } else {
-                setLoginModalOpen(true);
-              }
-            }}
-            className="block w-32 bg-blue-400 hover:bg-blue-500 text-white font-medium py-3 px-6 rounded-lg shadow-lg transition"
-          >
-            Sentence
+            Let&apos;s study!
           </button>
         </div>
 
         {/* Footer */}
-        <footer className={`fixed bottom-0 left-0 right-0 text-center py-4 text-sm ${backgroundImage ? 'text-white bg-black bg-opacity-50' : 'text-gray-600 bg-white bg-opacity-50'}`}>
+        <footer className="fixed bottom-0 left-0 right-0 text-center py-4 text-sm text-gray-700 bg-white bg-opacity-60">
           Copyright @ 2025 Goozi
         </footer>
       </div>

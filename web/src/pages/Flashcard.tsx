@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import api from '../config/api';
+import { useAuthStore } from '../store/authStore';
 
 interface VocabularyTranslation {
   id: string;
@@ -40,11 +41,17 @@ interface Topic {
 export default function Flashcard() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { user } = useAuthStore();
   const [vocabularies, setVocabularies] = useState<Vocabulary[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isFlipped, setIsFlipped] = useState(false);
   const [loading, setLoading] = useState(true);
   const [topic, setTopic] = useState<Topic | null>(null);
+  const [languages, setLanguages] = useState<Language[]>([]);
+  const [playingKey, setPlayingKey] = useState<string | null>(null);
+  
+  // Get voice accent version from user preference (default to 1)
+  const voiceAccentVersion = user?.voiceAccentVersion || 1;
 
   console.log('Flashcard component rendered, id:', id);
 
@@ -52,11 +59,21 @@ export default function Flashcard() {
     console.log('Flashcard useEffect triggered, id:', id);
     if (id) {
       fetchVocabularies();
+      fetchLanguages();
     } else {
       console.error('Flashcard: No topic ID provided');
       setLoading(false);
     }
   }, [id]);
+  
+  const fetchLanguages = async () => {
+    try {
+      const response = await api.get('/languages?isActive=true');
+      setLanguages(response.data.languages);
+    } catch (error) {
+      console.error('Error fetching languages:', error);
+    }
+  };
 
   const fetchVocabularies = async () => {
     try {
@@ -118,47 +135,100 @@ export default function Flashcard() {
 
   const playAudio = (() => {
     let currentAudio: HTMLAudioElement | null = null;
-    return (text: string, langCode?: string) => {
+    let currentKey: string | null = null;
+    return (audioUrl: string | null, text: string, langCode?: string, key?: string) => {
+      // Nếu đang có audio, xử lý toggle / dừng trước
       if (currentAudio) {
-        if (!currentAudio.paused) {
+        // Nếu đang phát và cùng key -> toggle stop
+        if (!currentAudio.paused && currentKey && key && currentKey === key) {
           currentAudio.pause();
           currentAudio.currentTime = 0;
+          currentAudio = null;
+          currentKey = null;
+          setPlayingKey(null);
+          return;
         }
+
+        // Nếu khác key hoặc đã dừng thì reset để phát audio mới
+        currentAudio.pause();
+        currentAudio.currentTime = 0;
         currentAudio = null;
+        currentKey = null;
+        setPlayingKey(null);
       }
       
-      if (text) {
-        // Use browser TTS
+      // Prefer audioUrl from translation if available
+      if (audioUrl) {
+        // Chuẩn hoá URL giống như ở TopicDetail
+        let normalizedUrl = audioUrl;
+        if (!audioUrl.startsWith('http')) {
+          const baseUrl = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:3001';
+          normalizedUrl = `${baseUrl}${audioUrl.startsWith('/') ? audioUrl : '/' + audioUrl}`;
+        }
+
+        const audio = new Audio(normalizedUrl);
+        currentAudio = audio;
+        currentKey = key || null;
+        setPlayingKey(key || null);
+        audio
+          .play()
+          .catch((err) => {
+            console.error('Error playing audio:', err);
+            console.error('Audio URL:', normalizedUrl);
+            // Nếu lỗi thì reset trạng thái nút để không bị kẹt ở trạng thái pause
+            currentAudio = null;
+            currentKey = null;
+            setPlayingKey(null);
+            // Fallback to TTS if audio fails
+            if (text) {
+              const utterance = new SpeechSynthesisUtterance(text);
+              utterance.lang = langCode || 'en-US';
+              window.speechSynthesis.speak(utterance);
+            }
+          });
+        audio.onended = () => {
+          currentAudio = null;
+          currentKey = null;
+          setPlayingKey(null);
+        };
+      } else if (text) {
+        // Fallback to browser TTS if no audioUrl
         const utterance = new SpeechSynthesisUtterance(text);
         utterance.lang = langCode || 'en-US';
         window.speechSynthesis.speak(utterance);
       }
     };
   })();
-
-  const getSourceTranslation = (vocab: Vocabulary) => {
-    if (!vocab.translations || vocab.translations.length === 0) return null;
+  
+  // Helper function to get translation with preferred voice accent version for a specific language
+  const getTranslationWithVoiceAccent = (translations: VocabularyTranslation[] | undefined, languageId: string) => {
+    if (!translations || translations.length === 0 || !languageId) return null;
     
-    // Try to find translation for source language
-    if (topic?.sourceLanguage?.id) {
-      const sourceTrans = vocab.translations.find(
-        (t) => t.languageId === topic.sourceLanguage?.id
-      );
-      if (sourceTrans) return sourceTrans;
+    // First try to find translation with preferred voice accent version AND matching language
+    let translation = translations.find(
+      (t) => t.version === voiceAccentVersion && t.languageId === languageId
+    );
+    
+    // If not found, try to find any translation for this language (any version)
+    if (!translation) {
+      translation = translations.find((t) => t.languageId === languageId);
     }
     
-    // Fallback to first translation
-    return vocab.translations[0];
+    // Return null if no translation found for this language (don't fallback to other languages)
+    return translation || null;
+  };
+
+  const getSourceTranslation = (vocab: Vocabulary) => {
+    if (!topic?.sourceLanguage?.id) return null;
+    return getTranslationWithVoiceAccent(vocab.translations, topic.sourceLanguage.id);
   };
 
   const getTargetTranslation = (vocab: Vocabulary) => {
     if (!vocab.translations || vocab.translations.length === 0) return null;
     
-    // Try to find translation for target language
+    // Try to find translation for target language with preferred voice accent
     if (topic?.targetLanguage?.id) {
-      const targetTrans = vocab.translations.find(
-        (t) => t.languageId === topic.targetLanguage?.id
-      );
+      const targetTrans = getTranslationWithVoiceAccent(vocab.translations, topic.targetLanguage.id);
       if (targetTrans) return targetTrans;
     }
     
@@ -223,22 +293,71 @@ export default function Flashcard() {
   const targetTranslation = getTargetTranslation(currentVocab);
   const sourceLang = topic?.sourceLanguage || sourceTranslation?.language;
   const targetLang = topic?.targetLanguage || targetTranslation?.language;
+  
+  // Get learning languages from user profile
+  const learningLanguageIds = user?.learningLanguageIds || [];
+  const uniqueLearningLanguageIds = Array.from(new Set(learningLanguageIds));
+  
+  console.log('Flashcard - User learning languages:', uniqueLearningLanguageIds);
+  console.log('Flashcard - Voice accent version:', voiceAccentVersion);
+  console.log('Flashcard - Current vocab translations:', currentVocab?.translations?.map(t => ({
+    languageId: t.languageId,
+    language: t.language?.name,
+    version: t.version,
+    meaning: t.meaning
+  })));
+  
+  // Get all translations for learning languages
+  const getTranslationsForLearningLanguages = () => {
+    if (!currentVocab.translations || uniqueLearningLanguageIds.length === 0) {
+      console.log('Flashcard - No translations or no learning languages selected');
+      return [];
+    }
+    
+    const results = uniqueLearningLanguageIds.map(langId => {
+      const translation = getTranslationWithVoiceAccent(currentVocab.translations, langId);
+      if (!translation) {
+        console.log(`Flashcard - No translation found for language ${langId} (voice accent version ${voiceAccentVersion})`);
+        return null;
+      }
+      
+      // Find language info from languages list or from translation
+      const lang = languages.find(l => l.id === langId) || translation.language;
+      if (!lang) {
+        console.warn(`Flashcard - Language info not found for languageId: ${langId}`);
+        return null;
+      }
+      
+      console.log(`Flashcard - Found translation for ${lang.name}: version ${translation.version}, meaning: ${translation.meaning}`);
+      return { translation, language: lang };
+    }).filter(Boolean) as Array<{ translation: VocabularyTranslation; language: Language }>;
+    
+    console.log('Flashcard - Final learning language translations:', results.map(r => ({
+      language: r.language.name,
+      version: r.translation.version,
+      meaning: r.translation.meaning
+    })));
+    
+    return results;
+  };
+  
+  const learningLanguageTranslations = getTranslationsForLearningLanguages();
 
   const handleClose = () => {
     navigate('/');
   };
 
-  const speakWord = (text: string, langCode?: string) => {
-    playAudio(text, langCode);
+  const speakWord = (translation: VocabularyTranslation | null, text: string, langCode?: string, key?: string) => {
+    playAudio(translation?.audioUrl || null, text, langCode, key);
   };
 
   console.log('Flashcard: Rendering flashcard UI with', vocabularies.length, 'vocabularies');
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl overflow-hidden flex flex-col max-h-[90vh]">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-40 backdrop-blur-sm">
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl overflow-hidden flex flex-col max-h-[90vh] relative">
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-gray-200">
+        <div className="flex items-center justify-between p-4 border-b border-gray-200 bg-gray-50">
           <button
             onClick={() => navigate(`/topics/${id}`)}
             className="text-gray-600 hover:text-gray-800"
@@ -249,29 +368,66 @@ export default function Flashcard() {
             </svg>
           </button>
           <div className="flex-1 text-center">
-            <h2 className="text-xl font-bold text-gray-800">
+            <h2 className="text-lg font-semibold text-gray-800">
               {currentVocab.word || `Name of word ${currentIndex + 1}`}
             </h2>
-            <p className="text-sm text-gray-500 mt-1">
-              {currentIndex + 1} / {vocabularies.length}
-            </p>
           </div>
           <div className="flex items-center gap-2">
             <button
-              onClick={() => speakWord(currentVocab.word, sourceLang?.code || 'en-US')}
-              className="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center"
+              onClick={() => {
+                const firstTranslation = learningLanguageTranslations[0];
+                if (firstTranslation) {
+                  speakWord(
+                    firstTranslation.translation,
+                    firstTranslation.translation.meaning || currentVocab.word,
+                    firstTranslation.language?.code || 'en-US',
+                    `header-${firstTranslation.language.id}`
+                  );
+                } else {
+                  speakWord(
+                    sourceTranslation,
+                    currentVocab.word,
+                    sourceLang?.code || 'en-US',
+                    'header-source'
+                  );
+                }
+              }}
+              className="w-8 h-8 rounded-full bg-white hover:bg-gray-100 flex items-center justify-center shadow-sm"
               title="Phát âm"
             >
-              <svg className="w-4 h-4 text-gray-600" fill="currentColor" viewBox="0 0 20 20">
-                <path d="M18 3a1 1 0 00-1.196-.98l-10 2A1 1 0 006 5v9.114A4.369 4.369 0 005 14c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V7.82l8-1.6v5.894A4.37 4.37 0 0015 12c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V3z" />
+              {playingKey === 'header-source' ||
+              (playingKey && playingKey.startsWith('header-')) ? (
+                // Stop icon (red) - giống CMS (fa-stop)
+                <svg className="w-4 h-4 text-red-500" viewBox="0 0 20 20" fill="currentColor">
+                  <path d="M6 5a1 1 0 00-1 1v8a1 1 0 001 1h8a1 1 0 001-1V6a1 1 0 00-1-1H6z" />
+                </svg>
+              ) : (
+                // Play icon (green) - giống CMS (fa-play)
+                <svg className="w-4 h-4 text-green-500" viewBox="0 0 20 20" fill="currentColor">
+                  <path d="M6 4.5v11l9-5.5-9-5.5z" />
+                </svg>
+              )}
+            </button>
+            <button className="w-8 h-8 rounded-full bg-white hover:bg-gray-100 flex items-center justify-center shadow-sm" title="Refresh">
+              <svg className="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
               </svg>
             </button>
-            <button className="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center" title="Cài đặt">
-              <svg className="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
-              </svg>
+            <button
+              onClick={handleClose}
+              className="w-8 h-8 rounded-full bg-white hover:bg-gray-100 flex items-center justify-center shadow-sm text-gray-600"
+              title="Đóng"
+            >
+              ×
             </button>
           </div>
+        </div>
+        
+        {/* Progress indicator */}
+        <div className="text-center py-2 bg-gray-50 border-b border-gray-200">
+          <p className="text-sm text-gray-600">
+            {currentIndex + 1} / {vocabularies.length}
+          </p>
         </div>
 
         {/* Avatar Section */}
@@ -308,62 +464,90 @@ export default function Flashcard() {
         </div>
 
         {/* Translations */}
-        <div className="p-6 space-y-4 flex-1 overflow-y-auto">
-          {/* Source Language (English) */}
-          {sourceLang && (
-            <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-lg">
-              <span className="text-3xl">{sourceLang.flag || '🇬🇧'}</span>
-              <div className="flex-1">
-                <div className="font-semibold text-lg text-gray-800">{currentVocab.word}</div>
-                {sourceTranslation?.pronunciation && (
-                  <div className="text-sm text-gray-600 italic mt-1">{sourceTranslation.pronunciation}</div>
-                )}
+        <div className="p-6 space-y-3 flex-1 overflow-y-auto">
+          {/* Display translations for learning languages */}
+          {learningLanguageTranslations.map((item, index) => {
+            if (!item.language || !item.translation) return null;
+            const key = `row-${item.language.id}-${item.translation.id}`;
+            
+            return (
+              <div
+                key={key}
+                className="flex items-center gap-4 p-4 bg-gray-50 rounded-lg"
+              >
+                <span className="text-2xl">{item.language.flag || '🌐'}</span>
+                <div className="flex-1">
+                  <div className="font-semibold text-base text-gray-800">
+                    {item.translation.meaning || currentVocab.word}
+                  </div>
+                  {item.translation.pronunciation && (
+                    <div className="text-sm text-gray-600 italic mt-1">
+                      /{item.translation.pronunciation}/
+                    </div>
+                  )}
+                </div>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => speakWord(
+                      item.translation,
+                      item.translation.meaning || currentVocab.word,
+                      item.language.code || 'en-US',
+                      key
+                    )}
+                    className="w-8 h-8 rounded-full bg-white hover:bg-gray-100 flex items-center justify-center shadow-sm"
+                    title="Phát âm"
+                  >
+                    {playingKey === key ? (
+                      // Stop icon (red) - giống CMS
+                      <svg className="w-4 h-4 text-red-500" viewBox="0 0 20 20" fill="currentColor">
+                        <path d="M6 5a1 1 0 00-1 1v8a1 1 0 001 1h8a1 1 0 001-1V6a1 1 0 00-1-1H6z" />
+                      </svg>
+                    ) : (
+                      // Play icon (green) - giống CMS
+                      <svg className="w-4 h-4 text-green-500" viewBox="0 0 20 20" fill="currentColor">
+                        <path d="M6 4.5v11l9-5.5-9-5.5z" />
+                      </svg>
+                    )}
+                  </button>
+                  <button className="w-8 h-8 rounded-full bg-white hover:bg-gray-100 flex items-center justify-center shadow-sm" title="Person">
+                    <svg className="w-4 h-4 text-gray-600" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
+                    </svg>
+                  </button>
+                </div>
               </div>
+            );
+          })}
+          
+          {/* Locked content row */}
+          {learningLanguageTranslations.length > 0 && (
+            <div className="flex items-center gap-4 p-4 bg-gray-100 rounded-lg opacity-60">
+              <div className="w-8 h-8 border-2 border-gray-300 rounded"></div>
+              <div className="flex-1">
+                <div className="font-semibold text-base text-gray-600">Unlock để xem thêm</div>
+              </div>
+              <button className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg font-medium transition">
+                Unlock
+              </button>
               <div className="flex gap-2">
-                <button
-                  onClick={() => speakWord(currentVocab.word, sourceLang.code || 'en-US')}
-                  className="w-8 h-8 rounded-full bg-gray-200 hover:bg-gray-300 flex items-center justify-center"
-                  title="Phát âm"
-                >
+                <button className="w-8 h-8 rounded-full bg-gray-200 hover:bg-gray-300 flex items-center justify-center opacity-50" title="Phát âm">
                   <svg className="w-4 h-4 text-gray-600" fill="currentColor" viewBox="0 0 20 20">
                     <path d="M18 3a1 1 0 00-1.196-.98l-10 2A1 1 0 006 5v9.114A4.369 4.369 0 005 14c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V7.82l8-1.6v5.894A4.37 4.37 0 0015 12c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V3z" />
                   </svg>
                 </button>
-                <button className="w-8 h-8 rounded-full bg-gray-200 hover:bg-gray-300 flex items-center justify-center" title="Cài đặt">
-                  <svg className="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
+                <button className="w-8 h-8 rounded-full bg-gray-200 hover:bg-gray-300 flex items-center justify-center opacity-50" title="Person">
+                  <svg className="w-4 h-4 text-gray-600" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
                   </svg>
                 </button>
               </div>
             </div>
           )}
-
-          {/* Target Language */}
-          {targetTranslation && targetLang && (
-            <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-lg">
-              <span className="text-3xl">{targetLang.flag || '🌐'}</span>
-              <div className="flex-1">
-                <div className="font-semibold text-lg text-gray-800">{targetTranslation.meaning}</div>
-                {targetTranslation.pronunciation && (
-                  <div className="text-sm text-gray-600 italic mt-1">{targetTranslation.pronunciation}</div>
-                )}
-              </div>
-              <div className="flex gap-2">
-                <button
-                  onClick={() => speakWord(targetTranslation.meaning, targetLang.code || 'en-US')}
-                  className="w-8 h-8 rounded-full bg-gray-200 hover:bg-gray-300 flex items-center justify-center"
-                  title="Phát âm"
-                >
-                  <svg className="w-4 h-4 text-gray-600" fill="currentColor" viewBox="0 0 20 20">
-                    <path d="M18 3a1 1 0 00-1.196-.98l-10 2A1 1 0 006 5v9.114A4.369 4.369 0 005 14c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V7.82l8-1.6v5.894A4.37 4.37 0 0015 12c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V3z" />
-                  </svg>
-                </button>
-                <button className="w-8 h-8 rounded-full bg-gray-200 hover:bg-gray-300 flex items-center justify-center" title="Cài đặt">
-                  <svg className="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
-                  </svg>
-                </button>
-              </div>
+          
+          {/* Fallback if no learning languages selected */}
+          {learningLanguageTranslations.length === 0 && (
+            <div className="text-center py-8 text-gray-500">
+              <p>Vui lòng chọn ngôn ngữ học trong profile để xem bản dịch</p>
             </div>
           )}
         </div>
@@ -379,7 +563,7 @@ export default function Flashcard() {
           </button>
           <div className="flex gap-2">
             <button
-              onClick={() => speakWord(currentVocab.word, sourceLang?.code || 'en-US')}
+              onClick={() => speakWord(sourceTranslation, currentVocab.word, sourceLang?.code || 'en-US')}
               className="w-8 h-8 rounded-full bg-gray-200 hover:bg-gray-300 flex items-center justify-center"
               title="Phát âm"
             >

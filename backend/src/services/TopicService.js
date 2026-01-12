@@ -6,7 +6,12 @@ class TopicService {
     const where = {};
 
     if (isActive !== undefined) {
-      where.isActive = isActive === 'true';
+      // Handle both string 'true'/'false' and boolean true/false
+      if (typeof isActive === 'string') {
+        where.isActive = isActive === 'true' || isActive === '1';
+      } else {
+        where.isActive = Boolean(isActive);
+      }
     }
 
     const pageNum = parseInt(page) || 1;
@@ -46,10 +51,26 @@ class TopicService {
             isActive: true,
           },
         });
-        return {
-          ...topic.toJSON(),
+        // Use get({ plain: true }) for better serialization with includes
+        let topicData = topic.get ? topic.get({ plain: true }) : (topic.toJSON ? topic.toJSON() : {});
+        // Ensure topicData is a proper object
+        if (!topicData || typeof topicData !== 'object') {
+          topicData = {};
+        }
+        // Manually construct the object to avoid spread issues
+        const result = {
+          id: topicData.id,
+          name: topicData.name,
+          description: topicData.description,
+          image: topicData.image,
+          order: topicData.order,
+          isActive: topicData.isActive,
+          createdAt: topicData.createdAt,
+          updatedAt: topicData.updatedAt,
+          translations: topicData.translations || [],
           vocabularyCount: vocabCount,
         };
+        return result;
       })
     );
 

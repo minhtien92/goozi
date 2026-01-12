@@ -23,9 +23,13 @@ export default function UserMenu({ onClose }: UserMenuProps) {
   const [showMotherTongue, setShowMotherTongue] = useState(false);
   const [showVoiceAccent, setShowVoiceAccent] = useState(false);
   const [languages, setLanguages] = useState<Language[]>([]);
-  const [selectedLanguages, setSelectedLanguages] = useState<string[]>([]);
+  // Initialize from user preference
+  const [selectedLanguages, setSelectedLanguages] = useState<string[]>(user?.learningLanguageIds || []);
   const [voiceAccents, setVoiceAccents] = useState<string[]>(['Voice accent 1', 'Voice accent 2', 'Voice accent 3', 'Voice accent 4']);
-  const [selectedVoiceAccent, setSelectedVoiceAccent] = useState<string>('Voice accent 2');
+  // Initialize from user preference or default to 2 (Voice accent 2)
+  const [selectedVoiceAccent, setSelectedVoiceAccent] = useState<string>(
+    user?.voiceAccentVersion ? `Voice accent ${user.voiceAccentVersion}` : 'Voice accent 2'
+  );
   const [activeMenuItemTop, setActiveMenuItemTop] = useState<number>(0);
   const profileButtonRef = useRef<HTMLButtonElement>(null);
   const languageButtonRef = useRef<HTMLButtonElement>(null);
@@ -34,7 +38,15 @@ export default function UserMenu({ onClose }: UserMenuProps) {
 
   useEffect(() => {
     fetchLanguages();
-  }, []);
+    // Load voice accent from user preference
+    if (user?.voiceAccentVersion) {
+      setSelectedVoiceAccent(`Voice accent ${user.voiceAccentVersion}`);
+    }
+    // Load learning languages from user preference
+    if (user?.learningLanguageIds) {
+      setSelectedLanguages(user.learningLanguageIds);
+    }
+  }, [user]);
 
   const fetchLanguages = async () => {
     try {
@@ -75,12 +87,64 @@ export default function UserMenu({ onClose }: UserMenuProps) {
     }
   };
 
-  const handleLanguageToggle = (languageId: string) => {
-    setSelectedLanguages(prev => 
-      prev.includes(languageId) 
-        ? prev.filter(id => id !== languageId)
-        : [...prev, languageId]
-    );
+  const handleLanguageToggle = async (languageId: string) => {
+    const newSelectedLanguages = selectedLanguages.includes(languageId)
+      ? selectedLanguages.filter(id => id !== languageId)
+      : [...selectedLanguages, languageId];
+    
+    setSelectedLanguages(newSelectedLanguages);
+    
+    // Save to database
+    if (!user?.id) return;
+    
+    try {
+      const response = await api.put(`/users/${user.id}`, {
+        learningLanguageIds: newSelectedLanguages,
+      });
+      if (response.data.user) {
+        const authStorage = localStorage.getItem('auth-storage');
+        if (authStorage) {
+          const parsed = JSON.parse(authStorage);
+          const token = parsed?.state?.token;
+          if (token) {
+            setAuth(response.data.user, token);
+          }
+        }
+      }
+    } catch (error: any) {
+      console.error('Error updating learning languages:', error);
+      // Revert on error
+      setSelectedLanguages(selectedLanguages);
+      alert('Failed to update learning languages');
+    }
+  };
+
+  const handleVoiceAccentChange = async (accent: string) => {
+    if (!user?.id) return;
+    
+    // Extract version number from accent string (e.g., "Voice accent 2" -> 2)
+    const version = parseInt(accent.replace('Voice accent ', ''));
+    
+    setSelectedVoiceAccent(accent);
+    
+    try {
+      const response = await api.put(`/users/${user.id}`, {
+        voiceAccentVersion: version,
+      });
+      if (response.data.user) {
+        const authStorage = localStorage.getItem('auth-storage');
+        if (authStorage) {
+          const parsed = JSON.parse(authStorage);
+          const token = parsed?.state?.token;
+          if (token) {
+            setAuth(response.data.user, token);
+          }
+        }
+      }
+    } catch (error: any) {
+      console.error('Error updating voice accent:', error);
+      alert('Failed to update voice accent');
+    }
   };
 
   return (
@@ -375,7 +439,7 @@ export default function UserMenu({ onClose }: UserMenuProps) {
                       name="voiceAccent"
                       value={accent}
                       checked={selectedVoiceAccent === accent}
-                      onChange={(e) => setSelectedVoiceAccent(e.target.value)}
+                      onChange={(e) => handleVoiceAccentChange(e.target.value)}
                       className="w-4 h-4 text-blue-600"
                     />
                     <span className="text-gray-700">{accent}</span>

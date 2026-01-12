@@ -15,6 +15,8 @@ interface User {
   name: string;
   role: string;
   nativeLanguage?: Language;
+  voiceAccentVersion?: number;
+  learningLanguageIds?: string[];
 }
 
 interface AuthState {

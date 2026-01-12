@@ -26,7 +26,10 @@ class TopicController {
       const { id } = request.params;
       const topic = await TopicService.getTopicById(id, true);
 
-      return reply.send({ topic: topic.toJSON() });
+      // Use get({ plain: true }) for better serialization with includes
+      const topicData = topic.get ? topic.get({ plain: true }) : (topic.toJSON ? topic.toJSON() : {});
+      
+      return reply.send({ topic: topicData });
     } catch (error) {
       if (error.message === 'Topic not found') {
         return reply.code(404).send({
