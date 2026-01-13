@@ -55,10 +55,28 @@ class UserController {
       }
       
       const user = await UserService.updateUser(id, request.body, isSelfUpdate);
+      const userJson = user.toJSON();
+      
+      // Log to debug
+      console.log('UpdateUser - Raw user data:', {
+        id: user.id,
+        learningLanguageIds: user.learningLanguageIds,
+        learningLanguageIdsType: typeof user.learningLanguageIds,
+        voiceAccentVersion: user.voiceAccentVersion,
+        voiceAccentVersionType: typeof user.voiceAccentVersion
+      });
+      
+      console.log('UpdateUser - User JSON:', {
+        id: userJson.id,
+        learningLanguageIds: userJson.learningLanguageIds,
+        learningLanguageIdsType: typeof userJson.learningLanguageIds,
+        voiceAccentVersion: userJson.voiceAccentVersion,
+        voiceAccentVersionType: typeof userJson.voiceAccentVersion
+      });
 
       return reply.send({
         message: 'User updated successfully',
-        user: user.toJSON(),
+        user: userJson,
       });
     } catch (error) {
       if (error.message === 'User not found') {

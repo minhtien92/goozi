@@ -45,11 +45,29 @@ class AuthController {
 
       const user = await AuthService.login(email, password);
       const token = AuthService.generateToken(request.server, user);
+      const userJson = user.toJSON();
+      
+      // Log to debug
+      console.log('Login - Raw user data:', {
+        id: user.id,
+        learningLanguageIds: user.learningLanguageIds,
+        learningLanguageIdsType: typeof user.learningLanguageIds,
+        voiceAccentVersion: user.voiceAccentVersion,
+        voiceAccentVersionType: typeof user.voiceAccentVersion
+      });
+      
+      console.log('Login - User JSON:', {
+        id: userJson.id,
+        learningLanguageIds: userJson.learningLanguageIds,
+        learningLanguageIdsType: typeof userJson.learningLanguageIds,
+        voiceAccentVersion: userJson.voiceAccentVersion,
+        voiceAccentVersionType: typeof userJson.voiceAccentVersion
+      });
 
       return reply.send({
         message: 'Login successful',
         token,
-        user: user.toJSON(),
+        user: userJson,
       });
     } catch (error) {
       if (error.message === 'Invalid email or password') {
@@ -67,7 +85,80 @@ class AuthController {
   async getCurrentUser(request, reply) {
     try {
       const user = await AuthService.getCurrentUser(request.user.id);
-      return reply.send({ user: user.toJSON() });
+      
+      // Get values from both dataValues and get({ plain: true })
+      const dataValues = user.dataValues || {};
+      const rawValues = user.get({ plain: true });
+      
+      // Log to debug
+      console.log('getCurrentUser - dataValues:', {
+        id: dataValues.id,
+        learningLanguageIds: dataValues.learningLanguageIds,
+        learningLanguageIdsType: typeof dataValues.learningLanguageIds,
+        voiceAccentVersion: dataValues.voiceAccentVersion,
+        voiceAccentVersionType: typeof dataValues.voiceAccentVersion,
+        allKeys: Object.keys(dataValues)
+      });
+      
+      console.log('getCurrentUser - rawValues from get({ plain: true }):', {
+        id: rawValues.id,
+        learningLanguageIds: rawValues.learningLanguageIds,
+        learningLanguageIdsType: typeof rawValues.learningLanguageIds,
+        learningLanguageIdsIsArray: Array.isArray(rawValues.learningLanguageIds),
+        voiceAccentVersion: rawValues.voiceAccentVersion,
+        voiceAccentVersionType: typeof rawValues.voiceAccentVersion,
+        allKeys: Object.keys(rawValues)
+      });
+      
+      // Use dataValues as primary source, fallback to rawValues
+      const learningLangIds = dataValues.learningLanguageIds !== undefined 
+        ? dataValues.learningLanguageIds 
+        : (rawValues.learningLanguageIds !== undefined ? rawValues.learningLanguageIds : []);
+      
+      const voiceAccent = dataValues.voiceAccentVersion !== undefined && dataValues.voiceAccentVersion !== null
+        ? dataValues.voiceAccentVersion
+        : (rawValues.voiceAccentVersion !== undefined && rawValues.voiceAccentVersion !== null
+          ? rawValues.voiceAccentVersion
+          : 1);
+      
+      // Build user object manually to ensure all fields are included
+      const userJson = {
+        id: dataValues.id || rawValues.id,
+        email: dataValues.email || rawValues.email,
+        googleId: dataValues.googleId || rawValues.googleId,
+        name: dataValues.name || rawValues.name,
+        role: dataValues.role || rawValues.role,
+        permissions: dataValues.permissions || rawValues.permissions,
+        nativeLanguageId: dataValues.nativeLanguageId || rawValues.nativeLanguageId,
+        learningLanguageIds: Array.isArray(learningLangIds) ? learningLangIds : (learningLangIds ? [learningLangIds] : []),
+        voiceAccentVersion: parseInt(voiceAccent) || 1,
+        createdAt: dataValues.createdAt || rawValues.createdAt,
+        updatedAt: dataValues.updatedAt || rawValues.updatedAt,
+      };
+      
+      // Add nativeLanguage if it exists
+      if (user.nativeLanguage) {
+        userJson.nativeLanguage = user.nativeLanguage.toJSON ? user.nativeLanguage.toJSON() : user.nativeLanguage;
+      } else if (rawValues.nativeLanguage) {
+        userJson.nativeLanguage = rawValues.nativeLanguage;
+      }
+      
+      console.log('getCurrentUser - Built user JSON:', {
+        id: userJson.id,
+        learningLanguageIds: userJson.learningLanguageIds,
+        learningLanguageIdsType: typeof userJson.learningLanguageIds,
+        learningLanguageIdsIsArray: Array.isArray(userJson.learningLanguageIds),
+        voiceAccentVersion: userJson.voiceAccentVersion,
+        voiceAccentVersionType: typeof userJson.voiceAccentVersion,
+        nativeLanguage: userJson.nativeLanguage,
+        allKeys: Object.keys(userJson)
+      });
+      
+      // Log the actual response that will be sent
+      const responseToSend = { user: userJson };
+      console.log('getCurrentUser - Response to send (stringified):', JSON.stringify(responseToSend, null, 2));
+      
+      return reply.send(responseToSend);
     } catch (error) {
       if (error.message === 'User not found') {
         return reply.code(404).send({

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { useAuthStore } from '../store/authStore';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { useAuthStore, authStore } from '../store/authStore';
 import UserMenu from '../components/UserMenu';
 import LoginModal from '../components/LoginModal';
 import api from '../config/api';
@@ -9,6 +9,7 @@ import logo from '../assets/img/logo.svg';
 export default function Home() {
   const { user, logout } = useAuthStore();
   const navigate = useNavigate();
+  const location = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [loginModalOpen, setLoginModalOpen] = useState(false);
@@ -21,6 +22,49 @@ export default function Home() {
   useEffect(() => {
     fetchHomeSettings();
   }, []);
+
+  // Fetch user data if logged in but missing settings
+  useEffect(() => {
+    const fetchUserData = async () => {
+      if (user?.id && (!user.learningLanguageIds || !user.voiceAccentVersion)) {
+        try {
+          console.log('Home - Fetching user data because settings are missing');
+          const userResponse = await api.get('/auth/me');
+          if (userResponse.data.user) {
+            const userData = userResponse.data.user;
+            console.log('Home - User data from /auth/me:', {
+              learningLanguageIds: userData.learningLanguageIds,
+              voiceAccentVersion: userData.voiceAccentVersion
+            });
+            
+            // Ensure learningLanguageIds is an array
+            if (userData.learningLanguageIds && typeof userData.learningLanguageIds === 'string') {
+              try {
+                userData.learningLanguageIds = JSON.parse(userData.learningLanguageIds);
+              } catch (e) {
+                console.warn('Failed to parse learningLanguageIds:', e);
+              }
+            }
+            
+            // Ensure voiceAccentVersion is a number
+            if (userData.voiceAccentVersion !== undefined && userData.voiceAccentVersion !== null) {
+              userData.voiceAccentVersion = parseInt(userData.voiceAccentVersion) || 1;
+            }
+            
+            // Update store
+            const { setAuth, token } = useAuthStore.getState();
+            if (token) {
+              setAuth(userData, token);
+            }
+          }
+        } catch (error) {
+          console.error('Home - Error fetching user data:', error);
+        }
+      }
+    };
+    
+    fetchUserData();
+  }, [user?.id]);
 
   useEffect(() => {
     if (slogans.length > 1) {
@@ -80,15 +124,23 @@ export default function Home() {
 
   const handleLogout = () => {
     logout();
-    navigate('/login');
+    navigate('/');
   };
+
+  // Auto-open login modal if on /login route
+  useEffect(() => {
+    if (location.pathname === '/login' && !user) {
+      setLoginModalOpen(true);
+    }
+  }, [location.pathname, user]);
 
   const backgroundStyle = {
     background: 'linear-gradient(to right, #60a5fa, #4fd1c7, #e5e7eb)',
   };
 
   // Check if we're being used as background (via parent class or prop)
-  const isBackground = window.location.pathname !== '/';
+  // /login should be treated as main page, not background
+  const isBackground = window.location.pathname !== '/' && window.location.pathname !== '/login';
   
   return (
     <div 
@@ -315,10 +367,22 @@ export default function Home() {
       {!isBackground && (
         <LoginModal 
           isOpen={loginModalOpen}
-          onClose={() => setLoginModalOpen(false)}
+          onClose={() => {
+            setLoginModalOpen(false);
+            // If on /login route, navigate to home when closing modal
+            if (location.pathname === '/login') {
+              navigate('/');
+            }
+          }}
           onSuccess={() => {
-            // Refresh page or update state after successful login
-            window.location.reload();
+            // Close modal and navigate to home if on /login route
+            setLoginModalOpen(false);
+            if (location.pathname === '/login') {
+              navigate('/');
+            } else {
+              // Refresh page or update state after successful login
+              window.location.reload();
+            }
           }}
         />
       )}

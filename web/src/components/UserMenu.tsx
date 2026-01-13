@@ -23,13 +23,11 @@ export default function UserMenu({ onClose }: UserMenuProps) {
   const [showMotherTongue, setShowMotherTongue] = useState(false);
   const [showVoiceAccent, setShowVoiceAccent] = useState(false);
   const [languages, setLanguages] = useState<Language[]>([]);
-  // Initialize from user preference
-  const [selectedLanguages, setSelectedLanguages] = useState<string[]>(user?.learningLanguageIds || []);
+  // Initialize from user preference - will be updated in useEffect
+  const [selectedLanguages, setSelectedLanguages] = useState<string[]>([]);
   const [voiceAccents, setVoiceAccents] = useState<string[]>(['Voice accent 1', 'Voice accent 2', 'Voice accent 3', 'Voice accent 4']);
-  // Initialize from user preference or default to 2 (Voice accent 2)
-  const [selectedVoiceAccent, setSelectedVoiceAccent] = useState<string>(
-    user?.voiceAccentVersion ? `Voice accent ${user.voiceAccentVersion}` : 'Voice accent 2'
-  );
+  // Initialize from user preference or default to 2 (Voice accent 2) - will be updated in useEffect
+  const [selectedVoiceAccent, setSelectedVoiceAccent] = useState<string>('Voice accent 2');
   const [activeMenuItemTop, setActiveMenuItemTop] = useState<number>(0);
   const profileButtonRef = useRef<HTMLButtonElement>(null);
   const languageButtonRef = useRef<HTMLButtonElement>(null);
@@ -38,15 +36,60 @@ export default function UserMenu({ onClose }: UserMenuProps) {
 
   useEffect(() => {
     fetchLanguages();
+  }, []);
+
+  // Update selected languages and voice accent when user changes
+  useEffect(() => {
+    console.log('UserMenu - User changed:', {
+      userId: user?.id,
+      learningLanguageIds: user?.learningLanguageIds,
+      learningLanguageIdsType: typeof user?.learningLanguageIds,
+      learningLanguageIdsIsArray: Array.isArray(user?.learningLanguageIds),
+      voiceAccentVersion: user?.voiceAccentVersion,
+      voiceAccentVersionType: typeof user?.voiceAccentVersion,
+      nativeLanguage: user?.nativeLanguage,
+      fullUser: user
+    });
+    
     // Load voice accent from user preference
-    if (user?.voiceAccentVersion) {
-      setSelectedVoiceAccent(`Voice accent ${user.voiceAccentVersion}`);
+    if (user?.voiceAccentVersion !== undefined && user?.voiceAccentVersion !== null) {
+      const version = parseInt(user.voiceAccentVersion) || 1;
+      const accent = `Voice accent ${version}`;
+      console.log('Setting voice accent to:', accent, 'from version:', version);
+      setSelectedVoiceAccent(accent);
+    } else {
+      console.log('No voice accent version found, using default');
+      setSelectedVoiceAccent('Voice accent 2');
     }
+    
     // Load learning languages from user preference
     if (user?.learningLanguageIds) {
-      setSelectedLanguages(user.learningLanguageIds);
+      let langIds = user.learningLanguageIds;
+      
+      // Handle if it's a string (shouldn't happen but just in case)
+      if (typeof langIds === 'string') {
+        try {
+          langIds = JSON.parse(langIds);
+          console.log('Parsed learningLanguageIds from string:', langIds);
+        } catch (e) {
+          console.warn('Failed to parse learningLanguageIds:', e);
+          langIds = [];
+        }
+      }
+      
+      // Ensure it's an array
+      if (Array.isArray(langIds) && langIds.length > 0) {
+        console.log('Setting learning languages to:', langIds);
+        setSelectedLanguages(langIds);
+      } else {
+        console.log('No learning languages found or empty array, clearing selection. langIds:', langIds);
+        setSelectedLanguages([]);
+      }
+    } else {
+      console.log('No learningLanguageIds field in user, clearing selection');
+      setSelectedLanguages([]);
     }
-  }, [user]);
+  }, [user?.id, user?.voiceAccentVersion, user?.learningLanguageIds ? JSON.stringify(user.learningLanguageIds) : null]);
 
   const fetchLanguages = async () => {
     try {
@@ -59,7 +102,7 @@ export default function UserMenu({ onClose }: UserMenuProps) {
 
   const handleLogout = () => {
     logout();
-    navigate('/login');
+    navigate('/');
     if (onClose) onClose();
   };
 
@@ -139,14 +182,24 @@ export default function UserMenu({ onClose }: UserMenuProps) {
       const response = await api.put(`/users/${currentUser.id}`, {
         learningLanguageIds: newSelectedLanguages,
       });
+      console.log('Update learning languages response:', {
+        responseUser: response.data.user,
+        learningLanguageIds: response.data.user?.learningLanguageIds,
+        type: typeof response.data.user?.learningLanguageIds
+      });
       if (response.data.user && currentToken) {
         // Merge with existing user data to preserve all fields
         const updatedUser = {
           ...currentUser,
           ...response.data.user,
-          // Ensure learningLanguageIds is set correctly
-          learningLanguageIds: response.data.user.learningLanguageIds || newSelectedLanguages,
+          // Ensure learningLanguageIds is set correctly (handle both array and string)
+          learningLanguageIds: Array.isArray(response.data.user.learningLanguageIds) 
+            ? response.data.user.learningLanguageIds 
+            : (typeof response.data.user.learningLanguageIds === 'string' 
+              ? JSON.parse(response.data.user.learningLanguageIds) 
+              : newSelectedLanguages),
         };
+        console.log('Updated user with learning languages:', updatedUser.learningLanguageIds);
         // Always use the current token from store
         setAuth(updatedUser, currentToken);
       }
@@ -185,14 +238,22 @@ export default function UserMenu({ onClose }: UserMenuProps) {
       const response = await api.put(`/users/${currentUser.id}`, {
         voiceAccentVersion: version,
       });
+      console.log('Update voice accent response:', {
+        responseUser: response.data.user,
+        voiceAccentVersion: response.data.user?.voiceAccentVersion,
+        type: typeof response.data.user?.voiceAccentVersion
+      });
       if (response.data.user && currentToken) {
         // Merge with existing user data to preserve all fields
         const updatedUser = {
           ...currentUser,
           ...response.data.user,
-          // Ensure voiceAccentVersion is set correctly
-          voiceAccentVersion: response.data.user.voiceAccentVersion || version,
+          // Ensure voiceAccentVersion is set correctly (convert to number)
+          voiceAccentVersion: response.data.user.voiceAccentVersion 
+            ? parseInt(response.data.user.voiceAccentVersion) || version 
+            : version,
         };
+        console.log('Updated user with voice accent:', updatedUser.voiceAccentVersion);
         // Always use the current token from store
         setAuth(updatedUser, currentToken);
       }

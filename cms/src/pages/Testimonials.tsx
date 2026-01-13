@@ -103,27 +103,11 @@ export default function Testimonials() {
     setEditName(testimonial.name);
     setEditQuote(testimonial.quote);
     setEditOrder(testimonial.order || 0);
-  };
-
-  const handleSaveEdit = async () => {
-    if (!editingId) return;
-
-    try {
-      await api.put(`/testimonials/${editingId}`, {
-        name: editName.trim(),
-        quote: editQuote.trim(),
-        order: editOrder,
-      });
-      alert('Testimonial updated successfully!');
-      setEditingId(null);
-      setEditName('');
-      setEditQuote('');
-      setEditOrder(0);
-      fetchTestimonials();
-    } catch (error: any) {
-      console.error('Error updating testimonial:', error);
-      alert('Failed to update testimonial: ' + (error.response?.data?.message || error.message));
-    }
+    // Fill form in right panel with testimonial data
+    setNewName(testimonial.name);
+    setNewQuote(testimonial.quote);
+    setNewOrder(testimonial.order || 0);
+    setShowModal(true);
   };
 
   const handleCancelEdit = () => {
@@ -131,6 +115,10 @@ export default function Testimonials() {
     setEditName('');
     setEditQuote('');
     setEditOrder(0);
+    setNewName('');
+    setNewQuote('');
+    setNewOrder(0);
+    setShowModal(false);
   };
 
   const handleDelete = async (id: string) => {
@@ -147,6 +135,10 @@ export default function Testimonials() {
   };
 
   const handleCreate = () => {
+    setEditingId(null);
+    setEditName('');
+    setEditQuote('');
+    setEditOrder(0);
     setShowModal(true);
     setNewName('');
     setNewQuote('');
@@ -167,21 +159,36 @@ export default function Testimonials() {
     }
 
     try {
-      await api.post('/testimonials', {
-        name: newName.trim(),
-        quote: newQuote.trim(),
-        order: newOrder,
-        isActive: true,
-      });
-      alert('Testimonial added successfully!');
+      if (editingId) {
+        // Update existing testimonial
+        await api.put(`/testimonials/${editingId}`, {
+          name: newName.trim(),
+          quote: newQuote.trim(),
+          order: newOrder,
+        });
+        alert('Testimonial updated successfully!');
+        setEditingId(null);
+      } else {
+        // Create new testimonial
+        await api.post('/testimonials', {
+          name: newName.trim(),
+          quote: newQuote.trim(),
+          order: newOrder,
+          isActive: true,
+        });
+        alert('Testimonial added successfully!');
+      }
       setShowModal(false);
       setNewName('');
       setNewQuote('');
       setNewOrder(0);
+      setEditName('');
+      setEditQuote('');
+      setEditOrder(0);
       fetchTestimonials();
     } catch (error: any) {
-      console.error('Error adding testimonial:', error);
-      alert('Failed to add testimonial: ' + (error.response?.data?.message || error.message));
+      console.error('Error saving testimonial:', error);
+      alert('Failed to save testimonial: ' + (error.response?.data?.message || error.message));
     }
   };
 
@@ -237,78 +244,31 @@ export default function Testimonials() {
                       <tr key={testimonial.id}>
                         <td>{index + 1}</td>
                         <td>
-                          {editingId === testimonial.id ? (
-                            <input
-                              type="number"
-                              className="form-control form-control-sm"
-                              style={{ width: '60px' }}
-                              value={editOrder}
-                              onChange={(e) => setEditOrder(parseInt(e.target.value) || 0)}
-                            />
-                          ) : (
-                            <span>{testimonial.order}</span>
-                          )}
+                          <span>{testimonial.order}</span>
                         </td>
                         <td>
-                          {editingId === testimonial.id ? (
-                            <input
-                              type="text"
-                              className="form-control form-control-sm"
-                              value={editName}
-                              onChange={(e) => setEditName(e.target.value)}
-                            />
-                          ) : (
-                            <span>{testimonial.name}</span>
-                          )}
+                          <span>{testimonial.name}</span>
                         </td>
                         <td>
-                          {editingId === testimonial.id ? (
-                            <textarea
-                              className="form-control form-control-sm"
-                              value={editQuote}
-                              onChange={(e) => setEditQuote(e.target.value)}
-                              rows={2}
-                            />
-                          ) : (
-                            <span>{testimonial.quote}</span>
-                          )}
+                          <span>{testimonial.quote}</span>
                         </td>
                         <td>
-                          {editingId === testimonial.id ? (
-                            <div className="d-flex" style={{ gap: '5px' }}>
-                              <button
-                                onClick={handleSaveEdit}
-                                className="btn btn-sm btn-success"
-                                title="Save"
-                              >
-                                <i className="fas fa-check"></i>
-                              </button>
-                              <button
-                                onClick={handleCancelEdit}
-                                className="btn btn-sm btn-secondary"
-                                title="Cancel"
-                              >
-                                <i className="fas fa-times"></i>
-                              </button>
-                            </div>
-                          ) : (
-                            <div className="d-flex" style={{ gap: '5px' }}>
-                              <button
-                                onClick={() => handleEdit(testimonial)}
-                                className="btn btn-sm btn-primary"
-                                title="Edit"
-                              >
-                                <i className="fas fa-edit"></i>
-                              </button>
-                              <button
-                                onClick={() => handleDelete(testimonial.id)}
-                                className="btn btn-sm btn-danger"
-                                title="Delete"
-                              >
-                                <i className="fas fa-trash"></i>
-                              </button>
-                            </div>
-                          )}
+                          <div className="d-flex" style={{ gap: '5px' }}>
+                            <button
+                              onClick={() => handleEdit(testimonial)}
+                              className="btn btn-sm btn-primary"
+                              title="Edit"
+                            >
+                              <i className="fas fa-edit"></i>
+                            </button>
+                            <button
+                              onClick={() => handleDelete(testimonial.id)}
+                              className="btn btn-sm btn-danger"
+                              title="Delete"
+                            >
+                              <i className="fas fa-trash"></i>
+                            </button>
+                          </div>
                         </td>
                       </tr>
                     ))
@@ -329,18 +289,18 @@ export default function Testimonials() {
         </div>
       </div>
 
-      {/* Right Panel - Add New Form */}
+      {/* Right Panel - Add/Edit Form */}
       {showModal && (
         <div className="card" style={{ width: '800px', marginLeft: '10px', overflowY: 'auto' }}>
           <div className="card-header d-flex align-items-center">
             <h4 className="card-title mb-0" style={{ flex: 1 }}>
-              Add New Testimonial
+              {editingId ? 'Edit Testimonial' : 'Add New Testimonial'}
             </h4>
             <div className="d-flex" style={{ gap: '8px', marginLeft: 'auto' }}>
               <button
                 type="button"
                 className="btn btn-sm btn-secondary"
-                onClick={handleCancelNew}
+                onClick={editingId ? handleCancelEdit : handleCancelNew}
               >
                 Cancel
               </button>
@@ -349,7 +309,7 @@ export default function Testimonials() {
                 className="btn btn-sm btn-primary"
                 onClick={handleAddNew}
               >
-                Save
+                {editingId ? 'Update' : 'Save'}
               </button>
             </div>
           </div>

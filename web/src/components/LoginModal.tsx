@@ -54,6 +54,49 @@ export default function LoginModal({ isOpen, onClose, onSuccess }: LoginModalPro
         idToken: response.credential,
       });
       setAuth(authResponse.data.user, authResponse.data.token);
+      
+      // Fetch fresh user data to ensure all settings are loaded
+      try {
+        const userResponse = await api.get('/auth/me');
+        console.log('Raw user response from /auth/me (Google):', userResponse.data);
+        if (userResponse.data.user) {
+          const userData = userResponse.data.user;
+          console.log('User data from /auth/me after Google login:', {
+            learningLanguageIds: userData.learningLanguageIds,
+            learningLanguageIdsType: typeof userData.learningLanguageIds,
+            learningLanguageIdsIsArray: Array.isArray(userData.learningLanguageIds),
+            voiceAccentVersion: userData.voiceAccentVersion,
+            voiceAccentVersionType: typeof userData.voiceAccentVersion,
+            nativeLanguage: userData.nativeLanguage,
+            fullUser: userData
+          });
+          
+          // Ensure learningLanguageIds is an array
+          if (userData.learningLanguageIds && typeof userData.learningLanguageIds === 'string') {
+            try {
+              userData.learningLanguageIds = JSON.parse(userData.learningLanguageIds);
+            } catch (e) {
+              console.warn('Failed to parse learningLanguageIds:', e);
+            }
+          }
+          
+          // Ensure voiceAccentVersion is a number
+          if (userData.voiceAccentVersion !== undefined && userData.voiceAccentVersion !== null) {
+            userData.voiceAccentVersion = parseInt(userData.voiceAccentVersion) || 1;
+          }
+          
+          console.log('Processed user data before setAuth (Google):', {
+            learningLanguageIds: userData.learningLanguageIds,
+            voiceAccentVersion: userData.voiceAccentVersion
+          });
+          
+          setAuth(userData, authResponse.data.token);
+        }
+      } catch (fetchError) {
+        console.warn('Failed to fetch user data after login:', fetchError);
+        // Continue with original user data if fetch fails
+      }
+      
       onClose();
       if (onSuccess) {
         onSuccess();
@@ -163,6 +206,49 @@ export default function LoginModal({ isOpen, onClose, onSuccess }: LoginModalPro
     try {
       const response = await api.post('/auth/login', { email, password });
       setAuth(response.data.user, response.data.token);
+      
+      // Fetch fresh user data to ensure all settings are loaded
+      try {
+        const userResponse = await api.get('/auth/me');
+        console.log('Raw user response from /auth/me:', userResponse.data);
+        if (userResponse.data.user) {
+          const userData = userResponse.data.user;
+          console.log('User data from /auth/me after login:', {
+            learningLanguageIds: userData.learningLanguageIds,
+            learningLanguageIdsType: typeof userData.learningLanguageIds,
+            learningLanguageIdsIsArray: Array.isArray(userData.learningLanguageIds),
+            voiceAccentVersion: userData.voiceAccentVersion,
+            voiceAccentVersionType: typeof userData.voiceAccentVersion,
+            nativeLanguage: userData.nativeLanguage,
+            fullUser: userData
+          });
+          
+          // Ensure learningLanguageIds is an array
+          if (userData.learningLanguageIds && typeof userData.learningLanguageIds === 'string') {
+            try {
+              userData.learningLanguageIds = JSON.parse(userData.learningLanguageIds);
+            } catch (e) {
+              console.warn('Failed to parse learningLanguageIds:', e);
+            }
+          }
+          
+          // Ensure voiceAccentVersion is a number
+          if (userData.voiceAccentVersion !== undefined && userData.voiceAccentVersion !== null) {
+            userData.voiceAccentVersion = parseInt(userData.voiceAccentVersion) || 1;
+          }
+          
+          console.log('Processed user data before setAuth:', {
+            learningLanguageIds: userData.learningLanguageIds,
+            voiceAccentVersion: userData.voiceAccentVersion
+          });
+          
+          setAuth(userData, response.data.token);
+        }
+      } catch (fetchError) {
+        console.warn('Failed to fetch user data after login:', fetchError);
+        // Continue with original user data if fetch fails
+      }
+      
       onClose();
       if (onSuccess) {
         onSuccess();

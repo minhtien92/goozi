@@ -41,12 +41,26 @@ class AuthService {
   }
 
   async login(email, password) {
-    // Find user (exclude Google OAuth users)
-    const user = await db.User.findOne({ 
+    // Find user (exclude Google OAuth users) - query with password first for verification
+    const userWithPassword = await db.User.findOne({ 
       where: { 
         email,
         password: { [Op.ne]: null }, // Must have password (not Google OAuth user)
       },
+    });
+    
+    if (!userWithPassword) {
+      throw new Error('Invalid email or password');
+    }
+
+    // Verify password
+    const isValidPassword = await userWithPassword.comparePassword(password);
+    if (!isValidPassword) {
+      throw new Error('Invalid email or password');
+    }
+
+    // Now get user with all relations but exclude password
+    const user = await db.User.findByPk(userWithPassword.id, {
       include: [
         {
           model: db.Language,
@@ -56,20 +70,35 @@ class AuthService {
         },
       ],
     });
-    if (!user) {
-      throw new Error('Invalid email or password');
-    }
 
-    // Verify password
-    const isValidPassword = await user.comparePassword(password);
-    if (!isValidPassword) {
-      throw new Error('Invalid email or password');
-    }
+    // Log to debug - check raw data from database
+    const rawData = user.get({ plain: true });
+    console.log('AuthService.login - Raw user data from DB:', {
+      id: rawData.id,
+      learningLanguageIds: rawData.learningLanguageIds,
+      learningLanguageIdsType: typeof rawData.learningLanguageIds,
+      learningLanguageIdsValue: rawData.learningLanguageIds ? JSON.stringify(rawData.learningLanguageIds) : 'null/undefined',
+      voiceAccentVersion: rawData.voiceAccentVersion,
+      voiceAccentVersionType: typeof rawData.voiceAccentVersion,
+      nativeLanguageId: rawData.nativeLanguageId,
+      allFields: Object.keys(rawData)
+    });
+    
+    // Check if fields are actually in the database
+    const directQuery = await db.sequelize.query(
+      `SELECT id, "learningLanguageIds", "voiceAccentVersion" FROM users WHERE id = :userId`,
+      {
+        replacements: { userId: user.id },
+        type: db.sequelize.QueryTypes.SELECT
+      }
+    );
+    console.log('AuthService.login - Direct SQL query result:', directQuery[0]);
 
     return user;
   }
 
   async getCurrentUser(userId) {
+    // Query without excluding password first to ensure all fields are loaded
     const user = await db.User.findByPk(userId, {
       include: [
         {
@@ -83,6 +112,31 @@ class AuthService {
     if (!user) {
       throw new Error('User not found');
     }
+    
+    // Log to debug - check raw data from database
+    const rawData = user.get({ plain: true });
+    console.log('AuthService.getCurrentUser - Raw user data from DB:', {
+      id: rawData.id,
+      learningLanguageIds: rawData.learningLanguageIds,
+      learningLanguageIdsType: typeof rawData.learningLanguageIds,
+      learningLanguageIdsValue: rawData.learningLanguageIds ? JSON.stringify(rawData.learningLanguageIds) : 'null/undefined',
+      voiceAccentVersion: rawData.voiceAccentVersion,
+      voiceAccentVersionType: typeof rawData.voiceAccentVersion,
+      nativeLanguageId: rawData.nativeLanguageId,
+      allFields: Object.keys(rawData),
+      hasPassword: !!rawData.password
+    });
+    
+    // Check if fields are actually in the database
+    const directQuery = await db.sequelize.query(
+      `SELECT id, "learningLanguageIds", "voiceAccentVersion" FROM users WHERE id = :userId`,
+      {
+        replacements: { userId },
+        type: db.sequelize.QueryTypes.SELECT
+      }
+    );
+    console.log('AuthService.getCurrentUser - Direct SQL query result:', directQuery[0]);
+    
     return user;
   }
 
@@ -108,6 +162,7 @@ class AuthService {
       // Find user by googleId first, then by email
       let user = await db.User.findOne({
         where: { googleId },
+        attributes: { exclude: ['password'] }, // Explicitly exclude password, include all other fields
         include: [
           {
             model: db.Language,
@@ -122,6 +177,7 @@ class AuthService {
       if (!user) {
         user = await db.User.findOne({
           where: { email },
+          attributes: { exclude: ['password'] }, // Explicitly exclude password, include all other fields
           include: [
             {
               model: db.Language,
@@ -144,6 +200,8 @@ class AuthService {
           user.name = name;
           await user.save();
         }
+        // Reload to ensure JSONB fields are properly loaded
+        await user.reload();
       } else {
         // Create new user
         user = await db.User.create({
@@ -155,6 +213,7 @@ class AuthService {
 
         // Load with language relation
         user = await db.User.findByPk(user.id, {
+          attributes: { exclude: ['password'] }, // Explicitly exclude password, include all other fields
           include: [
             {
               model: db.Language,
@@ -163,6 +222,21 @@ class AuthService {
               required: false,
             },
           ],
+        });
+      }
+
+      // Log to debug
+      if (user) {
+        const rawData = user.get({ plain: true });
+        console.log('AuthService.loginWithGoogle - Raw user data:', {
+          id: rawData.id,
+          learningLanguageIds: rawData.learningLanguageIds,
+          learningLanguageIdsType: typeof rawData.learningLanguageIds,
+          learningLanguageIdsValue: JSON.stringify(rawData.learningLanguageIds),
+          voiceAccentVersion: rawData.voiceAccentVersion,
+          voiceAccentVersionType: typeof rawData.voiceAccentVersion,
+          nativeLanguageId: rawData.nativeLanguageId,
+          allFields: Object.keys(rawData)
         });
       }
 

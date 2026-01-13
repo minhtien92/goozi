@@ -117,6 +117,12 @@ async function authRoutes(fastify, options) {
                 email: { type: 'string' },
                 name: { type: 'string' },
                 role: { type: 'string', enum: ['user', 'admin'] },
+                nativeLanguageId: { type: 'string', format: 'uuid' },
+                learningLanguageIds: {
+                  type: 'array',
+                  items: { type: 'string', format: 'uuid' },
+                },
+                voiceAccentVersion: { type: 'integer' },
                 nativeLanguage: {
                   type: 'object',
                   properties: {
