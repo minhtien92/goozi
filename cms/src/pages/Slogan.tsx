@@ -26,7 +26,9 @@ export default function Slogan() {
   const [editingSloganId, setEditingSloganId] = useState<string | null>(null);
   
   // Form thêm mới / edit
+  // sloganValues: key = languageId, value = text cho từng ngôn ngữ
   const [sloganValues, setSloganValues] = useState<Record<string, string>>({});
+  // wordValue: tiện nhập nhanh slogan chính (thường là English)
   const [wordValue, setWordValue] = useState('');
 
   useEffect(() => {
@@ -60,16 +62,57 @@ export default function Slogan() {
     }
   };
 
+  const parseSloganTranslations = (value: string): Record<string, string> => {
+    // value có thể là plain text (cũ) hoặc JSON map { [langCode]: text }
+    try {
+      const parsed = JSON.parse(value);
+      if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
+        return parsed as Record<string, string>;
+      }
+    } catch {
+      // ignore, treat as plain text
+    }
+    // Mặc định coi là English
+    return { en: value };
+  };
+
+  const buildTranslationsPayload = (): Record<string, string> => {
+    const translations: Record<string, string> = {};
+
+    // Ưu tiên giá trị nhập theo từng ngôn ngữ
+    languages.forEach((lang) => {
+      const val = (sloganValues[lang.id] || '').trim();
+      if (val) {
+        translations[lang.code] = val;
+      }
+    });
+
+    const mainValue = wordValue.trim();
+    if (mainValue) {
+      const enLang = languages.find((l) => l.code === 'en');
+      if (enLang && !translations['en']) {
+        translations['en'] = mainValue;
+      }
+      if (Object.keys(translations).length === 0 && languages[0]) {
+        translations[languages[0].code] = mainValue;
+      }
+    }
+
+    return translations;
+  };
+
   const handleEdit = (sloganId: string) => {
-    const slogan = slogans.find(s => s.id === sloganId);
+    const slogan = slogans.find((s) => s.id === sloganId);
     if (slogan) {
       setEditingSloganId(sloganId);
-      setWordValue(slogan.value); // Set word value from slogan
-      // Initialize values with current slogan value for all languages
+
+      const translations = parseSloganTranslations(slogan.value);
+      // Thiết lập wordValue theo English (nếu có) hoặc bản dịch đầu tiên
+      setWordValue(translations['en'] || Object.values(translations)[0] || slogan.value);
+
       const initialValues: Record<string, string> = {};
-      languages.forEach(lang => {
-        // For now, use the same value for all languages (can be enhanced later to support multi-language slogans)
-        initialValues[lang.id] = slogan.value;
+      languages.forEach((lang) => {
+        initialValues[lang.id] = translations[lang.code] || '';
       });
       setSloganValues(initialValues);
     }
@@ -102,24 +145,24 @@ export default function Slogan() {
   };
 
   const handleSaveSlogan = async () => {
-    // Use wordValue if available, otherwise get the first non-empty value from languages
-    const firstLanguage = languages[0];
-    const sloganValue = wordValue.trim() || sloganValues[firstLanguage?.id]?.trim() || Object.values(sloganValues).find(v => v?.trim()) || '';
-    
-    if (!sloganValue) {
-      alert(`Please enter word or slogan in at least one language`);
+    const translations = buildTranslationsPayload();
+
+    if (!Object.keys(translations).length) {
+      alert(`Please enter slogan in at least one language`);
       return;
     }
+
+    const value = JSON.stringify(translations);
 
     try {
       if (editingSloganId) {
         // Update existing slogan
-        const slogan = slogans.find(s => s.id === editingSloganId);
+        const slogan = slogans.find((s) => s.id === editingSloganId);
         if (!slogan) return;
 
         await api.put(`/home-settings/${slogan.id}`, {
           key: slogan.key,
-          value: sloganValue,
+          value,
           order: slogan.order,
           isActive: true,
         });
@@ -128,13 +171,13 @@ export default function Slogan() {
         // Create new slogan
         let maxOrder = 0;
         if (slogans.length > 0) {
-          const orders = slogans.map(s => s.order || 0);
+          const orders = slogans.map((s) => s.order || 0);
           maxOrder = Math.max(...orders) + 1;
         }
 
         await api.post('/home-settings/create', {
           key: 'slogan',
-          value: sloganValue,
+          value,
           order: maxOrder,
           isActive: true,
         });
@@ -153,8 +196,22 @@ export default function Slogan() {
     }
   };
 
+  const getDisplaySlogan = (slogan: HomeSetting) => {
+    // Hiển thị English nếu có, nếu không thì lấy bản dịch đầu tiên hoặc value gốc
+    try {
+      const parsed = JSON.parse(slogan.value);
+      if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
+        const map = parsed as Record<string, string>;
+        return map['en'] || Object.values(map)[0] || slogan.value;
+      }
+    } catch {
+      // ignore
+    }
+    return slogan.value;
+  };
+
   const filteredSlogans = slogans.filter((slogan) =>
-    slogan.value.toLowerCase().includes(searchTerm.toLowerCase())
+    getDisplaySlogan(slogan).toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   if (loading) {
@@ -206,7 +263,7 @@ export default function Slogan() {
                       <tr key={slogan.id}>
                         <td>{index + 1}</td>
                         <td>
-                          <span>{slogan.value}</span>
+                          <span>{getDisplaySlogan(slogan)}</span>
                         </td>
                         <td>
                           <div className="d-flex" style={{ gap: '5px' }}>

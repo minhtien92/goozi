@@ -89,7 +89,7 @@ export default function UserMenu({ onClose }: UserMenuProps) {
       console.log('No learningLanguageIds field in user, clearing selection');
       setSelectedLanguages([]);
     }
-  }, [user?.id, user?.voiceAccentVersion, user?.learningLanguageIds ? JSON.stringify(user.learningLanguageIds) : null]);
+  }, [user?.id, user?.voiceAccentVersion, user?.learningLanguageIds ? JSON.stringify(user.learningLanguageIds) : null, user?.nativeLanguage?.id]);
 
   const fetchLanguages = async () => {
     try {
@@ -121,15 +121,34 @@ export default function UserMenu({ onClose }: UserMenuProps) {
       const response = await api.put(`/users/${currentUser.id}`, {
         nativeLanguageId: languageId,
       });
-      if (response.data.user && currentToken) {
-        // Merge with existing user data to preserve all fields
-        const updatedUser = {
-          ...currentUser,
-          ...response.data.user,
-        };
-        // Always use the current token from store
-        setAuth(updatedUser, currentToken);
+      
+      console.log('handleUpdateNativeLanguage - Response:', {
+        user: response.data.user,
+        nativeLanguage: response.data.user?.nativeLanguage
+      });
+      
+      // Fetch fresh user data to ensure all associations are loaded
+      try {
+        const userResponse = await api.get('/auth/me');
+        if (userResponse.data.user && currentToken) {
+          console.log('handleUpdateNativeLanguage - Fresh user data:', {
+            user: userResponse.data.user,
+            nativeLanguage: userResponse.data.user?.nativeLanguage
+          });
+          setAuth(userResponse.data.user, currentToken);
+        }
+      } catch (fetchError) {
+        console.warn('Failed to fetch fresh user data, using response data:', fetchError);
+        // Fallback to response data if /auth/me fails
+        if (response.data.user && currentToken) {
+          const updatedUser = {
+            ...currentUser,
+            ...response.data.user,
+          };
+          setAuth(updatedUser, currentToken);
+        }
       }
+      
       setShowMotherTongue(false);
     } catch (error: any) {
       console.error('Error updating native language:', error);

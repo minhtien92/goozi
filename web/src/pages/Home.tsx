@@ -21,7 +21,7 @@ export default function Home() {
 
   useEffect(() => {
     fetchHomeSettings();
-  }, []);
+  }, [user?.nativeLanguage?.code]);
 
   // Fetch user data if logged in but missing settings
   useEffect(() => {
@@ -80,10 +80,32 @@ export default function Home() {
       const response = await api.get('/home-settings/active');
       const settings = response.data.settings;
       
-      // Get slogans
+      const currentLang = user?.nativeLanguage?.code || 'en';
+
+      // Get slogans (CMS lưu đa ngôn ngữ trong value dạng JSON { [langCode]: text })
       const sloganSettings = settings.filter((s: any) => s.key === 'slogan');
       sloganSettings.sort((a: any, b: any) => a.order - b.order);
-      const sloganValues = sloganSettings.map((s: any) => s.value);
+      const sloganValues = sloganSettings.map((s: any) => {
+        const rawValue = s.value;
+        if (!rawValue) return '';
+        try {
+          const parsed = JSON.parse(rawValue);
+          if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
+            const map = parsed as Record<string, string>;
+            return (
+              map[currentLang] ||
+              map[currentLang.toLowerCase()] ||
+              map['en'] ||
+              map['EN'] ||
+              Object.values(map)[0] ||
+              rawValue
+            );
+          }
+        } catch {
+          // value không phải JSON, dùng nguyên bản
+        }
+        return rawValue;
+      });
       if (sloganValues.length > 0) {
         setSlogans(sloganValues);
       }
@@ -280,7 +302,7 @@ export default function Home() {
           {/* Testimonials */}
           {testimonials.length > 0 && (
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto w-full mt-auto">
-              {testimonials.map((testimonial) => (
+              {testimonials.map((testimonial: any) => (
                 <div key={testimonial.id} className="bg-gray-100 rounded-lg p-6 shadow-md">
                   <p className="text-gray-600 text-sm mb-4 italic">
                     "{testimonial.quote}"
