@@ -36,8 +36,8 @@ services:
       JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-7d}
       GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
       PORT: 3001
-      FRONTEND_URL: http://localhost:3000
-      CMS_URL: http://localhost:3002
+      FRONTEND_URL: ${FRONTEND_URL:-http://localhost:3000}
+      CMS_URL: ${CMS_URL:-http://localhost:3002}
     ports:
       - "3001:3001"
     depends_on:
@@ -57,7 +57,7 @@ services:
       context: ./web
       dockerfile: Dockerfile
       args:
-        - VITE_API_URL=http://localhost:3001/api
+        - VITE_API_URL=${VITE_API_URL:-http://localhost:3001/api}
         - VITE_GOOGLE_CLIENT_ID=${VITE_GOOGLE_CLIENT_ID:-}
     container_name: goozi-web
     ports:
@@ -73,7 +73,7 @@ services:
       context: ./cms
       dockerfile: Dockerfile
       args:
-        - VITE_API_URL=http://localhost:3001/api
+        - VITE_API_URL=${VITE_API_URL:-http://localhost:3001/api}
     container_name: goozi-cms
     ports:
       - "3002:3002"
