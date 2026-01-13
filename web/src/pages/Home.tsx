@@ -4,13 +4,13 @@ import { useAuthStore, authStore } from '../store/authStore';
 import UserMenu from '../components/UserMenu';
 import LoginModal from '../components/LoginModal';
 import api from '../config/api';
-import logo from '../assets/img/logo.svg';
+import logoHeader from '../assets/img/logo_header.svg';
 
 export default function Home() {
   const { user, logout } = useAuthStore();
   const navigate = useNavigate();
   const location = useLocation();
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [logoMenuOpen, setLogoMenuOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [loginModalOpen, setLoginModalOpen] = useState(false);
   const [slogans, setSlogans] = useState<string[]>([]);
@@ -147,85 +147,66 @@ export default function Home() {
       className={`min-h-screen relative overflow-hidden w-full h-full ${isBackground ? 'pointer-events-none' : ''}`} 
       style={{ ...backgroundStyle, ...(isBackground ? { zIndex: 0 } : {}) }}
     >
-      {/* Sidebar */}
-      {!isBackground && (
-        <div
-          className={`fixed left-0 top-0 h-full w-64 bg-green-100 transform transition-transform duration-300 z-50 ${
-            sidebarOpen ? 'translate-x-0' : '-translate-x-full'
-          }`}
-        >
-        <div className="p-6">
-          <div className="text-2xl font-bold text-blue-600 mb-8">GOOZI</div>
-          <nav className="space-y-4">
-            <Link
-              to="/"
-              className="block text-gray-700 hover:text-blue-600 font-medium"
-              onClick={() => setSidebarOpen(false)}
-            >
-              Home
-            </Link>
-            <button
-              onClick={() => {
-                setSidebarOpen(false);
-                if (user) {
-                  navigate('/topics');
-                } else {
-                  setLoginModalOpen(true);
-                }
-              }}
-              className="block w-full text-left text-gray-700 hover:text-blue-600 font-medium"
-            >
-              Vocabulary
-            </button>
-            <Link
-              to="/"
-              className="block text-gray-700 hover:text-blue-600 font-medium"
-              onClick={() => setSidebarOpen(false)}
-            >
-              Phrase
-            </Link>
-            <Link
-              to="/"
-              className="block text-gray-700 hover:text-blue-600 font-medium"
-              onClick={() => setSidebarOpen(false)}
-            >
-              Sentence
-            </Link>
-          </nav>
-          {user ? (
-            <div className="mt-8 pt-8 border-t border-gray-300">
-              <div className="text-sm text-gray-600">{user?.name || 'User Name'}</div>
-              <div className="text-sm text-gray-500">{user?.email || 'user@email.com'}</div>
+      {/* Logo Menu */}
+      {!isBackground && logoMenuOpen && (
+        <>
+          {/* Overlay */}
+          <div
+            className="fixed inset-0 bg-black bg-opacity-50 z-40"
+            onClick={() => setLogoMenuOpen(false)}
+          />
+          {/* Menu */}
+          <div className="fixed left-0 top-0 h-full w-80 bg-white z-50 shadow-2xl">
+            {/* Header */}
+            <div className="flex justify-between items-center p-6 border-b border-gray-200">
+              <div className="text-2xl font-bold text-cyan-500 flex items-center gap-2">
+                <span>GOOZI</span>
+              </div>
               <button
-                onClick={handleLogout}
-                className="mt-4 text-sm text-gray-700 hover:text-red-600"
+                onClick={() => setLogoMenuOpen(false)}
+                className="text-gray-500 hover:text-gray-700 transition"
               >
-                Sign out
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
               </button>
             </div>
-          ) : (
-            <div className="mt-8 pt-8 border-t border-gray-300">
-              <button
-                onClick={() => {
-                  setSidebarOpen(false);
-                  setLoginModalOpen(true);
-                }}
-                className="w-full px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition"
-              >
-                Đăng nhập
-              </button>
+            
+            {/* Menu Items */}
+            <div className="p-6">
+              <nav className="space-y-2">
+                <button
+                  onClick={() => {
+                    setLogoMenuOpen(false);
+                    // Handle Support action
+                  }}
+                  className="w-full flex items-center gap-3 px-4 py-3 text-gray-700 hover:bg-gray-50 rounded-lg transition text-left"
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+                  </svg>
+                  <span className="font-medium">Support</span>
+                </button>
+                
+                <button
+                  onClick={() => {
+                    setLogoMenuOpen(false);
+                    // Handle About action
+                  }}
+                  className="w-full flex items-center gap-3 px-4 py-3 text-gray-700 hover:bg-gray-50 rounded-lg transition text-left"
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <span className="font-medium">About</span>
+                </button>
+              </nav>
             </div>
-          )}
-        </div>
-        </div>
-      )}
-
-      {/* Overlay */}
-      {!isBackground && sidebarOpen && (
-        <div
-          className="fixed inset-0 bg-black bg-opacity-50 z-40"
-          onClick={() => setSidebarOpen(false)}
-        />
+            
+            {/* Left border accent */}
+            <div className="absolute left-0 top-0 bottom-0 w-1 bg-cyan-500"></div>
+          </div>
+        </>
       )}
 
       {/* Main Content */}
@@ -233,24 +214,19 @@ export default function Home() {
         {/* Header */}
         {!isBackground && (
           <header className="relative flex justify-between items-center p-6">
-          {/* Left: menu + circle icon */}
+          {/* Left: G icon - clickable */}
           <div className="flex items-center gap-3">
             <button
-              onClick={() => setSidebarOpen(true)}
-              className="text-white hover:text-gray-200"
+              onClick={() => setLogoMenuOpen(true)}
+              className="w-10 h-10 bg-white bg-opacity-20 rounded-full flex items-center justify-center hover:bg-opacity-30 transition cursor-pointer"
             >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-              </svg>
-            </button>
-            <div className="w-10 h-10 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
               <span className="text-white font-bold text-lg">G</span>
-            </div>
+            </button>
           </div>
 
-          {/* Center: logo image - absolutely positioned */}
+          {/* Center: logo image - not clickable */}
           <div className="absolute left-1/2 transform -translate-x-1/2 pointer-events-none">
-            <img src={logo} alt="Goozi logo" className="h-10 md:h-12" />
+            <img src={logoHeader} alt="Goozi logo" className="h-10 md:h-12" />
           </div>
 
           {/* Right: user / login */}
@@ -275,9 +251,9 @@ export default function Home() {
         )}
 
         {/* Main Content Area */}
-        <div className="px-6 pb-16 flex flex-col gap-6">
+        <div className="px-6 pb-24 flex flex-col items-center justify-between min-h-[calc(100vh-140px)] pt-8">
           {/* Tagline */}
-          <div className="text-center mb-4">
+          <div className="text-center w-full">
             {slogans.length > 0 ? (
               <p className="text-2xl md:text-3xl font-medium text-gray-900">
                 {slogans[currentSloganIndex]}
@@ -291,11 +267,11 @@ export default function Home() {
 
           {/* Hero picture from settings */}
           {heroImage && !heroImageError && (
-            <div className="flex justify-center mb-6">
+            <div className="flex justify-center w-full flex-1 items-center">
               <img
                 src={heroImage}
                 alt="Hero"
-                className="max-w-4xl w-full max-h-[360px] object-contain"
+                className="max-w-5xl w-full max-h-[450px] object-contain"
                 onError={() => setHeroImageError(true)}
               />
             </div>
@@ -303,7 +279,7 @@ export default function Home() {
 
           {/* Testimonials */}
           {testimonials.length > 0 && (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8 max-w-5xl mx-auto max-h-[320px] overflow-auto">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto w-full mt-auto">
               {testimonials.map((testimonial) => (
                 <div key={testimonial.id} className="bg-gray-100 rounded-lg p-6 shadow-md">
                   <p className="text-gray-600 text-sm mb-4 italic">
