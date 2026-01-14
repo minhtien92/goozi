@@ -2,6 +2,37 @@
 
 Hệ thống học đa ngôn ngữ với flashcard, quản lý từ vựng và chủ đề.
 
+## 🎯 Sử Dụng Như Template
+
+Goozi có thể được sử dụng như một **project template** để tạo các project mới nhanh chóng.
+
+### Tạo Project Mới Từ Template
+
+**Linux/Mac:**
+```bash
+chmod +x create-project.sh
+./create-project.sh [project-name] [target-directory]
+```
+
+**Windows:**
+```cmd
+create-project.bat [project-name] [target-directory]
+```
+
+**Ví dụ:**
+```bash
+./create-project.sh myapp ../myapp
+```
+
+Script sẽ:
+- Copy toàn bộ project (trừ node_modules, .git, .env, etc.)
+- Thay thế tất cả "goozi" với tên project mới
+- Update database names, container names, network names
+- Initialize git repository mới
+- Sẵn sàng để chạy `./install.sh`
+
+Xem chi tiết trong [docs/TEMPLATE_GUIDE.md](docs/TEMPLATE_GUIDE.md)
+
 ## Cấu trúc dự án
 
 ```

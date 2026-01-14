@@ -30,6 +30,45 @@ Tài liệu chi tiết về Web Application:
 - Text-to-Speech
 - User flows
 
+### 📚 Tài liệu chuyên sâu
+
+#### [API Documentation](./API.md)
+- API endpoints đầy đủ
+- Swagger UI integration
+- Request/Response examples
+- Authentication flow
+
+#### [Database Schema](./DATABASE_SCHEMA.md)
+- Entity Relationship Diagram (ERD)
+- Chi tiết tất cả tables
+- Relationships và foreign keys
+- JSONB fields và cách sử dụng
+- Query examples
+
+#### [User Preferences](./USER_PREFERENCES.md)
+- Cấu trúc user preferences
+- learningLanguageIds, voiceAccentVersion, nativeLanguage
+- Data flow và synchronization
+- API endpoints
+- Common issues và solutions
+
+#### [Multi-Language Support](./MULTI_LANGUAGE.md)
+- Cấu trúc dữ liệu multi-language
+- Slogans (JSON format)
+- Topics và Vocabularies translations
+- CMS và Frontend implementation
+- Language selection flow
+
+#### [Google OAuth Setup](./GOOGLE_OAUTH_SETUP.md)
+- Cấu hình Google OAuth
+- Troubleshooting
+- Common issues
+
+#### [Documentation Review](./DOCUMENTATION_REVIEW.md)
+- Đánh giá mức độ đầy đủ của tài liệu
+- Đề xuất bổ sung
+- Priority list
+
 ## Tổng quan dự án
 
 ### Công nghệ chính
@@ -166,7 +205,7 @@ VITE_API_URL=http://localhost:3001/api
 - `home_settings` - Cấu hình trang chủ
 - `testimonials` - Đánh giá
 
-Xem chi tiết trong [BACKEND.md](./BACKEND.md)
+Xem chi tiết trong [DATABASE_SCHEMA.md](./DATABASE_SCHEMA.md) và [BACKEND.md](./BACKEND.md)
 
 ## Authentication Flow
 

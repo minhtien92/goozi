@@ -577,8 +577,18 @@ export default function Vocabularies() {
               </div>
                 </div>
                 <div style={{ flex: '0 0 40%', maxWidth: '40%', paddingLeft: '15px' }}>
-                  <div className="form-group d-flex flex-column align-items-center">
-                    <label>Avatar</label>
+                  <div className="form-group d-flex align-items-center justify-content-end" style={{ gap: '10px' }}>
+                    <div
+                      className="d-flex flex-column align-items-center justify-content-center"
+                      style={{
+                        width: '70px',
+                        height: '70px',
+                        borderRadius: '0.375rem',
+                        backgroundColor: '#fff',
+                      }}
+                    >
+                      <label style={{ marginBottom: '0', fontWeight: 'bold' }}>Avatar</label>
+                    </div>
                     <div
                       className="d-flex align-items-center justify-content-center"
                       style={{

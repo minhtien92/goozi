@@ -1,0 +1,41 @@
+# Goozi Project Template
+
+This directory is a project template. Use `create-project.sh` (Linux/Mac) or `create-project.bat` (Windows) to generate a new project from this template.
+
+## Usage
+
+### Linux/Mac
+```bash
+./create-project.sh [project-name] [target-directory]
+```
+
+### Windows
+```cmd
+create-project.bat [project-name] [target-directory]
+```
+
+## What gets replaced
+
+The script will replace the following placeholders:
+- `goozi` → project name (lowercase)
+- `Goozi` → project name (capitalized)
+- `GOOZI` → project name (uppercase)
+- `goozi_db` → project_name_db
+- `goozi-network` → project-name-network
+- `goozi-postgres` → project-name-postgres
+- `goozi-backend` → project-name-backend
+- `goozi-web` → project-name-web
+- `goozi-cms` → project-name-cms
+
+## Excluded files/directories
+
+The following are excluded when copying:
+- `node_modules/`
+- `.git/`
+- `.env` and `.env.*`
+- `dist/` and `build/`
+- `uploads/*`
+- `*.log`
+- `.cache/`
+- `coverage/`
+- `.nyc_output/`
