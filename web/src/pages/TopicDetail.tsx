@@ -202,8 +202,6 @@ export default function TopicDetail() {
     setCurrentVocabIndex(validIndex);
   }
 
-  const currentVocab = vocabulariesWithTranslations[validIndex];
-
   const handleClose = () => {
     navigate('/');
   };
@@ -253,7 +251,7 @@ export default function TopicDetail() {
           <div className="grid grid-cols-3 md:grid-cols-5 gap-4">
             {vocabulariesWithTranslations.map((vocab, index) => {
               // Get translation with preferred voice accent version for this vocabulary
-              const vocabTranslation = getTranslationWithVoiceAccent(vocab.translations, sourceLang?.id);
+              const vocabTranslation = getTranslationWithVoiceAccent(vocab.translations, topic.sourceLanguage?.id);
               return (
                 <div
                   key={vocab.id}

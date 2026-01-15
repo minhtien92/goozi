@@ -390,7 +390,6 @@ export default function Flashcard() {
 
   const currentVocab = vocabularies[currentIndex];
   const sourceTranslation = getSourceTranslation(currentVocab);
-  const targetTranslation = getTargetTranslation(currentVocab);
   const sourceLang = topic?.sourceLanguage || sourceTranslation?.language;
   
   // Get learning languages from user profile
