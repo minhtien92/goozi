@@ -76,49 +76,92 @@ goozi/
 - Docker Desktop đã được cài đặt
 - Docker Compose đã được cài đặt
 
-#### Cài đặt tự động
+#### 🏭 Production Environment
 
-**Linux/Mac:**
+**Quick Start:**
 ```bash
-chmod +x install.sh
-./install.sh
-```
-
-**Windows:**
-```cmd
-install.bat
+chmod +x build-prod.sh
+./build-prod.sh
 ```
 
 Script sẽ:
-1. Kiểm tra Docker và Docker Compose
-2. Tạo file `.env` nếu chưa có
-3. Build và khởi động tất cả services
-4. Chạy database migrations
+1. Tạo `.env` từ template (nếu chưa có)
+2. Build production images
+3. Start containers
+4. Run migrations
+5. Create admin user
 
-#### Cài đặt thủ công
-
-**Production:**
+**Manual Setup:**
 ```bash
-# Build và khởi động tất cả services
-docker-compose up -d --build
+# 1. Tạo .env cho production
+cat > .env << EOF
+DB_HOST=postgres
+DB_PORT=5432
+DB_NAME=goozi_db
+DB_USER=postgres
+DB_PASSWORD=postgres
+JWT_SECRET=$(openssl rand -hex 32)
+JWT_EXPIRES_IN=7d
+PORT=3001
+NODE_ENV=production
+FRONTEND_URL=https://web.goozi.org
+CMS_URL=https://cms.goozi.org
+GOOGLE_CLIENT_ID=your-client-id
+VITE_API_URL=https://api.goozi.org/api
+VITE_GOOGLE_CLIENT_ID=your-client-id
+EOF
 
-# Chạy migrations
+# 2. Build và start
+docker-compose build --no-cache
+docker-compose up -d
+
+# 3. Run migrations
 docker-compose exec backend npm run migrate
-
-# Xem logs
-docker-compose logs -f
+docker-compose exec backend npm run create-admin
 ```
 
-**Development (với hot reload):**
+#### 🧪 Development/Test Environment
+
+**Quick Start:**
 ```bash
-# Build và khởi động development environment
-docker-compose -f docker-compose.dev.yml up -d --build
+chmod +x build-dev.sh
+./build-dev.sh
+```
 
-# Chạy migrations
+Script sẽ:
+1. Tạo `.env` từ template (nếu chưa có)
+2. Build development images (với hot reload)
+3. Start containers
+4. Run migrations
+5. Create admin user
+
+**Manual Setup:**
+```bash
+# 1. Tạo .env cho development
+cat > .env << EOF
+DB_HOST=postgres
+DB_PORT=5432
+DB_NAME=goozi_db
+DB_USER=postgres
+DB_PASSWORD=postgres
+JWT_SECRET=dev-secret
+JWT_EXPIRES_IN=7d
+PORT=3001
+NODE_ENV=development
+FRONTEND_URL=http://localhost:3000
+CMS_URL=http://localhost:3002
+GOOGLE_CLIENT_ID=your-client-id
+VITE_API_URL=http://localhost:3001/api
+VITE_GOOGLE_CLIENT_ID=your-client-id
+EOF
+
+# 2. Build và start
+docker-compose -f docker-compose.dev.yml build --no-cache
+docker-compose -f docker-compose.dev.yml up -d
+
+# 3. Run migrations
 docker-compose -f docker-compose.dev.yml exec backend npm run migrate
-
-# Xem logs
-docker-compose -f docker-compose.dev.yml logs -f
+docker-compose -f docker-compose.dev.yml exec backend npm run create-admin
 ```
 
 **Dừng services:**
@@ -129,6 +172,8 @@ docker-compose down
 # Development
 docker-compose -f docker-compose.dev.yml down
 ```
+
+> 📖 **Xem chi tiết:** [ENVIRONMENTS.md](ENVIRONMENTS.md) - Hướng dẫn đầy đủ về quản lý môi trường
 
 **Xóa volumes (xóa database):**
 ```bash
