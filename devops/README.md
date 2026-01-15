@@ -90,3 +90,26 @@ Script sẽ:
 Kết hợp với `devops/setup-nginx.sh`, bạn sẽ có:
 - Người dùng truy cập qua domain: `web.goozi.org`, `cms.goozi.org`, `api.goozi.org`
 - Docker chỉ mở port nội bộ: 3000/3001/3002, Nginx public port 80.
+
+## 7) Cài Node.js + sequelize-cli (chạy backend ngoài Docker)
+
+Nếu bạn muốn chạy backend trực tiếp trên host (không dùng Docker), có thể cài Node.js 18.x và `sequelize-cli` global:
+
+```bash
+sudo bash devops/setup-node.sh
+```
+
+Script sẽ:
+- Cài Node.js 18.x (qua NodeSource)
+- Cài global:
+  - `npm` (cập nhật)
+  - `sequelize-cli`
+
+Sau đó bạn có thể:
+
+```bash
+cd backend
+npm install
+npm run migrate
+npm run dev
+```
