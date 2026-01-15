@@ -44,3 +44,49 @@ chmod +x check-services.sh
 ```bash
 sudo bash devops/open-ports.sh
 ```
+
+## 5) Cài Nginx reverse proxy (dùng domain, port 80)
+
+```bash
+sudo bash devops/setup-nginx.sh
+```
+
+Script sẽ:
+- Cài `nginx`
+- Hỏi domain cho Web, CMS, API (ví dụ: `example.com`, `cms.example.com`, `api.example.com`)
+- Tạo file cấu hình `/etc/nginx/sites-available/goozi` reverse proxy:
+  - Web → `http://127.0.0.1:3000`
+  - CMS → `http://127.0.0.1:3002`
+  - API → `http://127.0.0.1:3001`
+- Kích hoạt site, reload Nginx, mở port 80 qua `ufw` (nếu có)
+
+Bạn chỉ cần trỏ DNS (record A/AAAA) của các domain về IP server là truy cập được.
+
+## 6) Triển khai production với domain `*.goozi.org`
+
+Với các domain:
+- Web: `web.goozi.org`
+- CMS: `cms.goozi.org`
+- API: `api.goozi.org`
+
+Bạn có thể dùng script sau để build & chạy Docker production + tạo file `.env` đúng URL:
+
+```bash
+sudo bash devops/setup-prod.sh
+```
+
+Script sẽ:
+- Hỏi lại 3 URL (mặc định lần lượt là `https://web.goozi.org`, `https://cms.goozi.org`, `https://api.goozi.org`)
+- Tạo/ghi file `.env` với:
+  - `FRONTEND_URL`, `CMS_URL`
+  - `VITE_API_URL=https://api.goozi.org/api` (hoặc theo URL bạn nhập)
+  - `JWT_SECRET` ngẫu nhiên, các biến DB mặc định
+- Chạy:
+  - `docker-compose build`
+  - `docker-compose up -d`
+  - `docker-compose exec backend npm run migrate`
+  - `docker-compose exec backend npm run create-admin`
+
+Kết hợp với `devops/setup-nginx.sh`, bạn sẽ có:
+- Người dùng truy cập qua domain: `web.goozi.org`, `cms.goozi.org`, `api.goozi.org`
+- Docker chỉ mở port nội bộ: 3000/3001/3002, Nginx public port 80.
