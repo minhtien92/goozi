@@ -1,13 +1,13 @@
 import { useState, useEffect } from 'react';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { useAuthStore, authStore } from '../store/authStore';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { useAuthStore } from '../store/authStore';
 import UserMenu from '../components/UserMenu';
 import LoginModal from '../components/LoginModal';
 import api from '../config/api';
 import logoHeader from '../assets/img/logo_header.svg';
 
 export default function Home() {
-  const { user, logout } = useAuthStore();
+  const { user } = useAuthStore();
   const navigate = useNavigate();
   const location = useLocation();
   const [logoMenuOpen, setLogoMenuOpen] = useState(false);
@@ -143,11 +143,6 @@ export default function Home() {
   useEffect(() => {
     fetchTestimonials();
   }, []);
-
-  const handleLogout = () => {
-    logout();
-    navigate('/');
-  };
 
   // Auto-open login modal if on /login route
   useEffect(() => {

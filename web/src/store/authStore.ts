@@ -65,7 +65,7 @@ export const useAuthStore = create<AuthState>()(
         
         // Ensure voiceAccentVersion is a number
         if (userToStore?.voiceAccentVersion !== undefined && userToStore?.voiceAccentVersion !== null) {
-          userToStore.voiceAccentVersion = parseInt(userToStore.voiceAccentVersion) || 1;
+          userToStore.voiceAccentVersion = parseInt(String(userToStore.voiceAccentVersion), 10) || 1;
           console.log('Parsed voiceAccentVersion in setAuth:', userToStore.voiceAccentVersion);
         }
         

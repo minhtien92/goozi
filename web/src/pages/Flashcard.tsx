@@ -47,7 +47,6 @@ export default function Flashcard() {
   // Get initial index from URL params, default to 0
   const initialIndex = parseInt(searchParams.get('index') || '0', 10);
   const [currentIndex, setCurrentIndex] = useState(initialIndex);
-  const [isFlipped, setIsFlipped] = useState(false);
   const [loading, setLoading] = useState(true);
   const [topic, setTopic] = useState<Topic | null>(null);
   const [languages, setLanguages] = useState<Language[]>([]);
@@ -187,7 +186,6 @@ export default function Flashcard() {
     if (currentIndex < vocabularies.length - 1) {
       stopAllAudio();
       setCurrentIndex(currentIndex + 1);
-      setIsFlipped(false);
     }
   };
 
@@ -195,7 +193,6 @@ export default function Flashcard() {
     if (currentIndex > 0) {
       stopAllAudio();
       setCurrentIndex(currentIndex - 1);
-      setIsFlipped(false);
     }
   };
 
@@ -395,7 +392,6 @@ export default function Flashcard() {
   const sourceTranslation = getSourceTranslation(currentVocab);
   const targetTranslation = getTargetTranslation(currentVocab);
   const sourceLang = topic?.sourceLanguage || sourceTranslation?.language;
-  const targetLang = topic?.targetLanguage || targetTranslation?.language;
   
   // Get learning languages from user profile
   const learningLanguageIds = user?.learningLanguageIds || [];
@@ -571,7 +567,7 @@ export default function Flashcard() {
         {/* Translations */}
         <div className="p-6 space-y-3 flex-1 overflow-y-auto">
           {/* Display translations for learning languages */}
-          {learningLanguageTranslations.map((item, index) => {
+          {learningLanguageTranslations.map((item) => {
             if (!item.language || !item.translation) return null;
             const key = `row-${item.language.id}-${item.translation.id}`;
             

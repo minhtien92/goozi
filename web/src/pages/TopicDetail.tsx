@@ -73,21 +73,6 @@ export default function TopicDetail() {
     }
   };
 
-  const handlePrevious = () => {
-    if (currentVocabIndex > 0) {
-      setCurrentVocabIndex(currentVocabIndex - 1);
-    }
-  };
-
-  const handleNext = () => {
-    const vocabulariesWithTranslations = topic?.vocabularies.filter(
-      (vocab) => vocab.translations && vocab.translations.length > 0
-    ) || [];
-    if (currentVocabIndex < vocabulariesWithTranslations.length - 1) {
-      setCurrentVocabIndex(currentVocabIndex + 1);
-    }
-  };
-
   const playAudio = (() => {
     let currentAudio: HTMLAudioElement | null = null;
     return (audioUrl: string | null, word: string) => {
@@ -218,12 +203,6 @@ export default function TopicDetail() {
   }
 
   const currentVocab = vocabulariesWithTranslations[validIndex];
-  const sourceLang = topic.sourceLanguage;
-  const targetLang = topic.targetLanguage;
-
-  // Get translations for source and target languages with preferred voice accent version
-  const sourceTranslation = getTranslationWithVoiceAccent(currentVocab?.translations, sourceLang?.id);
-  const targetTranslation = getTranslationWithVoiceAccent(currentVocab?.translations, targetLang?.id) || currentVocab?.translations?.[0]; // Fallback to first translation if target language not found
 
   const handleClose = () => {
     navigate('/');

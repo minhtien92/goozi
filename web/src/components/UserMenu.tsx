@@ -25,7 +25,7 @@ export default function UserMenu({ onClose }: UserMenuProps) {
   const [languages, setLanguages] = useState<Language[]>([]);
   // Initialize from user preference - will be updated in useEffect
   const [selectedLanguages, setSelectedLanguages] = useState<string[]>([]);
-  const [voiceAccents, setVoiceAccents] = useState<string[]>(['Voice accent 1', 'Voice accent 2', 'Voice accent 3', 'Voice accent 4']);
+  const [voiceAccents] = useState<string[]>(['Voice accent 1', 'Voice accent 2', 'Voice accent 3', 'Voice accent 4']);
   // Initialize from user preference or default to 2 (Voice accent 2) - will be updated in useEffect
   const [selectedVoiceAccent, setSelectedVoiceAccent] = useState<string>('Voice accent 2');
   const [activeMenuItemTop, setActiveMenuItemTop] = useState<number>(0);
@@ -53,7 +53,7 @@ export default function UserMenu({ onClose }: UserMenuProps) {
     
     // Load voice accent from user preference
     if (user?.voiceAccentVersion !== undefined && user?.voiceAccentVersion !== null) {
-      const version = parseInt(user.voiceAccentVersion) || 1;
+      const version = parseInt(String(user.voiceAccentVersion), 10) || 1;
       const accent = `Voice accent ${version}`;
       console.log('Setting voice accent to:', accent, 'from version:', version);
       setSelectedVoiceAccent(accent);

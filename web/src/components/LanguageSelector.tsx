@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import api from '../config/api';
-import { useAuthStore, authStore } from '../store/authStore';
+import { useAuthStore } from '../store/authStore';
 
 interface Language {
   id: string;
