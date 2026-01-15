@@ -46,9 +46,16 @@ export default function Picture() {
 
   const getImageUrl = (value: string) => {
     if (!value) return '';
-    if (value.startsWith('http')) return value;
-    const baseUrl = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:3001';
-    return `${baseUrl}${value}`;
+    if (value.startsWith('http://') || value.startsWith('https://')) return value;
+    // Ensure baseUrl has proper format
+    let baseUrl = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:3001';
+    // Ensure baseUrl starts with http:// or https://
+    if (!baseUrl.startsWith('http://') && !baseUrl.startsWith('https://')) {
+      baseUrl = `http://${baseUrl}`;
+    }
+    // Ensure value starts with /
+    const imagePath = value.startsWith('/') ? value : `/${value}`;
+    return `${baseUrl}${imagePath}`;
   };
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
