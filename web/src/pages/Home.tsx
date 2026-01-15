@@ -111,7 +111,9 @@ export default function Home() {
       }
 
       // Get hero image from 'picture'
-      const baseUrl = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:3001';
+      // Only remove /api at the end of URL, not in the middle (e.g., api.goozi.org)
+      const viteApiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
+      const baseUrl = viteApiUrl.endsWith('/api') ? viteApiUrl.slice(0, -4) : viteApiUrl.replace(/\/api$/, '') || 'http://localhost:3001';
       const pictureSettings = settings.filter((s: any) => s.key === 'picture');
       if (pictureSettings.length > 0) {
         const sorted = [...pictureSettings].sort((a: any, b: any) => (a.order || 0) - (b.order || 0));

@@ -44,7 +44,9 @@ export default function HomeSettings() {
       // Get background image
       const bgSetting = allSettings.find((s: HomeSetting) => s.key === 'background_image');
       if (bgSetting && bgSetting.value) {
-        const baseUrl = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:3001';
+        // Only remove /api at the end of URL, not in the middle (e.g., api.goozi.org)
+      const viteApiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
+      const baseUrl = viteApiUrl.endsWith('/api') ? viteApiUrl.slice(0, -4) : viteApiUrl.replace(/\/api$/, '') || 'http://localhost:3001';
         setBackgroundImage(bgSetting.value.startsWith('http') ? bgSetting.value : `${baseUrl}${bgSetting.value}`);
       }
     } catch (error) {
@@ -85,14 +87,21 @@ export default function HomeSettings() {
       
       if (response.data.url) {
         // Get full URL - ensure baseUrl has proper format
-        let baseUrl = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:3001';
+        const viteApiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
+        // Only remove /api at the end of URL, not in the middle (e.g., api.goozi.org)
+        let baseUrl = viteApiUrl.endsWith('/api') ? viteApiUrl.slice(0, -4) : viteApiUrl.replace(/\/api$/, '');
+        if (!baseUrl) baseUrl = 'http://localhost:3001';
+        
         // Ensure baseUrl starts with http:// or https://
         if (!baseUrl.startsWith('http://') && !baseUrl.startsWith('https://')) {
           baseUrl = `http://${baseUrl}`;
         }
+        
         // Ensure response.data.url starts with /
         const imagePath = response.data.url.startsWith('/') ? response.data.url : `/${response.data.url}`;
         const fullUrl = `${baseUrl}${imagePath}`;
+        
+        console.log('Upload background - fullUrl:', fullUrl);
         
         await api.post('/home-settings', {
           key: 'background_image',

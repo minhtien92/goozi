@@ -81,7 +81,9 @@ export default function TopicDetail() {
         let normalizedUrl = audioUrl;
         if (!audioUrl.startsWith('http')) {
           // If it's a relative path, prepend the API base URL
-          const baseUrl = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:3001';
+          // Only remove /api at the end of URL, not in the middle (e.g., api.goozi.org)
+          const viteApiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
+          const baseUrl = viteApiUrl.endsWith('/api') ? viteApiUrl.slice(0, -4) : viteApiUrl.replace(/\/api$/, '') || 'http://localhost:3001';
           normalizedUrl = `${baseUrl}${audioUrl.startsWith('/') ? audioUrl : '/' + audioUrl}`;
         }
         

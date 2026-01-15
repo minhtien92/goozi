@@ -48,7 +48,10 @@ export default function Picture() {
     if (!value) return '';
     if (value.startsWith('http://') || value.startsWith('https://')) return value;
     // Ensure baseUrl has proper format
-    let baseUrl = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:3001';
+    // Only remove /api at the end of URL, not in the middle (e.g., api.goozi.org)
+    const viteApiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
+    let baseUrl = viteApiUrl.endsWith('/api') ? viteApiUrl.slice(0, -4) : viteApiUrl.replace(/\/api$/, '');
+    if (!baseUrl) baseUrl = 'http://localhost:3001';
     // Ensure baseUrl starts with http:// or https://
     if (!baseUrl.startsWith('http://') && !baseUrl.startsWith('https://')) {
       baseUrl = `http://${baseUrl}`;

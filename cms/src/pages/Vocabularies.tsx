@@ -313,14 +313,26 @@ export default function Vocabularies() {
 
       if (response.data.url) {
         // Get full URL - ensure baseUrl has proper format
-        let baseUrl = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:3001';
+        const viteApiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
+        // Only remove /api at the end of URL, not in the middle (e.g., api.goozi.org)
+        let baseUrl = viteApiUrl.endsWith('/api') ? viteApiUrl.slice(0, -4) : viteApiUrl.replace(/\/api$/, '');
+        if (!baseUrl) baseUrl = 'http://localhost:3001';
+        
         // Ensure baseUrl starts with http:// or https://
         if (!baseUrl.startsWith('http://') && !baseUrl.startsWith('https://')) {
           baseUrl = `http://${baseUrl}`;
         }
+        
         // Ensure response.data.url starts with /
         const audioPath = response.data.url.startsWith('/') ? response.data.url : `/${response.data.url}`;
         const fullUrl = `${baseUrl}${audioPath}`;
+        
+        // Debug logging
+        console.log('Upload audio - VITE_API_URL:', viteApiUrl);
+        console.log('Upload audio - baseUrl:', baseUrl);
+        console.log('Upload audio - response.data.url:', response.data.url);
+        console.log('Upload audio - fullUrl:', fullUrl);
+        
         updateTranslation(languageId, version, 'audioUrl', fullUrl);
       }
     } catch (error: any) {
@@ -335,14 +347,26 @@ export default function Vocabularies() {
 
       if (response.data.url) {
         // Get full URL - ensure baseUrl has proper format
-        let baseUrl = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:3001';
+        const viteApiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
+        // Only remove /api at the end of URL, not in the middle (e.g., api.goozi.org)
+        let baseUrl = viteApiUrl.endsWith('/api') ? viteApiUrl.slice(0, -4) : viteApiUrl.replace(/\/api$/, '');
+        if (!baseUrl) baseUrl = 'http://localhost:3001';
+        
         // Ensure baseUrl starts with http:// or https://
         if (!baseUrl.startsWith('http://') && !baseUrl.startsWith('https://')) {
           baseUrl = `http://${baseUrl}`;
         }
+        
         // Ensure response.data.url starts with /
         const imagePath = response.data.url.startsWith('/') ? response.data.url : `/${response.data.url}`;
         const fullUrl = `${baseUrl}${imagePath}`;
+        
+        // Debug logging
+        console.log('Upload avatar - VITE_API_URL:', viteApiUrl);
+        console.log('Upload avatar - baseUrl:', baseUrl);
+        console.log('Upload avatar - response.data.url:', response.data.url);
+        console.log('Upload avatar - fullUrl:', fullUrl);
+        
         setFormData({ ...formData, avatar: fullUrl });
       }
     } catch (error: any) {

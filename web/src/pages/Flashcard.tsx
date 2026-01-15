@@ -239,7 +239,9 @@ export default function Flashcard() {
       // Chuẩn hoá URL giống như ở TopicDetail
       let normalizedUrl = audioUrl;
       if (!audioUrl.startsWith('http')) {
-        const baseUrl = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:3001';
+        // Only remove /api at the end of URL, not in the middle (e.g., api.goozi.org)
+        const viteApiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
+        const baseUrl = viteApiUrl.endsWith('/api') ? viteApiUrl.slice(0, -4) : viteApiUrl.replace(/\/api$/, '') || 'http://localhost:3001';
         normalizedUrl = `${baseUrl}${audioUrl.startsWith('/') ? audioUrl : '/' + audioUrl}`;
       }
 
