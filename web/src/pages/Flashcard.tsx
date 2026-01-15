@@ -323,25 +323,6 @@ export default function Flashcard() {
     return getTranslationWithVoiceAccent(vocab.translations, topic.sourceLanguage.id);
   };
 
-  const getTargetTranslation = (vocab: Vocabulary) => {
-    if (!vocab.translations || vocab.translations.length === 0) return null;
-    
-    // Try to find translation for target language with preferred voice accent
-    if (topic?.targetLanguage?.id) {
-      const targetTrans = getTranslationWithVoiceAccent(vocab.translations, topic.targetLanguage.id);
-      if (targetTrans) return targetTrans;
-    }
-    
-    // If we have source translation, try to get a different one
-    const sourceTrans = getSourceTranslation(vocab);
-    if (sourceTrans && vocab.translations.length > 1) {
-      return vocab.translations.find(t => t.id !== sourceTrans.id) || vocab.translations[0];
-    }
-    
-    // Fallback to first translation
-    return vocab.translations[0];
-  };
-
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
