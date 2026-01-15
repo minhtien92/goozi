@@ -312,9 +312,15 @@ export default function Vocabularies() {
       const response = await uploadFile('/upload/audio', file);
 
       if (response.data.url) {
-        // Get full URL - response.data.url is already /uploads/audio/xxx.mp3
-        const baseUrl = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:3001';
-        const fullUrl = `${baseUrl}${response.data.url}`;
+        // Get full URL - ensure baseUrl has proper format
+        let baseUrl = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:3001';
+        // Ensure baseUrl starts with http:// or https://
+        if (!baseUrl.startsWith('http://') && !baseUrl.startsWith('https://')) {
+          baseUrl = `http://${baseUrl}`;
+        }
+        // Ensure response.data.url starts with /
+        const audioPath = response.data.url.startsWith('/') ? response.data.url : `/${response.data.url}`;
+        const fullUrl = `${baseUrl}${audioPath}`;
         updateTranslation(languageId, version, 'audioUrl', fullUrl);
       }
     } catch (error: any) {
@@ -328,9 +334,15 @@ export default function Vocabularies() {
       const response = await uploadFile('/upload/image', file);
 
       if (response.data.url) {
-        // Get full URL
-        const baseUrl = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:3001';
-        const fullUrl = `${baseUrl}${response.data.url}`;
+        // Get full URL - ensure baseUrl has proper format
+        let baseUrl = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:3001';
+        // Ensure baseUrl starts with http:// or https://
+        if (!baseUrl.startsWith('http://') && !baseUrl.startsWith('https://')) {
+          baseUrl = `http://${baseUrl}`;
+        }
+        // Ensure response.data.url starts with /
+        const imagePath = response.data.url.startsWith('/') ? response.data.url : `/${response.data.url}`;
+        const fullUrl = `${baseUrl}${imagePath}`;
         setFormData({ ...formData, avatar: fullUrl });
       }
     } catch (error: any) {

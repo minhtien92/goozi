@@ -84,12 +84,19 @@ export default function HomeSettings() {
       const response = await uploadFile('/upload/image', file);
       
       if (response.data.url) {
-        const baseUrl = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:3001';
-        const fullUrl = `${baseUrl}${response.data.url}`;
+        // Get full URL - ensure baseUrl has proper format
+        let baseUrl = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:3001';
+        // Ensure baseUrl starts with http:// or https://
+        if (!baseUrl.startsWith('http://') && !baseUrl.startsWith('https://')) {
+          baseUrl = `http://${baseUrl}`;
+        }
+        // Ensure response.data.url starts with /
+        const imagePath = response.data.url.startsWith('/') ? response.data.url : `/${response.data.url}`;
+        const fullUrl = `${baseUrl}${imagePath}`;
         
         await api.post('/home-settings', {
           key: 'background_image',
-          value: response.data.url,
+          value: response.data.url, // Store relative path in DB
           isActive: true,
         });
         
