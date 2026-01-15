@@ -91,12 +91,28 @@ docker-compose -f docker-compose.dev.yml down
 ./build-prod.sh
 ```
 
+## 🔧 Rebuild Services
+
+Sau khi thay đổi code, rebuild services:
+
+```bash
+# Development
+./rebuild-dev.sh
+
+# Production
+./rebuild-prod.sh
+```
+
+Script sẽ hỏi bạn chọn services cần rebuild (có thể chọn nhiều).
+
+Xem chi tiết: [REBUILD.md](REBUILD.md)
+
 ## ⚠️ Lưu ý
 
 - File `.env` không được commit vào git
 - Production và Development dùng database riêng biệt
 - Sau khi thay đổi `.env`, cần rebuild containers:
-  - Production: `docker-compose build --no-cache web cms backend && docker-compose up -d`
-  - Development: `docker-compose -f docker-compose.dev.yml restart backend` (frontend tự reload)
+  - Production: `./rebuild-prod.sh` (chọn web, cms, backend)
+  - Development: `./rebuild-dev.sh` (chọn backend) hoặc restart (frontend tự reload)
 
 Xem chi tiết: [ENVIRONMENTS.md](ENVIRONMENTS.md)

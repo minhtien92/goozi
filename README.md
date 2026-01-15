@@ -408,14 +408,37 @@ chmod +x check-services.sh
 check-services.bat
 ```
 
+### Rebuild Services
+
+Để rebuild một hoặc nhiều services sau khi thay đổi code:
+
+**Development:**
+```bash
+chmod +x rebuild-dev.sh
+./rebuild-dev.sh
+# Chọn services cần rebuild (có thể chọn nhiều)
+```
+
+**Production:**
+```bash
+chmod +x rebuild-prod.sh
+./rebuild-prod.sh
+# Chọn services cần rebuild (có thể chọn nhiều)
+```
+
+Xem chi tiết: [REBUILD.md](REBUILD.md)
+
 ### Khắc phục sự cố
 
 Nếu không truy cập được web:
 
 1. **Rebuild containers:**
 ```bash
-docker-compose down
-docker-compose up -d --build
+# Development
+./rebuild-dev.sh
+
+# Production
+./rebuild-prod.sh
 ```
 
 2. **Kiểm tra logs:**

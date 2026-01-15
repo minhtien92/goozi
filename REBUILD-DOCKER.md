@@ -1,15 +1,12 @@
-# Hướng Dẫn Rebuild Docker Containers
+# Hướng Dẫn Rebuild Docker Containers (Deprecated)
 
-Scripts để rebuild lại Docker containers từng phần khi có cập nhật code.
+> ⚠️ **Deprecated**: Tài liệu này đã được thay thế. Vui lòng xem [REBUILD.md](REBUILD.md) để biết cách sử dụng script rebuild mới với interactive menu.
 
-## 📋 Các Script Có Sẵn
+---
 
-### Script Chính
+**Khuyến nghị:** Sử dụng `rebuild-dev.sh` hoặc `rebuild-prod.sh` với interactive menu để rebuild services.
 
-- **`rebuild-docker.bat`** (Windows) / **`rebuild-docker.sh`** (Linux/Mac) - Script chính với đầy đủ tùy chọn
-- **`rebuild-backend.bat`** / **`rebuild-backend.sh`** - Rebuild backend nhanh
-- **`rebuild-web.bat`** / **`rebuild-web.sh`** - Rebuild web nhanh
-- **`rebuild-cms.bat`** / **`rebuild-cms.sh`** - Rebuild CMS nhanh
+Các script cũ đã được di chuyển vào `scripts/rebuild/` và không còn được khuyến nghị sử dụng.
 
 ## 🚀 Cách Sử Dụng
 
