@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react';
-import api from '../config/api';
 
 interface Feedback {
   id: string;

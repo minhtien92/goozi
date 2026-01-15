@@ -22,9 +22,9 @@ export default function Testimonials() {
     currentPage: 1,
     itemsPerPage: 10,
   });
-  const [editName, setEditName] = useState('');
-  const [editQuote, setEditQuote] = useState('');
-  const [editOrder, setEditOrder] = useState(0);
+  const [, setEditName] = useState('');
+  const [, setEditQuote] = useState('');
+  const [, setEditOrder] = useState(0);
   
   // Form thêm mới
   const [newName, setNewName] = useState('');

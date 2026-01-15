@@ -16,7 +16,6 @@ export default function HomeSettings() {
   const [slogans, setSlogans] = useState<HomeSetting[]>([]);
   const [backgroundImage, setBackgroundImage] = useState<string>('');
   const [loading, setLoading] = useState(true);
-  const [editingSloganIndex, setEditingSloganIndex] = useState<number | null>(null);
   const [sloganValues, setSloganValues] = useState<string[]>(['', '', '', '', '']);
 
   useEffect(() => {

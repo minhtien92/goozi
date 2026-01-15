@@ -639,7 +639,7 @@ export default function Vocabularies() {
               <div className="form-group">
                 <label className="mb-3">Translations</label>
                 <div>
-                  {languages.map((lang, langIndex) => {
+                  {languages.map((lang) => {
                     const firstMeaning =
                       formData.translations[lang.id]?.[1]?.meaning ||
                       formData.translations[lang.id]?.[2]?.meaning ||
