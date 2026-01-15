@@ -34,6 +34,10 @@ await fastify.register(cors, {
     'http://localhost:3002',
     'http://web:3000',
     'http://cms:3002',
+    'http://web.goozi.org',
+    'http://cms.goozi.org',
+    'https://web.goozi.org',
+    'https://cms.goozi.org',
   ],
   credentials: true,
 });
@@ -44,7 +48,7 @@ await fastify.register(jwt, {
 
 await fastify.register(multipart, {
   limits: {
-    fileSize: 10 * 1024 * 1024, // 10MB
+    fileSize: 50 * 1024 * 1024, // 50MB
   },
 });
 
