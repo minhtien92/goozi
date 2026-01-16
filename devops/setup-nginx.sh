@@ -131,7 +131,7 @@ cat <<EOF
 
 NOTE:
 - Make sure your DNS records (A/AAAA) of those domains point to this server's IP.
-- For HTTPS/SSL, you can later install certbot and obtain Let's Encrypt certificates.
+- For HTTPS/SSL, run: sudo bash devops/setup-ssl.sh
 
 EOF
 

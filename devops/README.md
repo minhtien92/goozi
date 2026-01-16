@@ -62,7 +62,28 @@ Script sẽ:
 
 Bạn chỉ cần trỏ DNS (record A/AAAA) của các domain về IP server là truy cập được.
 
-## 6) Triển khai production với domain `*.goozi.org`
+## 6) Setup SSL/HTTPS với Let's Encrypt
+
+Sau khi đã setup Nginx và DNS đã trỏ đúng, setup SSL:
+
+```bash
+sudo bash devops/setup-ssl.sh
+```
+
+Script sẽ:
+- Cài đặt Certbot
+- Lấy SSL certificates từ Let's Encrypt cho cả 3 domains
+- Cấu hình Nginx tự động cho HTTPS
+- Setup auto-renewal
+
+**Lưu ý:**
+- DNS phải đã trỏ đúng về server IP
+- Port 80 và 443 phải mở
+- Sau khi có HTTPS, cần rebuild frontend containers với URLs mới
+
+Xem chi tiết: [devops/SSL.md](devops/SSL.md)
+
+## 7) Triển khai production với domain `*.goozi.org`
 
 Với các domain:
 - Web: `web.goozi.org`
@@ -87,11 +108,12 @@ Script sẽ:
   - `docker-compose exec backend npm run migrate`
   - `docker-compose exec backend npm run create-admin`
 
-Kết hợp với `devops/setup-nginx.sh`, bạn sẽ có:
+Kết hợp với `devops/setup-nginx.sh` và `devops/setup-ssl.sh`, bạn sẽ có:
 - Người dùng truy cập qua domain: `web.goozi.org`, `cms.goozi.org`, `api.goozi.org`
-- Docker chỉ mở port nội bộ: 3000/3001/3002, Nginx public port 80.
+- HTTPS/SSL tự động với Let's Encrypt
+- Docker chỉ mở port nội bộ: 3000/3001/3002, Nginx public port 80/443
 
-## 7) Cài Node.js + sequelize-cli (chạy backend ngoài Docker)
+## 8) Cài Node.js + sequelize-cli (chạy backend ngoài Docker)
 
 Nếu bạn muốn chạy backend trực tiếp trên host (không dùng Docker), có thể cài Node.js 18.x và `sequelize-cli` global:
 
