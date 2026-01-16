@@ -40,6 +40,9 @@ await fastify.register(cors, {
     'https://cms.goozi.org',
   ],
   credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+  exposedHeaders: ['Content-Type', 'Authorization'],
 });
 
 await fastify.register(jwt, {
