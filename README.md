@@ -428,6 +428,54 @@ chmod +x rebuild-prod.sh
 
 Xem chi tiết: [REBUILD.md](REBUILD.md)
 
+### Backup & Restore
+
+Để tránh mất dữ liệu uploads khi Docker container bị xóa:
+
+**Backup Uploads:**
+```bash
+# Development
+chmod +x scripts/backup/backup-uploads.sh
+./scripts/backup/backup-uploads.sh dev
+
+# Production
+./scripts/backup/backup-uploads.sh prod
+```
+
+**Backup Tất cả (Database + Uploads):**
+```bash
+./scripts/backup/backup-all.sh prod
+```
+
+**Setup Automated Backup (tự động backup hàng ngày):**
+```bash
+# Production - backup hàng ngày, giữ 30 ngày
+chmod +x scripts/backup/setup-auto-backup.sh
+./scripts/backup/setup-auto-backup.sh prod daily 30
+```
+
+**Kiểm tra trạng thái backup:**
+```bash
+./scripts/backup/check-backup-status.sh
+```
+
+**Restore Uploads:**
+```bash
+./scripts/backup/restore-uploads.sh backups/uploads/uploads_20240115_120000.tar.gz prod
+```
+
+Xem chi tiết: [BACKUP.md](BACKUP.md)
+
+### Bind Mounts (Production)
+
+**Production** sử dụng **bind mounts** cho uploads:
+- Uploads được lưu tại: `/home/goozi_upload/`
+- Dễ truy cập và backup hơn
+
+**Development** vẫn dùng Docker volumes (không cần migrate).
+
+Nếu đang migrate từ volumes, xem: [scripts/mounts/README.md](scripts/mounts/README.md)
+
 ### Khắc phục sự cố
 
 Nếu không truy cập được web:

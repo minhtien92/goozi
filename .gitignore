@@ -137,3 +137,12 @@ dist
 # Vite logs files
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
+
+# Backup files
+backups/
+*.sql
+*.sql.gz
+*.tar.gz
+
+# Uploads (bind mount - production uses /home/goozi_upload)
+# Note: Development still uses Docker volumes
