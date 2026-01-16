@@ -30,16 +30,52 @@ else
     echo "✅ Certbot already installed"
 fi
 
+# Function to validate domain
+validate_domain() {
+    local domain=$1
+    # Check if domain contains only valid characters (letters, numbers, dots, hyphens)
+    if [[ ! "$domain" =~ ^[a-zA-Z0-9][a-zA-Z0-9\.-]*[a-zA-Z0-9]$ ]] || [[ "$domain" =~ , ]]; then
+        return 1
+    fi
+    # Check if domain has at least one dot
+    if [[ ! "$domain" =~ \. ]]; then
+        return 1
+    fi
+    return 0
+}
+
 # Get domains
 echo ""
 echo "==> Enter your domains:"
-read -rp "Web domain (e.g., web.goozi.org): " WEB_DOMAIN
-read -rp "CMS domain (e.g., cms.goozi.org): " CMS_DOMAIN
-read -rp "API domain (e.g., api.goozi.org): " API_DOMAIN
+while true; do
+    read -rp "Web domain (e.g., web.goozi.org): " WEB_DOMAIN
+    WEB_DOMAIN=${WEB_DOMAIN:-web.goozi.org}
+    if validate_domain "$WEB_DOMAIN"; then
+        break
+    else
+        echo "❌ Invalid domain format. Please use format like: web.goozi.org"
+    fi
+done
 
-WEB_DOMAIN=${WEB_DOMAIN:-web.goozi.org}
-CMS_DOMAIN=${CMS_DOMAIN:-cms.goozi.org}
-API_DOMAIN=${API_DOMAIN:-api.goozi.org}
+while true; do
+    read -rp "CMS domain (e.g., cms.goozi.org): " CMS_DOMAIN
+    CMS_DOMAIN=${CMS_DOMAIN:-cms.goozi.org}
+    if validate_domain "$CMS_DOMAIN"; then
+        break
+    else
+        echo "❌ Invalid domain format. Please use format like: cms.goozi.org"
+    fi
+done
+
+while true; do
+    read -rp "API domain (e.g., api.goozi.org): " API_DOMAIN
+    API_DOMAIN=${API_DOMAIN:-api.goozi.org}
+    if validate_domain "$API_DOMAIN"; then
+        break
+    else
+        echo "❌ Invalid domain format. Please use format like: api.goozi.org"
+    fi
+done
 
 echo ""
 echo "📋 Domains:"

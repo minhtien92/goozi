@@ -89,7 +89,23 @@ sudo bash devops/setup-ssl.sh
 
 Xem chi tiết: [devops/SSL.md](devops/SSL.md)
 
-## 7) Triển khai production với domain `*.goozi.org`
+## 7) Fix Google OAuth Issues
+
+Nếu gặp lỗi Google OAuth (401, COOP policy, etc.):
+
+```bash
+# Check và fix configuration
+bash scripts/fix_db/fix-google-oauth.sh
+```
+
+Script sẽ hướng dẫn bạn:
+- Kiểm tra GOOGLE_CLIENT_ID trong .env
+- Cập nhật Google Cloud Console với đúng origins
+- Troubleshooting các lỗi thường gặp
+
+Xem chi tiết: [docs/GOOGLE_OAUTH_SETUP.md](docs/GOOGLE_OAUTH_SETUP.md)
+
+## 8) Triển khai production với domain `*.goozi.org`
 
 Với các domain:
 - Web: `web.goozi.org`

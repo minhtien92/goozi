@@ -27,9 +27,12 @@ Nếu bạn gặp lỗi:
 
 1. Trong phần **Authorized JavaScript origins**, click nút **+ ADD URI**
 2. Thêm các origins sau:
-   - `http://localhost:3000`
-   - `http://127.0.0.1:3000`
-   - (Nếu có domain production, thêm domain đó, ví dụ: `https://yourdomain.com`)
+   - `http://localhost:3000` (development)
+   - `http://127.0.0.1:3000` (development)
+   - `https://web.goozi.org` (production - nếu đã setup HTTPS)
+   - `https://cms.goozi.org` (production - nếu đã setup HTTPS)
+   - `http://web.goozi.org` (production - nếu chưa có HTTPS)
+   - `http://cms.goozi.org` (production - nếu chưa có HTTPS)
 
 3. **Lưu ý quan trọng**:
    - Không thêm dấu `/` ở cuối (ví dụ: `http://localhost:3000/` là SAI)

@@ -73,6 +73,13 @@ await fastify.register(cors, {
   preflightContinue: false,
 });
 
+// Add Cross-Origin-Opener-Policy header for Google OAuth
+fastify.addHook('onSend', async (request, reply) => {
+  // Allow popups for OAuth (Google Sign In needs this)
+  reply.header('Cross-Origin-Opener-Policy', 'same-origin-allow-popups');
+  reply.header('Cross-Origin-Embedder-Policy', 'unsafe-none');
+});
+
 await fastify.register(jwt, {
   secret: process.env.JWT_SECRET || 'your-super-secret-jwt-key-change-in-production',
 });
