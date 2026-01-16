@@ -26,23 +26,51 @@ const fastify = Fastify({
 });
 
 // Register plugins
+// CORS configuration
+const corsOrigins = [
+  process.env.FRONTEND_URL,
+  process.env.CMS_URL,
+  'http://localhost:3000',
+  'http://localhost:3002',
+  'http://web:3000',
+  'http://cms:3002',
+  'http://web.goozi.org',
+  'http://cms.goozi.org',
+  'https://web.goozi.org',
+  'https://cms.goozi.org',
+].filter(Boolean); // Remove undefined/null values
+
 await fastify.register(cors, {
-  origin: [
-    process.env.FRONTEND_URL || 'http://localhost:3000',
-    process.env.CMS_URL || 'http://localhost:3002',
-    'http://localhost:3000',
-    'http://localhost:3002',
-    'http://web:3000',
-    'http://cms:3002',
-    'http://web.goozi.org',
-    'http://cms.goozi.org',
-    'https://web.goozi.org',
-    'https://cms.goozi.org',
-  ],
+  origin: (origin, cb) => {
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return cb(null, true);
+    
+    // Check if origin is in allowed list
+    if (corsOrigins.some(allowed => origin === allowed || origin.startsWith(allowed))) {
+      return cb(null, true);
+    }
+    
+    // Default: allow if matches pattern
+    if (origin.includes('goozi.org') || origin.includes('localhost')) {
+      return cb(null, true);
+    }
+    
+    return cb(new Error('Not allowed by CORS'), false);
+  },
   credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS', 'HEAD'],
+  allowedHeaders: [
+    'Content-Type',
+    'Authorization',
+    'X-Requested-With',
+    'Accept',
+    'Origin',
+    'Access-Control-Request-Method',
+    'Access-Control-Request-Headers',
+  ],
   exposedHeaders: ['Content-Type', 'Authorization'],
+  preflight: true,
+  preflightContinue: false,
 });
 
 await fastify.register(jwt, {

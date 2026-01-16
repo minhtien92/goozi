@@ -72,6 +72,9 @@ server {
     listen 80;
     server_name ${API_DOMAIN};
 
+    # Increase body size for uploads
+    client_max_body_size 50M;
+
     location / {
         proxy_pass         http://127.0.0.1:3001;
         proxy_http_version 1.1;
@@ -81,6 +84,24 @@ server {
         proxy_set_header   X-Real-IP \$remote_addr;
         proxy_set_header   X-Forwarded-For \$proxy_add_x_forwarded_for;
         proxy_set_header   X-Forwarded-Proto \$scheme;
+        proxy_set_header   X-Forwarded-Host \$host;
+        
+        # CORS headers (backend should handle, but ensure they pass through)
+        add_header 'Access-Control-Allow-Origin' '*' always;
+        add_header 'Access-Control-Allow-Methods' 'GET, POST, PUT, DELETE, PATCH, OPTIONS' always;
+        add_header 'Access-Control-Allow-Headers' 'Content-Type, Authorization, X-Requested-With' always;
+        add_header 'Access-Control-Allow-Credentials' 'true' always;
+        
+        # Handle preflight requests
+        if (\$request_method = 'OPTIONS') {
+            add_header 'Access-Control-Allow-Origin' '*' always;
+            add_header 'Access-Control-Allow-Methods' 'GET, POST, PUT, DELETE, PATCH, OPTIONS' always;
+            add_header 'Access-Control-Allow-Headers' 'Content-Type, Authorization, X-Requested-With' always;
+            add_header 'Access-Control-Max-Age' 1728000;
+            add_header 'Content-Type' 'text/plain; charset=utf-8';
+            add_header 'Content-Length' 0;
+            return 204;
+        }
     }
 }
 EOF
