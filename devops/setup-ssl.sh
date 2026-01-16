@@ -142,26 +142,47 @@ echo "==> Obtaining SSL certificates from Let's Encrypt..."
 echo "Email: $EMAIL"
 echo ""
 
+# Function to get or fix certificate
+get_certificate() {
+    local domain=$1
+    echo "Getting certificate for $domain..."
+    
+    # Check if certificate exists and is valid
+    if [ -d "/etc/letsencrypt/live/$domain" ]; then
+        # Try to renew first
+        if certbot renew --cert-name "$domain" --dry-run &>/dev/null; then
+            echo "✅ Certificate for $domain is valid"
+            return 0
+        else
+            echo "⚠️  Certificate for $domain has issues. Recreating..."
+            # Delete old certificate
+            certbot delete --cert-name "$domain" --non-interactive 2>/dev/null || {
+                rm -rf "/etc/letsencrypt/live/$domain" 2>/dev/null || true
+                rm -rf "/etc/letsencrypt/archive/$domain" 2>/dev/null || true
+                rm -f "/etc/letsencrypt/renewal/${domain}.conf" 2>/dev/null || true
+            }
+        fi
+    fi
+    
+    # Create new certificate
+    if certbot --nginx -d "$domain" --non-interactive --agree-tos --email "$EMAIL" --redirect; then
+        echo "✅ Certificate for $domain created successfully"
+        return 0
+    else
+        echo "❌ Failed to get certificate for $domain"
+        echo "   Check DNS and try again"
+        return 1
+    fi
+}
+
 # Get certificates for each domain
-echo "Getting certificate for $WEB_DOMAIN..."
-certbot --nginx -d "$WEB_DOMAIN" --non-interactive --agree-tos --email "$EMAIL" --redirect || {
-    echo "⚠️  Failed to get certificate for $WEB_DOMAIN"
-    echo "   Check DNS and try again"
-}
+get_certificate "$WEB_DOMAIN"
 
 echo ""
-echo "Getting certificate for $CMS_DOMAIN..."
-certbot --nginx -d "$CMS_DOMAIN" --non-interactive --agree-tos --email "$EMAIL" --redirect || {
-    echo "⚠️  Failed to get certificate for $CMS_DOMAIN"
-    echo "   Check DNS and try again"
-}
+get_certificate "$CMS_DOMAIN"
 
 echo ""
-echo "Getting certificate for $API_DOMAIN..."
-certbot --nginx -d "$API_DOMAIN" --non-interactive --agree-tos --email "$EMAIL" --redirect || {
-    echo "⚠️  Failed to get certificate for $API_DOMAIN"
-    echo "   Check DNS and try again"
-}
+get_certificate "$API_DOMAIN"
 
 # Setup auto-renewal
 echo ""

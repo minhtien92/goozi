@@ -81,6 +81,12 @@ Script sẽ:
 - Port 80 và 443 phải mở
 - Sau khi có HTTPS, cần rebuild frontend containers với URLs mới
 
+**Fix lỗi renewal:**
+```bash
+# Chạy lại setup-ssl.sh - script sẽ tự động detect và fix certificates có vấn đề
+sudo bash devops/setup-ssl.sh
+```
+
 Xem chi tiết: [devops/SSL.md](devops/SSL.md)
 
 ## 7) Triển khai production với domain `*.goozi.org`

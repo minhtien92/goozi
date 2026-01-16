@@ -177,6 +177,22 @@ sudo certbot renew
 sudo certbot certificates
 ```
 
+### Lỗi: Renewal failed - "No such authorization"
+
+Lỗi này thường xảy ra khi certificate đã bị xóa hoặc không hợp lệ:
+
+```bash
+# Chạy lại setup-ssl.sh - script sẽ tự động detect và fix
+sudo bash devops/setup-ssl.sh
+
+# Hoặc thủ công:
+# 1. Xóa certificate cũ
+sudo certbot delete --cert-name api.goozi.org
+
+# 2. Tạo lại
+sudo certbot --nginx -d api.goozi.org --non-interactive --agree-tos --email your-email@example.com --redirect
+```
+
 ## 📚 Xem thêm
 
 - [Let's Encrypt Documentation](https://letsencrypt.org/docs/)
