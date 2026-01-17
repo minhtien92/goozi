@@ -38,7 +38,7 @@ export default function Login() {
     <div className="login-page" style={{ minHeight: '100vh' }}>
       <div className="login-box">
         <div className="login-logo">
-          <img src={logoSvg} alt="Goozi Logo" style={{ maxWidth: '250px', height: 'auto' }} />
+          <img src={logoSvg} alt="Goozi Logo" style={{ maxWidth: '400px', height: 'auto' }} />
         </div>
         <div className="card">
           <div className="card-body login-card-body">
