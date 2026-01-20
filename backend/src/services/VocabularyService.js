@@ -115,7 +115,7 @@ class VocabularyService {
     // Create translations if provided
     if (translations && Array.isArray(translations)) {
       for (const translation of translations) {
-        const { languageId, meaning, pronunciation, example, audioUrl, version } = translation;
+        const { languageId, meaning, pronunciation, ipa, example, audioUrl, version } = translation;
         
         if (languageId && meaning) {
           // Verify language exists
@@ -129,6 +129,7 @@ class VocabularyService {
             languageId,
             meaning,
             pronunciation: pronunciation || null,
+            ipa: ipa || null,
             example: example || null,
             audioUrl: audioUrl || null,
             version: version || 1,
@@ -175,7 +176,7 @@ class VocabularyService {
 
       // Create new translations
       for (const translation of translations) {
-        const { languageId, meaning, pronunciation, example, audioUrl, version } = translation;
+        const { languageId, meaning, pronunciation, ipa, example, audioUrl, version } = translation;
         
         if (languageId && meaning) {
           // Verify language exists
@@ -189,6 +190,7 @@ class VocabularyService {
             languageId,
             meaning,
             pronunciation: pronunciation || null,
+            ipa: ipa || null,
             example: example || null,
             audioUrl: audioUrl || null,
             version: version || 1,

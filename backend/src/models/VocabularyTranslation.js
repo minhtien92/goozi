@@ -33,6 +33,11 @@ export default function (sequelize) {
         type: DataTypes.STRING,
         allowNull: true,
       },
+      ipa: {
+        type: DataTypes.STRING,
+        allowNull: true,
+        comment: 'Phiên âm IPA cho từ',
+      },
       example: {
         type: DataTypes.TEXT,
         allowNull: true,

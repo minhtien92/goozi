@@ -157,6 +157,7 @@ class TopicService {
         topicId: topic.id,
         languageId: trans.languageId,
         meaning: trans.meaning,
+        ipa: trans.ipa || null,
         version: trans.version || 1,
         audioUrl: trans.audioUrl || null,
       }));
@@ -209,6 +210,7 @@ class TopicService {
           topicId: topic.id,
           languageId: trans.languageId,
           meaning: trans.meaning,
+          ipa: trans.ipa || null,
           version: trans.version || 1,
           audioUrl: trans.audioUrl || null,
         }));

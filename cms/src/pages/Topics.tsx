@@ -17,6 +17,7 @@ interface TopicTranslation {
   id: string;
   languageId: string;
   meaning: string;
+  ipa?: string | null;
   version: number;
   audioUrl: string | null;
   language?: Language;
@@ -53,7 +54,10 @@ export default function Topics() {
     image: '',
     order: '',
     isActive: true,
-    translations: {} as Record<string, Record<number, { meaning: string; audioUrl: string }>>,
+    translations: {} as Record<
+      string,
+      Record<number, { meaning: string; ipa: string; audioUrl: string }>
+    >,
   });
 
   useEffect(() => {
@@ -85,10 +89,10 @@ export default function Topics() {
           const translations: Record<string, Record<number, any>> = {};
           languages.forEach((lang) => {
             translations[lang.id] = {
-              1: { meaning: '', audioUrl: '' },
-              2: { meaning: '', audioUrl: '' },
-              3: { meaning: '', audioUrl: '' },
-              4: { meaning: '', audioUrl: '' },
+              1: { meaning: '', ipa: '', audioUrl: '' },
+              2: { meaning: '', ipa: '', audioUrl: '' },
+              3: { meaning: '', ipa: '', audioUrl: '' },
+              4: { meaning: '', ipa: '', audioUrl: '' },
             };
           });
           setFormData({ 
@@ -178,10 +182,10 @@ export default function Topics() {
     const translations: Record<string, Record<number, any>> = {};
     languages.forEach((lang) => {
       translations[lang.id] = {
-        1: { meaning: '', audioUrl: '' },
-        2: { meaning: '', audioUrl: '' },
-        3: { meaning: '', audioUrl: '' },
-        4: { meaning: '', audioUrl: '' },
+        1: { meaning: '', ipa: '', audioUrl: '' },
+        2: { meaning: '', ipa: '', audioUrl: '' },
+        3: { meaning: '', ipa: '', audioUrl: '' },
+        4: { meaning: '', ipa: '', audioUrl: '' },
       };
     });
     
@@ -204,10 +208,10 @@ export default function Topics() {
     // Initialize all languages with empty versions
     languages.forEach((lang) => {
       translations[lang.id] = {
-        1: { meaning: '', audioUrl: '' },
-        2: { meaning: '', audioUrl: '' },
-        3: { meaning: '', audioUrl: '' },
-        4: { meaning: '', audioUrl: '' },
+        1: { meaning: '', ipa: '', audioUrl: '' },
+        2: { meaning: '', ipa: '', audioUrl: '' },
+        3: { meaning: '', ipa: '', audioUrl: '' },
+        4: { meaning: '', ipa: '', audioUrl: '' },
       };
     });
 
@@ -217,6 +221,7 @@ export default function Topics() {
         if (translations[trans.languageId] && trans.version >= 1 && trans.version <= 4) {
           translations[trans.languageId][trans.version] = {
             meaning: trans.meaning || '',
+            ipa: trans.ipa || '',
             audioUrl: trans.audioUrl || '',
           };
         }
@@ -269,8 +274,29 @@ export default function Topics() {
       const updated: Record<number, any> = { ...langEntry };
       [1, 2, 3, 4].forEach((v) => {
         updated[v] = {
-          ...(updated[v] || { meaning: '', audioUrl: '' }),
+          ...(updated[v] || { meaning: '', ipa: '', audioUrl: '' }),
           meaning: value,
+        };
+      });
+      return {
+        ...prev,
+        translations: {
+          ...prev.translations,
+          [languageId]: updated,
+        },
+      };
+    });
+  };
+
+  // Update IPA for all versions of a language
+  const updateLanguageIPA = (languageId: string, value: string) => {
+    setFormData((prev) => {
+      const langEntry = prev.translations[languageId] || {};
+      const updated: Record<number, any> = { ...langEntry };
+      [1, 2, 3, 4].forEach((v) => {
+        updated[v] = {
+          ...(updated[v] || { meaning: '', ipa: '', audioUrl: '' }),
+          ipa: value,
         };
       });
       return {
@@ -357,6 +383,7 @@ export default function Topics() {
               languageId,
               version,
               meaning: trans.meaning,
+              ipa: trans.ipa || null,
               audioUrl: trans.audioUrl || null,
             });
           }
@@ -634,6 +661,12 @@ export default function Topics() {
                       formData.translations[lang.id]?.[2]?.meaning ||
                       formData.translations[lang.id]?.[3]?.meaning ||
                       formData.translations[lang.id]?.[4]?.meaning || '';
+                    const firstIPA =
+                      formData.translations[lang.id]?.[1]?.ipa ||
+                      formData.translations[lang.id]?.[2]?.ipa ||
+                      formData.translations[lang.id]?.[3]?.ipa ||
+                      formData.translations[lang.id]?.[4]?.ipa ||
+                      '';
                     return (
                       <div key={lang.id} className="mb-3 p-2 border rounded">
                         <div className="d-flex align-items-center mb-2" style={{ gap: '8px' }}>
@@ -647,6 +680,14 @@ export default function Topics() {
                             value={firstMeaning}
                             onChange={(e) => updateLanguageMeaning(lang.id, e.target.value)}
                             placeholder="Meaning"
+                            style={{ flex: 1, marginTop: '0px', marginBottom: '0px', height: '100%' }}
+                          />
+                          <input
+                            type="text"
+                            className="form-control form-control-sm"
+                            value={firstIPA}
+                            onChange={(e) => updateLanguageIPA(lang.id, e.target.value)}
+                            placeholder="IPA (optional)"
                             style={{ flex: 1, marginTop: '0px', marginBottom: '0px', height: '100%' }}
                           />
                           <div className="d-flex" style={{ gap: '8px' }}>

@@ -30,6 +30,11 @@ export default function (sequelize) {
         allowNull: false,
         comment: 'Tên topic dịch sang ngôn ngữ này',
       },
+      ipa: {
+        type: DataTypes.STRING,
+        allowNull: true,
+        comment: 'Phiên âm IPA cho topic',
+      },
       version: {
         type: DataTypes.INTEGER,
         allowNull: false,

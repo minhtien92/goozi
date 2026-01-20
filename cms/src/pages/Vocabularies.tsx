@@ -23,6 +23,7 @@ interface VocabularyTranslation {
   languageId: string;
   meaning: string;
   pronunciation: string | null;
+  ipa?: string | null;
   example: string | null;
   audioUrl: string | null;
   version: number;
@@ -66,7 +67,10 @@ export default function Vocabularies() {
     order: '',
     avatar: '',
     isActive: true,
-    translations: {} as Record<string, Record<number, { meaning: string; pronunciation: string; example: string; audioUrl: string }>>,
+    translations: {} as Record<
+      string,
+      Record<number, { meaning: string; pronunciation: string; ipa: string; example: string; audioUrl: string }>
+    >,
   });
 
   useEffect(() => {
@@ -91,10 +95,10 @@ export default function Vocabularies() {
           const translations: Record<string, Record<number, any>> = {};
           languages.forEach((lang) => {
             translations[lang.id] = {
-              1: { meaning: '', pronunciation: '', example: '', audioUrl: '' },
-              2: { meaning: '', pronunciation: '', example: '', audioUrl: '' },
-              3: { meaning: '', pronunciation: '', example: '', audioUrl: '' },
-              4: { meaning: '', pronunciation: '', example: '', audioUrl: '' },
+              1: { meaning: '', pronunciation: '', ipa: '', example: '', audioUrl: '' },
+              2: { meaning: '', pronunciation: '', ipa: '', example: '', audioUrl: '' },
+              3: { meaning: '', pronunciation: '', ipa: '', example: '', audioUrl: '' },
+              4: { meaning: '', pronunciation: '', ipa: '', example: '', audioUrl: '' },
             };
           });
           const maxOrder = vocabularies.length > 0 
@@ -196,10 +200,10 @@ export default function Vocabularies() {
     const translations: Record<string, Record<number, any>> = {};
     languages.forEach((lang) => {
       translations[lang.id] = {
-        1: { meaning: '', pronunciation: '', example: '', audioUrl: '' },
-        2: { meaning: '', pronunciation: '', example: '', audioUrl: '' },
-        3: { meaning: '', pronunciation: '', example: '', audioUrl: '' },
-        4: { meaning: '', pronunciation: '', example: '', audioUrl: '' },
+        1: { meaning: '', pronunciation: '', ipa: '', example: '', audioUrl: '' },
+        2: { meaning: '', pronunciation: '', ipa: '', example: '', audioUrl: '' },
+        3: { meaning: '', pronunciation: '', ipa: '', example: '', audioUrl: '' },
+        4: { meaning: '', pronunciation: '', ipa: '', example: '', audioUrl: '' },
       };
     });
     
@@ -226,10 +230,10 @@ export default function Vocabularies() {
     // Initialize all languages with empty versions
     languages.forEach((lang) => {
       translations[lang.id] = {
-        1: { meaning: '', pronunciation: '', example: '', audioUrl: '' },
-        2: { meaning: '', pronunciation: '', example: '', audioUrl: '' },
-        3: { meaning: '', pronunciation: '', example: '', audioUrl: '' },
-        4: { meaning: '', pronunciation: '', example: '', audioUrl: '' },
+        1: { meaning: '', pronunciation: '', ipa: '', example: '', audioUrl: '' },
+        2: { meaning: '', pronunciation: '', ipa: '', example: '', audioUrl: '' },
+        3: { meaning: '', pronunciation: '', ipa: '', example: '', audioUrl: '' },
+        4: { meaning: '', pronunciation: '', ipa: '', example: '', audioUrl: '' },
       };
     });
 
@@ -240,6 +244,7 @@ export default function Vocabularies() {
           translations[trans.languageId][trans.version] = {
             meaning: trans.meaning || '',
             pronunciation: trans.pronunciation || '',
+            ipa: trans.ipa || '',
             example: trans.example || '',
             audioUrl: trans.audioUrl || '',
           };
@@ -293,8 +298,29 @@ export default function Vocabularies() {
       const updated: Record<number, any> = { ...langEntry };
       [1, 2, 3, 4].forEach((v) => {
         updated[v] = {
-          ...(updated[v] || { meaning: '', pronunciation: '', example: '', audioUrl: '' }),
+          ...(updated[v] || { meaning: '', pronunciation: '', ipa: '', example: '', audioUrl: '' }),
           meaning: value,
+        };
+      });
+      return {
+        ...prev,
+        translations: {
+          ...prev.translations,
+          [languageId]: updated,
+        },
+      };
+    });
+  };
+
+  // Update IPA for all versions of a language (single IPA per language)
+  const updateLanguageIPA = (languageId: string, value: string) => {
+    setFormData((prev) => {
+      const langEntry = prev.translations[languageId] || {};
+      const updated: Record<number, any> = { ...langEntry };
+      [1, 2, 3, 4].forEach((v) => {
+        updated[v] = {
+          ...(updated[v] || { meaning: '', pronunciation: '', ipa: '', example: '', audioUrl: '' }),
+          ipa: value,
         };
       });
       return {
@@ -390,6 +416,7 @@ export default function Vocabularies() {
               version,
               meaning: trans.meaning,
               pronunciation: trans.pronunciation || null,
+              ipa: trans.ipa || null,
               example: trans.example || null,
               audioUrl: trans.audioUrl || null,
             });
@@ -681,6 +708,12 @@ export default function Vocabularies() {
                       formData.translations[lang.id]?.[2]?.meaning ||
                       formData.translations[lang.id]?.[3]?.meaning ||
                       formData.translations[lang.id]?.[4]?.meaning || '';
+                    const firstIPA =
+                      formData.translations[lang.id]?.[1]?.ipa ||
+                      formData.translations[lang.id]?.[2]?.ipa ||
+                      formData.translations[lang.id]?.[3]?.ipa ||
+                      formData.translations[lang.id]?.[4]?.ipa ||
+                      '';
                     return (
                     <div key={lang.id} className="mb-3 p-2 border rounded">
                       <div className="d-flex align-items-center mb-2" style={{ gap: '8px' }}>
@@ -694,6 +727,14 @@ export default function Vocabularies() {
                             value={firstMeaning}
                             onChange={(e) => updateLanguageMeaning(lang.id, e.target.value)}
                             placeholder="Meaning"
+                            style={{ flex: 1, marginTop: '0px', marginBottom: '0px', height: '100%' }}
+                          />
+                          <input
+                            type="text"
+                            className="form-control form-control-sm"
+                            value={firstIPA}
+                            onChange={(e) => updateLanguageIPA(lang.id, e.target.value)}
+                            placeholder="IPA (optional)"
                             style={{ flex: 1, marginTop: '0px', marginBottom: '0px', height: '100%' }}
                           />
                           <div className="d-flex" style={{ gap: '8px' }}>
