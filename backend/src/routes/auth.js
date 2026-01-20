@@ -71,6 +71,16 @@ async function authRoutes(fastify, options) {
                 email: { type: 'string' },
                 name: { type: 'string' },
                 role: { type: 'string', enum: ['user', 'admin'] },
+                permissions: {
+                  type: ['object', 'null'],
+                  properties: {
+                    topics: { type: 'boolean' },
+                    vocabularies: { type: 'boolean' },
+                    home: { type: 'boolean' },
+                    users: { type: 'boolean' },
+                  },
+                  additionalProperties: false,
+                },
               },
             },
           },
@@ -132,6 +142,16 @@ async function authRoutes(fastify, options) {
                     nativeName: { type: 'string' },
                     flag: { type: 'string' },
                   },
+                },
+                permissions: {
+                  type: ['object', 'null'],
+                  properties: {
+                    topics: { type: 'boolean' },
+                    vocabularies: { type: 'boolean' },
+                    home: { type: 'boolean' },
+                    users: { type: 'boolean' },
+                  },
+                  additionalProperties: false,
                 },
               },
             },

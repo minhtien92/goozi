@@ -18,7 +18,7 @@ interface User {
   permissions?: Permissions;
 }
 
-export default function Users() {
+export default function Users({ mode = 'all' }: { mode?: 'all' | 'admin' | 'learner' }) {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
@@ -69,21 +69,21 @@ export default function Users() {
       role: user.role,
       password: '',
       permissions: {
-        topics: user.permissions?.topics ?? true,
-        vocabularies: user.permissions?.vocabularies ?? true,
-        home: user.permissions?.home ?? true,
-        users: user.permissions?.users ?? true,
+        topics: user.permissions?.topics ?? false,
+        vocabularies: user.permissions?.vocabularies ?? false,
+        home: user.permissions?.home ?? false,
+        users: user.permissions?.users ?? false,
       },
     });
     setShowModal(true);
   };
 
-  const handleCreate = () => {
+  const handleCreate = (role: 'admin' | 'user') => {
     setEditingUser(null);
     setFormData({
       name: '',
       email: '',
-      role: 'admin',
+      role,
       password: '',
       permissions: {
         topics: true,
@@ -117,12 +117,21 @@ export default function Users() {
           name: formData.name,
           email: formData.email,
           role: formData.role,
-          permissions: formData.permissions,
+          permissions: formData.role === 'admin' ? formData.permissions : undefined,
         };
         await api.put(`/users/${editingUser.id}`, payload);
       } else {
         // create new
-        await api.post('/users', formData);
+        const payload: any = {
+          name: formData.name,
+          email: formData.email,
+          role: formData.role,
+          password: formData.password,
+        };
+        if (formData.role === 'admin') {
+          payload.permissions = formData.permissions;
+        }
+        await api.post('/users', payload);
       }
       setShowModal(false);
       fetchUsers();
@@ -142,81 +151,105 @@ export default function Users() {
     );
   }
 
+  const adminUsers = users.filter((u) => u.role === 'admin');
+  const learnerUsers = users.filter((u) => u.role !== 'admin');
+  const visibleAdminUsers = adminUsers;
+  const visibleLearnerUsers = learnerUsers;
+
+  const renderTable = (data: User[], title: string, emptyText: string) => (
+    <div className="card mb-4">
+      <div className="card-header d-flex justify-content-between align-items-center">
+        <h3 className="card-title mb-0">{title}</h3>
+        <div className="card-tools">
+          <button
+            className="btn btn-primary btn-sm"
+            onClick={() => handleCreate(title.includes('Admin') ? 'admin' : 'user')}
+          >
+            <i className="fas fa-plus mr-1"></i> {title.includes('Admin') ? 'Add Admin' : 'Add Learner'}
+          </button>
+        </div>
+      </div>
+      <div className="card-body">
+        <table className="table table-bordered table-striped">
+          <thead>
+            <tr>
+              <th style={{ width: '10px' }}>#</th>
+              <th>Name</th>
+              <th>Email</th>
+              <th>Role</th>
+              <th>Created Date</th>
+              <th>Permissions</th>
+              <th style={{ width: '150px' }}>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {data.map((user, index) => (
+              <tr key={user.id}>
+                <td>{index + 1}</td>
+                <td>{user.name}</td>
+                <td>{user.email}</td>
+                <td>
+                  <span className={`badge ${user.role === 'admin' ? 'badge-danger' : 'badge-secondary'}`}>
+                    {user.role === 'admin' ? 'Admin' : 'Learner'}
+                  </span>
+                </td>
+                <td>{new Date(user.createdAt).toLocaleDateString('vi-VN')}</td>
+                <td>
+                  {user.role === 'admin' ? (
+                    <div className="small">
+                      <span className="badge badge-light border mr-1">Topic</span>
+                      <span className="badge badge-light border mr-1">Vocab</span>
+                      <span className="badge badge-light border mr-1">Web/Home</span>
+                      <span className="badge badge-light border">Users</span>
+                    </div>
+                  ) : (
+                    <span className="text-muted small">N/A</span>
+                  )}
+                </td>
+                <td>
+                  <button
+                    onClick={() => handleEdit(user)}
+                    className="btn btn-sm btn-primary mr-1"
+                  >
+                    <i className="fas fa-edit"></i>
+                  </button>
+                  <button
+                    onClick={() => handleDelete(user.id)}
+                    className="btn btn-sm btn-danger"
+                  >
+                    <i className="fas fa-trash"></i>
+                  </button>
+                </td>
+              </tr>
+            ))}
+            {data.length === 0 && (
+              <tr>
+                <td colSpan={7} className="text-center text-muted">
+                  {emptyText}
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+
   return (
     <div>
+      {(mode === 'all' || mode === 'admin') &&
+        renderTable(visibleAdminUsers, 'Quản lý user admin', 'Chưa có admin')}
+      {(mode === 'all' || mode === 'learner') &&
+        renderTable(visibleLearnerUsers, 'Quản lý user người học', 'Chưa có người học')}
       <div className="card">
-        <div className="card-header">
-          <h3 className="card-title mb-0">User List</h3>
-          <div className="card-tools">
-            <button className="btn btn-primary btn-sm" onClick={handleCreate}>
-              <i className="fas fa-plus mr-1"></i> Add User
-            </button>
-          </div>
-        </div>
-        <div className="card-body">
-          <table className="table table-bordered table-striped">
-            <thead>
-              <tr>
-                <th style={{ width: '10px' }}>#</th>
-                <th>Name</th>
-                <th>Email</th>
-                <th>Role</th>
-                <th>Created Date</th>
-                <th>Permissions</th>
-                <th style={{ width: '150px' }}>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {users.map((user, index) => (
-                <tr key={user.id}>
-                  <td>{index + 1}</td>
-                  <td>{user.name}</td>
-                  <td>{user.email}</td>
-                  <td>
-                    <span className={`badge ${user.role === 'admin' ? 'badge-danger' : 'badge-secondary'}`}>
-                      {user.role === 'admin' ? 'Admin' : 'User'}
-                    </span>
-                  </td>
-                  <td>{new Date(user.createdAt).toLocaleDateString('vi-VN')}</td>
-                  <td>
-                    {user.role === 'admin' ? (
-                      <div className="small">
-                        <span className="badge badge-light border mr-1">Topic</span>
-                        <span className="badge badge-light border mr-1">Vocab</span>
-                        <span className="badge badge-light border mr-1">Web/Home</span>
-                        <span className="badge badge-light border">Users</span>
-                      </div>
-                    ) : (
-                      <span className="text-muted small">N/A</span>
-                    )}
-                  </td>
-                  <td>
-                    <button
-                      onClick={() => handleEdit(user)}
-                      className="btn btn-sm btn-primary mr-1"
-                    >
-                      <i className="fas fa-edit"></i>
-                    </button>
-                    <button
-                      onClick={() => handleDelete(user.id)}
-                      className="btn btn-sm btn-danger"
-                    >
-                      <i className="fas fa-trash"></i>
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-          <div className="card-footer">
-            <Pagination
-              currentPage={pagination.currentPage}
-              totalPages={pagination.totalPages}
-              totalItems={pagination.totalItems}
-              itemsPerPage={pagination.itemsPerPage}
-              onPageChange={(page) => setCurrentPage(page)}
-            />
-          </div>
+        <div className="card-footer">
+          <Pagination
+            currentPage={pagination.currentPage}
+            totalPages={pagination.totalPages}
+            totalItems={pagination.totalItems}
+            itemsPerPage={pagination.itemsPerPage}
+            onPageChange={(page) => setCurrentPage(page)}
+          />
         </div>
       </div>
 

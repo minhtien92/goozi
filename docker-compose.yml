@@ -41,8 +41,7 @@ services:
     ports:
       - "3001:3001"
     depends_on:
-      # postgres:
-      #   condition: service_healthy
+      - postgres
     volumes:
       - ./backend:/app
       - /app/node_modules

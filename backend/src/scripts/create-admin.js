@@ -34,27 +34,36 @@ async function createAdmin() {
       }
     );
 
+    const fullPerms = JSON.stringify({
+      topics: true,
+      vocabularies: true,
+      home: true,
+      users: true,
+    });
+
     if (existing) {
-      // Update existing user to admin
+      // Update existing user to admin with full permissions
       const hashedPassword = await bcrypt.hash(password, 10);
       await sequelize.query(
-        `UPDATE users SET password = :password, role = 'admin', name = :name WHERE email = :email`,
+        `UPDATE users 
+         SET password = :password, role = 'admin', name = :name, permissions = :permissions, "updatedAt" = NOW()
+         WHERE email = :email`,
         {
-          replacements: { password: hashedPassword, name, email },
+          replacements: { password: hashedPassword, name, email, permissions: fullPerms },
         }
       );
-      console.log(`✅ Admin user updated successfully!`);
+      console.log(`✅ Admin user updated successfully with full permissions!`);
     } else {
-      // Create new admin user
+      // Create new admin user with full permissions
       const hashedPassword = await bcrypt.hash(password, 10);
       await sequelize.query(
-        `INSERT INTO users (id, email, password, name, role, "createdAt", "updatedAt")
-         VALUES (gen_random_uuid(), :email, :password, :name, 'admin', NOW(), NOW())`,
+        `INSERT INTO users (id, email, password, name, role, permissions, "createdAt", "updatedAt")
+         VALUES (gen_random_uuid(), :email, :password, :name, 'admin', :permissions, NOW(), NOW())`,
         {
-          replacements: { email, password: hashedPassword, name },
+          replacements: { email, password: hashedPassword, name, permissions: fullPerms },
         }
       );
-      console.log(`✅ Admin user created successfully!`);
+      console.log(`✅ Admin user created successfully with full permissions!`);
     }
 
     console.log('\n📧 Admin Credentials:');

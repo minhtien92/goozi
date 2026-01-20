@@ -3,17 +3,17 @@ import UserController from '../controllers/UserController.js';
 async function usersRoutes(fastify, options) {
   // Get all users (admin only)
   fastify.get('/', {
-    preHandler: [fastify.requireAdmin],
+    preHandler: [fastify.requireAdminWithPermission('users')],
   }, UserController.getAllUsers.bind(UserController));
 
   // Create user (admin only)
   fastify.post('/', {
-    preHandler: [fastify.requireAdmin],
+    preHandler: [fastify.requireAdminWithPermission('users')],
   }, UserController.createUser.bind(UserController));
 
   // Get single user (admin only)
   fastify.get('/:id', {
-    preHandler: [fastify.requireAdmin],
+    preHandler: [fastify.requireAdminWithPermission('users')],
   }, UserController.getUserById.bind(UserController));
 
   // Update user (admin can update anyone, user can update themselves)
@@ -38,7 +38,16 @@ async function usersRoutes(fastify, options) {
           email: { type: 'string', format: 'email' },
           role: { type: 'string', enum: ['admin', 'user'] },
           nativeLanguageId: { type: 'string', format: 'uuid' },
-          permissions: { type: 'array', items: { type: 'string' } },
+          permissions: {
+            type: 'object',
+            properties: {
+              topics: { type: 'boolean' },
+              vocabularies: { type: 'boolean' },
+              home: { type: 'boolean' },
+              users: { type: 'boolean' },
+            },
+            additionalProperties: false,
+          },
           voiceAccentVersion: { type: 'integer' },
           learningLanguageIds: { type: 'array', items: { type: 'string', format: 'uuid' } },
         },
@@ -75,7 +84,7 @@ async function usersRoutes(fastify, options) {
 
   // Delete user (admin only)
   fastify.delete('/:id', {
-    preHandler: [fastify.requireAdmin],
+    preHandler: [fastify.requireAdminWithPermission('users')],
   }, UserController.deleteUser.bind(UserController));
 }
 

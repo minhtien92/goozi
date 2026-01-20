@@ -1,6 +1,19 @@
 import AuthService from '../services/AuthService.js';
 
 class AuthController {
+  normalizePermissions(userJson) {
+    // If not admin, return as-is
+    if (userJson.role !== 'admin') return userJson;
+    const perms = userJson.permissions || {};
+    userJson.permissions = {
+      topics: perms.topics === true,
+      vocabularies: perms.vocabularies === true,
+      home: perms.home === true,
+      users: perms.users === true,
+    };
+    return userJson;
+  }
+
   async register(request, reply) {
     try {
       const { email, password, name, nativeLanguageId } = request.body;
@@ -67,7 +80,7 @@ class AuthController {
       return reply.send({
         message: 'Login successful',
         token,
-        user: userJson,
+        user: this.normalizePermissions(userJson),
       });
     } catch (error) {
       if (error.message === 'Invalid email or password') {
@@ -155,7 +168,7 @@ class AuthController {
       });
       
       // Log the actual response that will be sent
-      const responseToSend = { user: userJson };
+      const responseToSend = { user: this.normalizePermissions(userJson) };
       console.log('getCurrentUser - Response to send (stringified):', JSON.stringify(responseToSend, null, 2));
       
       return reply.send(responseToSend);

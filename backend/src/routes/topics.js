@@ -81,7 +81,7 @@ async function topicsRoutes(fastify, options) {
 
   // Create topic (admin only)
   fastify.post('/', {
-    preHandler: [fastify.requireAdmin],
+    preHandler: [fastify.requireAdminWithPermission('topics')],
     schema: {
       tags: ['topics'],
       summary: 'Create a new topic',
@@ -127,7 +127,7 @@ async function topicsRoutes(fastify, options) {
 
   // Update topic (admin only)
   fastify.put('/:id', {
-    preHandler: [fastify.requireAdmin],
+    preHandler: [fastify.requireAdminWithPermission('topics')],
     schema: {
       tags: ['topics'],
       summary: 'Update a topic',
@@ -178,7 +178,7 @@ async function topicsRoutes(fastify, options) {
 
   // Delete topic (admin only)
   fastify.delete('/:id', {
-    preHandler: [fastify.requireAdmin],
+    preHandler: [fastify.requireAdminWithPermission('topics')],
     schema: {
       tags: ['topics'],
       summary: 'Delete a topic',

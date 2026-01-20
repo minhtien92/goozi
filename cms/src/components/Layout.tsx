@@ -10,12 +10,20 @@ export default function Layout() {
   const [isHomeMenuOpen, setIsHomeMenuOpen] = useState(false);
   const [isVocabularyMenuOpen, setIsVocabularyMenuOpen] = useState(false);
   const [isSidebarUserOpen, setIsSidebarUserOpen] = useState(false);
+  const [isUsersMenuOpen, setIsUsersMenuOpen] = useState(false);
+  // Only explicit true grants access
+  const canManageTopics = user?.role === 'admin' && user?.permissions?.topics === true;
+  const canManageVocabularies = user?.role === 'admin' && user?.permissions?.vocabularies === true;
+  const canManageHome = user?.role === 'admin' && user?.permissions?.home === true;
+  const canManageUsers = user?.role === 'admin' && user?.permissions?.users === true;
 
   useEffect(() => {
     // Auto-open menu if on home-settings or testimonials page
     setIsHomeMenuOpen(location.pathname.startsWith('/home-settings') || location.pathname.startsWith('/testimonials'));
     // Auto-open Vocabulary menu if on topics or vocabularies page
     setIsVocabularyMenuOpen(location.pathname.startsWith('/topics') || location.pathname.startsWith('/vocabularies'));
+    // Auto-open Users menu if on users page
+    setIsUsersMenuOpen(location.pathname.startsWith('/users'));
   }, [location.pathname]);
 
   useEffect(() => {
@@ -102,7 +110,7 @@ export default function Layout() {
                   <p>Language</p>
                 </Link>
               </li>
-              {user?.role === 'admin' && ((user.permissions?.topics ?? true) || (user.permissions?.vocabularies ?? true)) && (
+              {user?.role === 'admin' && (canManageTopics || canManageVocabularies) && (
                 <li className={`nav-item has-treeview ${isVocabularyMenuOpen ? 'menu-open' : ''}`}>
                   <a 
                     href="#" 
@@ -119,7 +127,7 @@ export default function Layout() {
                     </p>
                   </a>
                   <ul className="nav nav-treeview" style={{ display: isVocabularyMenuOpen ? 'block' : 'none' }}>
-                    {user?.role === 'admin' && (user.permissions?.topics ?? true) && (
+                    {canManageTopics && (
                       <li className="nav-item">
                         <Link
                           to="/topics"
@@ -130,7 +138,7 @@ export default function Layout() {
                         </Link>
                       </li>
                     )}
-                    {user?.role === 'admin' && (user.permissions?.vocabularies ?? true) && (
+                    {canManageVocabularies && (
                       <li className="nav-item">
                         <Link
                           to="/vocabularies"
@@ -156,7 +164,7 @@ export default function Layout() {
                   <p>Sentence</p>
                 </a>
               </li>
-              {user?.role === 'admin' && (user.permissions?.home ?? true) && (
+              {canManageHome && (
               <li className={`nav-item has-treeview ${isHomeMenuOpen ? 'menu-open' : ''}`}>
                 <a 
                   href="#" 
@@ -210,12 +218,50 @@ export default function Layout() {
                 </Link>
               </li>
               <li className="nav-header">SYSTEM</li>
-              {user?.role === 'admin' && (user.permissions?.users ?? true) && (
-                <li className="nav-item">
-                  <Link to="/users" className={`nav-link ${isActive('/users') ? 'active' : ''}`}>
+              {canManageUsers && (
+                <li className={`nav-item has-treeview ${isUsersMenuOpen ? 'menu-open' : ''}`}>
+                  <a
+                    href="#"
+                    className={`nav-link ${location.pathname.startsWith('/users') ? 'active' : ''}`}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      setIsUsersMenuOpen(!isUsersMenuOpen);
+                    }}
+                  >
                     <i className="nav-icon fas fa-users"></i>
-                    <p>Users</p>
-                  </Link>
+                    <p>
+                      Users
+                      <i
+                        className={`right fas fa-angle-${isUsersMenuOpen ? 'down' : 'left'}`}
+                        style={{
+                          position: 'absolute',
+                          right: '10px',
+                          top: '50%',
+                          transform: 'translateY(-50%)',
+                        }}
+                      ></i>
+                    </p>
+                  </a>
+                  <ul className="nav nav-treeview" style={{ display: isUsersMenuOpen ? 'block' : 'none' }}>
+                    <li className="nav-item">
+                      <Link
+                        to="/users/admin"
+                        className={`nav-link ${isActive('/users/admin') ? 'active' : ''}`}
+                      >
+                        <i className="far fa-circle nav-icon"></i>
+                        <p>Admin users</p>
+                      </Link>
+                    </li>
+                    <li className="nav-item">
+                      <Link
+                        to="/users/learners"
+                        className={`nav-link ${isActive('/users/learners') ? 'active' : ''}`}
+                      >
+                        <i className="far fa-circle nav-icon"></i>
+                        <p>Learner users</p>
+                      </Link>
+                    </li>
+                  </ul>
                 </li>
               )}
               <li className="nav-item">
@@ -282,7 +328,10 @@ export default function Layout() {
               <div className="col-sm-6">
                 <h1 className="m-0">
                   {location.pathname === '/' && 'Dashboard'}
-                  {location.pathname === '/users' && 'User Management'}
+                  {(location.pathname === '/users' ||
+                    location.pathname === '/users/admin' ||
+                    location.pathname === '/users/learners') &&
+                    'User Management'}
                   {location.pathname === '/topics' && 'Topic Management'}
                   {location.pathname === '/vocabularies' && 'Vocabulary Management'}
                   {location.pathname === '/languages' && 'Language Management'}
@@ -299,7 +348,10 @@ export default function Layout() {
                   </li>
                   <li className="breadcrumb-item active">
                     {location.pathname === '/' && 'Dashboard'}
-                    {location.pathname === '/users' && 'Users'}
+                    {(location.pathname === '/users' ||
+                      location.pathname === '/users/admin' ||
+                      location.pathname === '/users/learners') &&
+                      'Users'}
                     {location.pathname === '/topics' && 'Topics'}
                     {location.pathname === '/vocabularies' && 'Vocabularies'}
                     {location.pathname === '/languages' && 'Languages'}

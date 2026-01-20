@@ -248,10 +248,19 @@ class AuthService {
   }
 
   generateToken(fastify, user) {
+    const perms = user.permissions || {};
+    const permissions = {
+      topics: perms.topics === true,
+      vocabularies: perms.vocabularies === true,
+      home: perms.home === true,
+      users: perms.users === true,
+    };
+
     return fastify.jwt.sign({
       id: user.id,
       email: user.email,
       role: user.role,
+      permissions,
     });
   }
 }

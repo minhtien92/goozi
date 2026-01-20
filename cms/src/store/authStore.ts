@@ -28,9 +28,29 @@ export const useAuthStore = create<AuthState>()(
     (set, get) => ({
       user: null,
       token: null,
+      normalizeUser: (user: User) => {
+        if (!user) return user;
+        if (user.role === 'admin') {
+          // If permissions missing, default to false; only explicit true is allowed
+          const perms = user.permissions || {};
+          return {
+            ...user,
+            permissions: {
+              topics: perms.topics === undefined ? false : perms.topics,
+              vocabularies: perms.vocabularies === undefined ? false : perms.vocabularies,
+              home: perms.home === undefined ? false : perms.home,
+              users: perms.users === undefined ? false : perms.users,
+            },
+          };
+        }
+        return user;
+      },
       setAuth: (user, token) => {
+        const normalizedUser = (get() as any).normalizeUser
+          ? (get() as any).normalizeUser(user)
+          : user;
         localStorage.setItem('token', token);
-        set({ user, token });
+        set({ user: normalizedUser, token });
       },
       logout: () => {
         localStorage.removeItem('token');
@@ -45,6 +65,31 @@ export const useAuthStore = create<AuthState>()(
     }),
     {
       name: 'auth-storage',
+      version: 2,
+      migrate: (persistedState: any) => {
+        if (!persistedState) return persistedState;
+        const normalizeUser = (user: User) => {
+          if (!user) return user;
+          if (user.role === 'admin') {
+            const perms = user.permissions || {};
+            return {
+              ...user,
+              permissions: {
+                topics: perms.topics === undefined ? false : perms.topics,
+                vocabularies: perms.vocabularies === undefined ? false : perms.vocabularies,
+                home: perms.home === undefined ? false : perms.home,
+                users: perms.users === undefined ? false : perms.users,
+              },
+            };
+          }
+          return user;
+        };
+
+        return {
+          ...persistedState,
+          user: normalizeUser(persistedState.user),
+        };
+      },
     }
   )
 );

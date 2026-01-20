@@ -9,17 +9,17 @@ async function vocabulariesRoutes(fastify, options) {
 
   // Create vocabulary (admin only)
   fastify.post('/', {
-    preHandler: [fastify.requireAdmin],
+    preHandler: [fastify.requireAdminWithPermission('vocabularies')],
   }, VocabularyController.createVocabulary.bind(VocabularyController));
 
   // Update vocabulary (admin only)
   fastify.put('/:id', {
-    preHandler: [fastify.requireAdmin],
+    preHandler: [fastify.requireAdminWithPermission('vocabularies')],
   }, VocabularyController.updateVocabulary.bind(VocabularyController));
 
   // Delete vocabulary (admin only)
   fastify.delete('/:id', {
-    preHandler: [fastify.requireAdmin],
+    preHandler: [fastify.requireAdminWithPermission('vocabularies')],
   }, VocabularyController.deleteVocabulary.bind(VocabularyController));
 }
 
