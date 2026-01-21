@@ -7,6 +7,7 @@ export default defineConfig({
   server: {
     port: 3002,
     host: true,
+    allowedHosts: ['cms.goozi.org'],
     proxy: {
       '/api': {
         target: process.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:3001',

@@ -24,6 +24,8 @@ export default function Users({ mode = 'all' }: { mode?: 'all' | 'admin' | 'lear
   const [showModal, setShowModal] = useState(false);
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
+  const [adminSearch, setAdminSearch] = useState('');
+  const [learnerSearch, setLearnerSearch] = useState('');
   const [pagination, setPagination] = useState({
     totalItems: 0,
     totalPages: 1,
@@ -156,17 +158,54 @@ export default function Users({ mode = 'all' }: { mode?: 'all' | 'admin' | 'lear
   const visibleAdminUsers = adminUsers;
   const visibleLearnerUsers = learnerUsers;
 
-  const renderTable = (data: User[], title: string, emptyText: string) => (
+  const filterByKeyword = (data: User[], keyword: string) => {
+    if (!keyword.trim()) return data;
+    const q = keyword.trim().toLowerCase();
+    return data.filter(
+      (u) =>
+        u.name.toLowerCase().includes(q) ||
+        u.email.toLowerCase().includes(q) ||
+        (u.role || '').toLowerCase().includes(q)
+    );
+  };
+
+  const renderTable = (
+    data: User[],
+    title: string,
+    emptyText: string,
+    opts: { isAdminTable: boolean; keyword: string; onSearch: (v: string) => void }
+  ) => {
+    const filteredData = filterByKeyword(data, opts.keyword);
+    const showCreateButton = opts.isAdminTable && (mode === 'all' || mode === 'admin');
+    const createLabel = opts.isAdminTable ? 'Add new admin' : '';
+
+    return (
     <div className="card mb-4">
       <div className="card-header d-flex justify-content-between align-items-center">
         <h3 className="card-title mb-0">{title}</h3>
         <div className="card-tools">
-          <button
-            className="btn btn-primary btn-sm"
-            onClick={() => handleCreate(title.includes('Admin') ? 'admin' : 'user')}
-          >
-            <i className="fas fa-plus mr-1"></i> {title.includes('Admin') ? 'Add Admin' : 'Add Learner'}
-          </button>
+            <div className="input-group input-group-sm mr-2" style={{ width: '220px' }}>
+              <input
+                type="text"
+                className="form-control"
+                placeholder="Search by name or email"
+                value={opts.keyword}
+                onChange={(e) => opts.onSearch(e.target.value)}
+              />
+              <div className="input-group-append">
+                <span className="input-group-text">
+                  <i className="fas fa-search"></i>
+                </span>
+              </div>
+            </div>
+            {showCreateButton && (
+              <button
+                className="btn btn-primary btn-sm"
+                onClick={() => handleCreate('admin')}
+              >
+                <i className="fas fa-plus mr-1"></i> {createLabel}
+              </button>
+            )}
         </div>
       </div>
       <div className="card-body">
@@ -183,7 +222,7 @@ export default function Users({ mode = 'all' }: { mode?: 'all' | 'admin' | 'lear
             </tr>
           </thead>
           <tbody>
-            {data.map((user, index) => (
+            {filteredData.map((user, index) => (
               <tr key={user.id}>
                 <td>{index + 1}</td>
                 <td>{user.name}</td>
@@ -222,7 +261,7 @@ export default function Users({ mode = 'all' }: { mode?: 'all' | 'admin' | 'lear
                 </td>
               </tr>
             ))}
-            {data.length === 0 && (
+            {filteredData.length === 0 && (
               <tr>
                 <td colSpan={7} className="text-center text-muted">
                   {emptyText}
@@ -233,14 +272,23 @@ export default function Users({ mode = 'all' }: { mode?: 'all' | 'admin' | 'lear
         </table>
       </div>
     </div>
-  );
+    );
+  };
 
   return (
     <div>
       {(mode === 'all' || mode === 'admin') &&
-        renderTable(visibleAdminUsers, 'Quản lý user admin', 'Chưa có admin')}
+        renderTable(visibleAdminUsers, 'Quản lý user admin', 'Chưa có admin', {
+          isAdminTable: true,
+          keyword: adminSearch,
+          onSearch: setAdminSearch,
+        })}
       {(mode === 'all' || mode === 'learner') &&
-        renderTable(visibleLearnerUsers, 'Quản lý user người học', 'Chưa có người học')}
+        renderTable(visibleLearnerUsers, 'Quản lý user người học', 'Chưa có người học', {
+          isAdminTable: false,
+          keyword: learnerSearch,
+          onSearch: setLearnerSearch,
+        })}
       <div className="card">
         <div className="card-footer">
           <Pagination
