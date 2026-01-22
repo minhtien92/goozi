@@ -14,7 +14,7 @@ class UploadController {
       console.log('Headers:', JSON.stringify(request.headers, null, 2));
       console.log('Body:', request.body);
 
-      const data = await request.file();
+      const data = request.body.file;
       
       if (!data) {
         console.error('Upload Error: request.file() did not return a file or was empty.');
