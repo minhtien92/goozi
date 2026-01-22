@@ -9,11 +9,17 @@ const __dirname = dirname(__filename);
 class UploadController {
   async uploadAudio(request, reply) {
     try {
+      // Log headers and body for debugging
+      console.log('--- Upload Audio Request ---');
+      console.log('Headers:', JSON.stringify(request.headers, null, 2));
+      console.log('Body:', request.body);
+
       const data = await request.file();
       
       if (!data) {
+        console.error('Upload Error: request.file() did not return a file or was empty.');
         return reply.code(400).send({
-          error: 'No file uploaded',
+          error: 'No file uploaded or file could not be processed.',
         });
       }
 
@@ -105,4 +111,3 @@ class UploadController {
 }
 
 export default new UploadController();
-
