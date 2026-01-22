@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import api from '../config/api';
+import api, { uploadFile } from '../config/api';
 import Pagination from '../components/Pagination';
 
 interface Language {
@@ -123,6 +123,36 @@ export default function Languages() {
     }
   };
 
+  const handleFlagUpload = async (file: File) => {
+    try {
+      const response = await uploadFile('/upload/image', file);
+
+      if (response.data.url) {
+        // Get full URL - ensure baseUrl has proper format
+        const viteApiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
+        // Only remove /api at the end of URL, not in the middle (e.g., api.goozi.org)
+        let baseUrl = viteApiUrl.endsWith('/api') ? viteApiUrl.slice(0, -4) : viteApiUrl.replace(/\/api$/, '');
+        if (!baseUrl) baseUrl = 'http://localhost:3001';
+        
+        // Ensure baseUrl starts with http:// or https://
+        if (!baseUrl.startsWith('http://') && !baseUrl.startsWith('https://')) {
+          baseUrl = `http://${baseUrl}`;
+        }
+        
+        // Ensure response.data.url starts with /
+        const imagePath = response.data.url.startsWith('/') ? response.data.url : `/${response.data.url}`;
+        const fullUrl = `${baseUrl}${imagePath}`;
+        
+        console.log('Upload flag - fullUrl:', fullUrl);
+        
+        setFormData({ ...formData, flag: fullUrl });
+      }
+    } catch (error: any) {
+      console.error('Error uploading flag:', error);
+      alert('Failed to upload flag: ' + (error.response?.data?.message || error.message));
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -204,8 +234,29 @@ export default function Languages() {
                     .map((language, index) => (
                     <tr key={language.id}>
                       <td>{index + 1}</td>
-                      <td className="text-center" style={{ fontSize: '24px' }}>
-                        {language.flag}
+                      <td className="text-center">
+                        {language.flag && language.flag.startsWith('http') ? (
+                          <img
+                            src={language.flag}
+                            alt={language.name}
+                            style={{
+                              width: '32px',
+                              height: '24px',
+                              objectFit: 'cover',
+                              borderRadius: '4px',
+                            }}
+                            onError={(e) => {
+                              const target = e.target as HTMLImageElement;
+                              target.style.display = 'none';
+                              const fallback = document.createElement('span');
+                              fallback.textContent = language.flag || '🏳️';
+                              fallback.style.fontSize = '24px';
+                              target.parentElement?.appendChild(fallback);
+                            }}
+                          />
+                        ) : (
+                          <span style={{ fontSize: '24px' }}>{language.flag || '🏳️'}</span>
+                        )}
                       </td>
                       <td>
                         <span className="badge badge-info">{language.code}</span>
@@ -309,14 +360,60 @@ export default function Languages() {
                 />
               </div>
               <div className="form-group">
-                <label>Flag (Emoji)</label>
-                <input
-                  type="text"
-                  className="form-control"
-                  value={formData.flag}
-                  onChange={(e) => setFormData({ ...formData, flag: e.target.value })}
-                  placeholder="🇻🇳, 🇺🇸, 🇯🇵..."
-                />
+                <label>Flag</label>
+                <div className="d-flex align-items-center" style={{ gap: '10px' }}>
+                  <div
+                    className="d-flex align-items-center justify-content-center"
+                    style={{
+                      width: '80px',
+                      height: '80px',
+                      cursor: 'pointer',
+                      backgroundImage: formData.flag && formData.flag.startsWith('http') 
+                        ? `url(${formData.flag})` 
+                        : 'none',
+                      backgroundSize: 'cover',
+                      backgroundPosition: 'center',
+                      border: '1px solid #ced4da',
+                      borderRadius: '0.375rem',
+                      backgroundColor: '#f8f9fa',
+                    }}
+                    onClick={() => document.getElementById('flag-file-input')?.click()}
+                    title="Click to upload flag image"
+                  >
+                    {!formData.flag || !formData.flag.startsWith('http') ? (
+                      <div className="text-center">
+                        {formData.flag ? (
+                          <span style={{ fontSize: '32px' }}>{formData.flag}</span>
+                        ) : (
+                          <span className="text-muted small">Upload</span>
+                        )}
+                      </div>
+                    ) : null}
+                  </div>
+                  <div className="flex-fill">
+                    <input
+                      type="text"
+                      className="form-control"
+                      value={formData.flag}
+                      onChange={(e) => setFormData({ ...formData, flag: e.target.value })}
+                      placeholder="🇻🇳, 🇺🇸, 🇯🇵 or image URL"
+                    />
+                    <small className="text-muted">Enter emoji or upload image</small>
+                  </div>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="d-none"
+                    id="flag-file-input"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) {
+                        handleFlagUpload(file);
+                      }
+                      e.target.value = '';
+                    }}
+                  />
+                </div>
               </div>
               <div className="form-group">
                 <div className="custom-control custom-switch">
