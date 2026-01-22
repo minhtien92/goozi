@@ -341,13 +341,7 @@ export default function Vocabularies() {
         // Get full URL - ensure baseUrl has proper format
         const viteApiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
         // Only remove /api at the end of URL, not in the middle (e.g., api.goozi.org)
-        let baseUrl = viteApiUrl.endsWith('/api') ? viteApiUrl.slice(0, -4) : viteApiUrl.replace(/\/api$/, '');
-        if (!baseUrl) baseUrl = 'http://localhost:3001';
-        
-        // Ensure baseUrl starts with http:// or https://
-        if (!baseUrl.startsWith('http://') && !baseUrl.startsWith('https://')) {
-          baseUrl = `http://${baseUrl}`;
-        }
+        const baseUrl = new URL(viteApiUrl).origin;
         
         // Ensure response.data.url starts with /
         const audioPath = response.data.url.startsWith('/') ? response.data.url : `/${response.data.url}`;
@@ -375,13 +369,7 @@ export default function Vocabularies() {
         // Get full URL - ensure baseUrl has proper format
         const viteApiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
         // Only remove /api at the end of URL, not in the middle (e.g., api.goozi.org)
-        let baseUrl = viteApiUrl.endsWith('/api') ? viteApiUrl.slice(0, -4) : viteApiUrl.replace(/\/api$/, '');
-        if (!baseUrl) baseUrl = 'http://localhost:3001';
-        
-        // Ensure baseUrl starts with http:// or https://
-        if (!baseUrl.startsWith('http://') && !baseUrl.startsWith('https://')) {
-          baseUrl = `http://${baseUrl}`;
-        }
+        const baseUrl = new URL(viteApiUrl).origin;
         
         // Ensure response.data.url starts with /
         const imagePath = response.data.url.startsWith('/') ? response.data.url : `/${response.data.url}`;
@@ -717,8 +705,14 @@ export default function Vocabularies() {
                     return (
                     <div key={lang.id} className="mb-3 p-2 border rounded">
                       <div className="d-flex align-items-center mb-2" style={{ gap: '8px' }}>
-                        <span style={{ fontSize: '1.2rem', lineHeight: '1', minWidth: '28px', textAlign: 'center' }}>{lang.flag}</span>
+                        {lang.flag && lang.flag.startsWith('http') ? (
+                          <img src={lang.flag} alt={lang.name} style={{ width: '28px', height: '21px', objectFit: 'cover', borderRadius: '3px' }} />
+                        ) : (
+                          <span style={{ fontSize: '1.2rem', lineHeight: '1', minWidth: '28px', textAlign: 'center' }}>{lang.flag}</span>
+                        )}
                         <span className="text-muted" style={{ fontWeight: '500' }}>{lang.nativeName}</span>
+                        <span className="badge badge-info">{lang.code}</span>
+                        <span className="text-muted" style={{ fontWeight: '500' }}>{lang.name}</span>
                       </div>
                         <div className="d-flex align-items-start" style={{ gap: '8px' }}>
                           <input

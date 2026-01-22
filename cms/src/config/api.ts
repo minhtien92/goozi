@@ -29,7 +29,6 @@ export const uploadFile = async (endpoint: string, file: File, onUploadProgress?
 
   return axios.post(`${API_BASE_URL}${endpoint}`, formData, {
     headers: {
-      'Content-Type': 'multipart/form-data',
       ...(token && { Authorization: `Bearer ${token}` }),
     },
     onUploadProgress: onUploadProgress ? (progressEvent) => {

@@ -670,8 +670,14 @@ export default function Topics() {
                     return (
                       <div key={lang.id} className="mb-3 p-2 border rounded">
                         <div className="d-flex align-items-center mb-2" style={{ gap: '8px' }}>
-                          <span style={{ fontSize: '1.2rem', lineHeight: '1', minWidth: '28px', textAlign: 'center' }}>{lang.flag}</span>
+                          {lang.flag && lang.flag.startsWith('http') ? (
+                            <img src={lang.flag} alt={lang.name} style={{ width: '28px', height: '21px', objectFit: 'cover', borderRadius: '3px' }} />
+                          ) : (
+                            <span style={{ fontSize: '1.2rem', lineHeight: '1', minWidth: '28px', textAlign: 'center' }}>{lang.flag}</span>
+                          )}
                           <span className="text-muted" style={{ fontWeight: '500' }}>{lang.nativeName}</span>
+                          <span className="badge badge-info">{lang.code}</span>
+                          <span className="text-muted" style={{ fontWeight: '500' }}>{lang.name}</span>
                         </div>
                         <div className="d-flex align-items-start" style={{ gap: '8px' }}>
                           <input
