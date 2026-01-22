@@ -305,8 +305,12 @@ export default function UserMenu({ onClose }: UserMenuProps) {
           {/* Header */}
           <div className="flex items-center justify-between p-4 border-b">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-2xl">
-                {user?.nativeLanguage?.flag || '🇰🇷'}
+              <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-2xl overflow-hidden">
+                {user?.nativeLanguage?.flag && user.nativeLanguage.flag.startsWith('http') ? (
+                  <img src={user.nativeLanguage.flag} alt={user.nativeLanguage.name} className="w-full h-full object-cover" />
+                ) : (
+                  <span>{user?.nativeLanguage?.flag || '🇰🇷'}</span>
+                )}
               </div>
               <span className="font-medium text-gray-800">{user?.name || 'Angelyna'}</span>
             </div>
@@ -536,7 +540,11 @@ export default function UserMenu({ onClose }: UserMenuProps) {
                       user?.nativeLanguage?.id === lang.id ? 'bg-blue-50 border border-blue-200' : ''
                     }`}
                   >
-                    <span className="text-2xl">{lang.flag}</span>
+                    {lang.flag && lang.flag.startsWith('http') ? (
+                      <img src={lang.flag} alt={lang.name} className="w-8 h-6 object-cover rounded" />
+                    ) : (
+                      <span className="text-2xl">{lang.flag}</span>
+                    )}
                     <div className="flex-1 text-left">
                       <div className="text-sm font-medium text-gray-800">{lang.nativeName}</div>
                       <div className="text-xs text-gray-500">{lang.name}</div>

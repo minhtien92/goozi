@@ -121,7 +121,11 @@ export default function LanguageSelector() {
                     (selectedSourceLang?.id === lang.id || user?.nativeLanguage?.id === lang.id) ? 'bg-blue-50 border border-blue-200' : ''
                   }`}
                 >
-                  <span className="text-2xl">{lang.flag}</span>
+                  {lang.flag && lang.flag.startsWith('http') ? (
+                    <img src={lang.flag} alt={lang.name} className="w-8 h-6 object-cover rounded" />
+                  ) : (
+                    <span className="text-2xl">{lang.flag}</span>
+                  )}
                   <div className="flex-1 text-left">
                     <div className="text-sm font-medium text-gray-800">{lang.nativeName}</div>
                     <div className="text-xs text-gray-500">{lang.name}</div>

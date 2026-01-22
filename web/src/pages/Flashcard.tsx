@@ -558,7 +558,11 @@ export default function Flashcard() {
                 key={key}
                 className="flex items-center gap-4 p-4 bg-gray-50 rounded-lg"
               >
-                <span className="text-2xl">{item.language.flag || '🌐'}</span>
+                {item.language.flag && item.language.flag.startsWith('http') ? (
+                  <img src={item.language.flag} alt={item.language.name} className="w-8 h-6 object-cover rounded" />
+                ) : (
+                  <span className="text-2xl">{item.language.flag || '🌐'}</span>
+                )}
                 <div className="flex-1">
                   <div className="font-semibold text-base text-gray-800">
                     {item.translation.meaning || currentVocab.word}
