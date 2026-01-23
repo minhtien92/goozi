@@ -9,13 +9,32 @@ class LanguageService {
       where.isActive = isActive === 'true';
     }
 
+    // If no pagination parameters provided -> return full list (no pagination)
+    if (!page && !limit) {
+      const rows = await db.Language.findAll({
+        where,
+        order: [
+          ['order', 'ASC'],
+          ['name', 'ASC'],
+        ],
+      });
+
+      return {
+        languages: rows.map((lang) => lang.toJSON()),
+      };
+    }
+
+    // With pagination (used where explicitly requested)
     const pageNum = parseInt(page) || 1;
     const limitNum = parseInt(limit) || 10;
     const offset = (pageNum - 1) * limitNum;
 
     const { count, rows } = await db.Language.findAndCountAll({
       where,
-      order: [['name', 'ASC']],
+      order: [
+        ['order', 'ASC'],
+        ['name', 'ASC'],
+      ],
       limit: limitNum,
       offset: offset,
     });
@@ -109,6 +128,41 @@ class LanguageService {
 
     await language.destroy();
     return true;
+  }
+
+  async updateOrder(orderData) {
+    if (!Array.isArray(orderData)) {
+      throw new Error('Invalid order data');
+    }
+
+    await db.sequelize.transaction(async (transaction) => {
+      for (const item of orderData) {
+        if (!item.id || typeof item.order !== 'number') {
+          continue;
+        }
+
+        await db.Language.update(
+          { order: item.order },
+          {
+            where: { id: item.id },
+            transaction,
+          }
+        );
+      }
+    });
+
+    // Return updated list
+    const languages = await db.Language.findAll({
+      order: [
+        ['order', 'ASC'],
+        ['name', 'ASC'],
+      ],
+    });
+
+    return {
+      message: 'Order updated successfully',
+      languages: languages.map((lang) => lang.toJSON()),
+    };
   }
 }
 

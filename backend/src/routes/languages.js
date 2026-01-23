@@ -21,6 +21,11 @@ async function languagesRoutes(fastify, options) {
   fastify.delete('/:id', {
     preHandler: [fastify.requireAdmin],
   }, LanguageController.deleteLanguage.bind(LanguageController));
+
+  // Update order of languages
+  fastify.post('/order', {
+    preHandler: [fastify.requireAdmin],
+  }, LanguageController.updateOrder.bind(LanguageController));
 }
 
 export default languagesRoutes;

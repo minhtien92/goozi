@@ -34,6 +34,11 @@ export default function (sequelize) {
         type: DataTypes.BOOLEAN,
         defaultValue: true,
       },
+      order: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        defaultValue: 0,
+      },
     },
     {
       tableName: 'languages',

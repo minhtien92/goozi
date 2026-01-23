@@ -99,6 +99,18 @@ class LanguageController {
       });
     }
   }
+
+  async updateOrder(request, reply) {
+    try {
+      const result = await LanguageService.updateOrder(request.body);
+      return reply.send(result);
+    } catch (error) {
+      return reply.code(500).send({
+        error: 'Internal server error',
+        message: error.message,
+      });
+    }
+  }
 }
 
 export default new LanguageController();

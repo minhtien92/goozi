@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import api, { uploadFile } from '../config/api';
-import Pagination from '../components/Pagination';
+import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 
 interface Language {
   id: string;
@@ -18,13 +18,6 @@ export default function Languages() {
   const [showModal, setShowModal] = useState(false);
   const [editingLanguage, setEditingLanguage] = useState<Language | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
-  const [currentPage, setCurrentPage] = useState(1);
-  const [pagination, setPagination] = useState({
-    totalItems: 0,
-    totalPages: 1,
-    currentPage: 1,
-    itemsPerPage: 10,
-  });
   const [formData, setFormData] = useState({
     code: '',
     name: '',
@@ -35,7 +28,7 @@ export default function Languages() {
 
   useEffect(() => {
     fetchLanguages();
-  }, [currentPage]);
+  }, []);
 
   // Auto open/close form based on screen size
   useEffect(() => {
@@ -81,11 +74,8 @@ export default function Languages() {
 
   const fetchLanguages = async () => {
     try {
-      const response = await api.get('/languages', {
-        params: { page: currentPage, limit: 10 },
-      });
+      const response = await api.get('/languages');
       setLanguages(response.data.languages);
-      setPagination(response.data.pagination);
     } catch (error) {
       console.error('Error fetching languages:', error);
     } finally {
@@ -170,6 +160,27 @@ export default function Languages() {
     }
   };
 
+  const onDragEnd = (result: any) => {
+    if (!result.destination) return;
+
+    const items = Array.from(languages);
+    const [reorderedItem] = items.splice(result.source.index, 1);
+    items.splice(result.destination.index, 0, reorderedItem);
+
+    setLanguages(items);
+  };
+
+  const handleSaveOrder = async () => {
+    const orderData = languages.map((lang, index) => ({ id: lang.id, order: index }));
+    try {
+      await api.post('/languages/order', orderData);
+      alert('Order saved successfully');
+    } catch (error) {
+      console.error('Error saving order:', error);
+      alert('Failed to save order');
+    }
+  };
+
   if (loading) {
     return (
       <div className="text-center py-12">
@@ -198,6 +209,14 @@ export default function Languages() {
               />
               <button
                 type="button"
+                className="btn btn-success btn-sm"
+                onClick={handleSaveOrder}
+              >
+                <i className="fas fa-save mr-1"></i>
+                Save Order
+              </button>
+              <button
+                type="button"
                 className="btn btn-primary btn-sm"
                 onClick={handleCreate}
               >
@@ -207,97 +226,103 @@ export default function Languages() {
             </div>
           </div>
           <div className="card-body p-0">
-            <div className="table-responsive">
-              <table className="table table-bordered table-striped table-hover mb-0">
-                <thead>
-                  <tr>
-                    <th style={{ width: '10px' }}>#</th>
-                    <th>Flag</th>
-                    <th>Code</th>
-                    <th>Name</th>
-                    <th>Native Name</th>
-                    <th>Status</th>
-                    <th style={{ width: '150px' }}>Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {languages
-                    .filter((language) => {
-                      if (!searchTerm.trim()) return true;
-                      const keyword = searchTerm.trim().toLowerCase();
-                      return (
-                        language.code.toLowerCase().includes(keyword) ||
-                        language.name.toLowerCase().includes(keyword) ||
-                        (language.nativeName && language.nativeName.toLowerCase().includes(keyword))
-                      );
-                    })
-                    .map((language, index) => (
-                    <tr key={language.id}>
-                      <td>{index + 1}</td>
-                      <td className="text-center">
-                        {language.flag && language.flag.startsWith('http') ? (
-                          <img
-                            src={language.flag}
-                            alt={language.name}
-                            style={{
-                              width: '32px',
-                              height: '24px',
-                              objectFit: 'cover',
-                              borderRadius: '4px',
-                            }}
-                            onError={(e) => {
-                              const target = e.target as HTMLImageElement;
-                              target.style.display = 'none';
-                              const fallback = document.createElement('span');
-                              fallback.textContent = language.flag || '🏳️';
-                              fallback.style.fontSize = '24px';
-                              target.parentElement?.appendChild(fallback);
-                            }}
-                          />
-                        ) : (
-                          <span style={{ fontSize: '24px' }}>{language.flag || '🏳️'}</span>
-                        )}
-                      </td>
-                      <td>
-                        <span className="badge badge-info">{language.code}</span>
-                      </td>
-                      <td>{language.name}</td>
-                      <td>{language.nativeName}</td>
-                      <td>
-                        <span className={`badge ${language.isActive ? 'badge-success' : 'badge-secondary'}`}>
-                          {language.isActive ? 'Active' : 'Inactive'}
-                        </span>
-                      </td>
-                      <td>
-                        <button
-                          onClick={() => handleEdit(language)}
-                          className="btn btn-sm btn-success mr-1"
-                          title="Edit"
-                        >
-                          <i className="fas fa-edit"></i>
-                        </button>
-                        <button
-                          onClick={() => handleDelete(language.id)}
-                          className="btn btn-sm btn-danger"
-                          title="Delete"
-                        >
-                          <i className="fas fa-trash"></i>
-                        </button>
-                      </td>
+            <DragDropContext onDragEnd={onDragEnd}>
+              <div className="table-responsive">
+                <table className="table table-bordered table-striped table-hover mb-0">
+                  <thead>
+                    <tr>
+                      <th style={{ width: '10px' }}>#</th>
+                      <th>Flag</th>
+                      <th>Code</th>
+                      <th>Name</th>
+                      <th>Native Name</th>
+                      <th>Status</th>
+                      <th style={{ width: '150px' }}>Actions</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-            <div className="card-footer">
-              <Pagination
-                currentPage={pagination.currentPage}
-                totalPages={pagination.totalPages}
-                totalItems={pagination.totalItems}
-                itemsPerPage={pagination.itemsPerPage}
-                onPageChange={(page) => setCurrentPage(page)}
-              />
-            </div>
+                  </thead>
+                  <Droppable droppableId="languages">
+                    {(provided: any) => (
+                      <tbody {...provided.droppableProps} ref={provided.innerRef}>
+                        {languages
+                          .filter((language) => {
+                            if (!searchTerm.trim()) return true;
+                            const keyword = searchTerm.trim().toLowerCase();
+                            return (
+                              language.code.toLowerCase().includes(keyword) ||
+                              language.name.toLowerCase().includes(keyword) ||
+                              (language.nativeName && language.nativeName.toLowerCase().includes(keyword))
+                            );
+                          })
+                          .map((language, index) => (
+                            <Draggable key={language.id} draggableId={language.id} index={index}>
+                              {(provided: any) => (
+                                <tr
+                                  ref={provided.innerRef}
+                                  {...provided.draggableProps}
+                                  {...provided.dragHandleProps}
+                                >
+                                  <td>{index + 1}</td>
+                                  <td className="text-center">
+                                    {language.flag && language.flag.startsWith('http') ? (
+                                      <img
+                                        src={language.flag}
+                                        alt={language.name}
+                                        style={{
+                                          width: '32px',
+                                          height: '24px',
+                                          objectFit: 'cover',
+                                          borderRadius: '4px',
+                                        }}
+                                        onError={(e) => {
+                                          const target = e.target as HTMLImageElement;
+                                          target.style.display = 'none';
+                                          const fallback = document.createElement('span');
+                                          fallback.textContent = language.flag || '🏳️';
+                                          fallback.style.fontSize = '24px';
+                                          target.parentElement?.appendChild(fallback);
+                                        }}
+                                      />
+                                    ) : (
+                                      <span style={{ fontSize: '24px' }}>{language.flag || '🏳️'}</span>
+                                    )}
+                                  </td>
+                                  <td>
+                                    <span className="badge badge-info">{language.code}</span>
+                                  </td>
+                                  <td>{language.name}</td>
+                                  <td>{language.nativeName}</td>
+                                  <td>
+                                    <span className={`badge ${language.isActive ? 'badge-success' : 'badge-secondary'}`}>
+                                      {language.isActive ? 'Active' : 'Inactive'}
+                                    </span>
+                                  </td>
+                                  <td>
+                                    <button
+                                      onClick={() => handleEdit(language)}
+                                      className="btn btn-sm btn-success mr-1"
+                                      title="Edit"
+                                    >
+                                      <i className="fas fa-edit"></i>
+                                    </button>
+                                    <button
+                                      onClick={() => handleDelete(language.id)}
+                                      className="btn btn-sm btn-danger"
+                                      title="Delete"
+                                    >
+                                      <i className="fas fa-trash"></i>
+                                    </button>
+                                  </td>
+                                </tr>
+                              )}
+                            </Draggable>
+                          ))}
+                        {provided.placeholder}
+                      </tbody>
+                    )}
+                  </Droppable>
+                </table>
+              </div>
+            </DragDropContext>
           </div>
         </div>
       </div>
