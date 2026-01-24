@@ -165,7 +165,7 @@ export default function Topics() {
       const sorted = response.data.topics.sort((a: Topic, b: Topic) => {
         const orderA = a.order ?? 0;
         const orderB = b.order ?? 0;
-        return orderB - orderA; // Descending: high to low
+        return orderB - orderA; // Descending: high to low (số lớn trước, số nhỏ sau) - giống Languages
       });
       setTopics(sorted);
       setPagination(response.data.pagination);
@@ -440,7 +440,7 @@ export default function Topics() {
     .sort((a: Topic, b: Topic) => {
       const orderA = a.order ?? 0;
       const orderB = b.order ?? 0;
-      return orderB - orderA; // Descending: high to low
+      return orderB - orderA; // Descending: high to low (số lớn trước, số nhỏ sau) - giống Languages
     });
 
   return (

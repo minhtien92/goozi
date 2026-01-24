@@ -172,7 +172,7 @@ export default function Vocabularies() {
       const sorted = vocabRes.data.vocabularies.sort((a: Vocabulary, b: Vocabulary) => {
         const orderA = a.order ?? 0;
         const orderB = b.order ?? 0;
-        return orderB - orderA; // Descending: high to low
+        return orderB - orderA; // Descending: high to low (số lớn trước, số nhỏ sau) - giống Languages
       });
       setVocabularies(sorted);
       setPagination(vocabRes.data.pagination);
@@ -526,7 +526,7 @@ export default function Vocabularies() {
                   .sort((a: Vocabulary, b: Vocabulary) => {
                     const orderA = a.order ?? 0;
                     const orderB = b.order ?? 0;
-                    return orderB - orderA; // Descending: high to low
+                    return orderB - orderA; // Descending: high to low (số lớn trước, số nhỏ sau) - giống Languages
                   })
                   .map((vocab) => (
                     <tr key={vocab.id}>
