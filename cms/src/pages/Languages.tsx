@@ -83,7 +83,12 @@ export default function Languages() {
   const fetchLanguages = async () => {
     try {
       const response = await api.get('/languages');
-      setLanguages(response.data.languages);
+      const sorted = response.data.languages.sort((a: Language, b: Language) => {
+        const orderA = a.order ?? 0;
+        const orderB = b.order ?? 0;
+        return orderB - orderA; // Descending: high to low
+      });
+      setLanguages(sorted);
     } catch (error) {
       console.error('Error fetching languages:', error);
     } finally {

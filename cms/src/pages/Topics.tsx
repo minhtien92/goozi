@@ -162,7 +162,12 @@ export default function Topics() {
       const response = await api.get('/topics', {
         params: { page: currentPage, limit: 10 },
       });
-      setTopics(response.data.topics);
+      const sorted = response.data.topics.sort((a: Topic, b: Topic) => {
+        const orderA = a.order ?? 0;
+        const orderB = b.order ?? 0;
+        return orderB - orderA; // Descending: high to low
+      });
+      setTopics(sorted);
       setPagination(response.data.pagination);
     } catch (error) {
       console.error('Error fetching topics:', error);

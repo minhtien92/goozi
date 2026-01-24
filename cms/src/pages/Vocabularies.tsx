@@ -169,7 +169,12 @@ export default function Vocabularies() {
         api.get('/topics'),
         api.get('/languages?isActive=true'),
       ]);
-      setVocabularies(vocabRes.data.vocabularies);
+      const sorted = vocabRes.data.vocabularies.sort((a: Vocabulary, b: Vocabulary) => {
+        const orderA = a.order ?? 0;
+        const orderB = b.order ?? 0;
+        return orderB - orderA; // Descending: high to low
+      });
+      setVocabularies(sorted);
       setPagination(vocabRes.data.pagination);
       setTopics(topicsRes.data.topics);
       setLanguages(languagesRes.data.languages);
