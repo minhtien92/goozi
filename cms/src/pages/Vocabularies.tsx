@@ -523,6 +523,11 @@ export default function Vocabularies() {
                     }
                     return true;
                   })
+                  .sort((a: Vocabulary, b: Vocabulary) => {
+                    const orderA = a.order ?? 0;
+                    const orderB = b.order ?? 0;
+                    return orderB - orderA; // Descending: high to low
+                  })
                   .map((vocab) => (
                     <tr key={vocab.id}>
                       <td>{vocab.order || '-'}</td>

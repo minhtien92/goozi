@@ -428,14 +428,20 @@ export default function Topics() {
     );
   }
 
-  const filteredTopics = topics.filter((topic) => {
-    if (!searchTerm.trim()) return true;
-    const keyword = searchTerm.trim().toLowerCase();
-    return (
-      topic.name.toLowerCase().includes(keyword) ||
-      (topic.description && topic.description.toLowerCase().includes(keyword))
-    );
-  });
+  const filteredTopics = topics
+    .filter((topic) => {
+      if (!searchTerm.trim()) return true;
+      const keyword = searchTerm.trim().toLowerCase();
+      return (
+        topic.name.toLowerCase().includes(keyword) ||
+        (topic.description && topic.description.toLowerCase().includes(keyword))
+      );
+    })
+    .sort((a: Topic, b: Topic) => {
+      const orderA = a.order ?? 0;
+      const orderB = b.order ?? 0;
+      return orderB - orderA; // Descending: high to low
+    });
 
   return (
     <div className="d-flex" style={{ minHeight: 'calc(100vh - 200px)' }}>
