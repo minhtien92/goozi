@@ -16,6 +16,7 @@ interface Language {
   name: string;
   nativeName: string;
   flag: string;
+  order?: number | null;
 }
 
 interface VocabularyTranslation {
@@ -174,10 +175,15 @@ export default function Vocabularies() {
         const orderB = b.order ?? 0;
         return orderB - orderA; // Descending: high to low (số lớn trước, số nhỏ sau) - giống Languages
       });
+      const sortedLanguages = languagesRes.data.languages.sort((a: Language, b: Language) => {
+        const orderA = a.order ?? 0;
+        const orderB = b.order ?? 0;
+        return orderB - orderA; // Descending: high to low (số lớn trước, số nhỏ sau)
+      });
       setVocabularies(sorted);
       setPagination(vocabRes.data.pagination);
       setTopics(topicsRes.data.topics);
-      setLanguages(languagesRes.data.languages);
+      setLanguages(sortedLanguages);
     } catch (error) {
       console.error('Error fetching data:', error);
     } finally {

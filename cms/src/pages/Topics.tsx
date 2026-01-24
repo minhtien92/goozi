@@ -8,6 +8,7 @@ interface Language {
   name: string;
   nativeName: string;
   flag: string;
+  order?: number | null;
 }
 
 const DEFAULT_IMAGE =
@@ -151,7 +152,12 @@ export default function Topics() {
   const fetchLanguages = async () => {
     try {
       const response = await api.get('/languages?isActive=true');
-      setLanguages(response.data.languages);
+      const sorted = response.data.languages.sort((a: Language, b: Language) => {
+        const orderA = a.order ?? 0;
+        const orderB = b.order ?? 0;
+        return orderB - orderA; // Descending: high to low (số lớn trước, số nhỏ sau)
+      });
+      setLanguages(sorted);
     } catch (error) {
       console.error('Error fetching languages:', error);
     }
