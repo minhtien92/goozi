@@ -70,7 +70,7 @@ class LanguageService {
   }
 
   async createLanguage(data) {
-    const { code, name, nativeName, flag, isActive } = data;
+    const { code, name, nativeName, flag, order, isActive } = data;
 
     if (!code || !name) {
       throw new Error('Code and name are required');
@@ -87,6 +87,7 @@ class LanguageService {
       name,
       nativeName,
       flag,
+      order: order !== undefined && order !== null ? order : null,
       isActive: isActive !== undefined ? isActive : true,
     });
 
@@ -99,7 +100,7 @@ class LanguageService {
       throw new Error('Language not found');
     }
 
-    const { code, name, nativeName, flag, isActive } = data;
+    const { code, name, nativeName, flag, order, isActive } = data;
 
     // Check if code is being changed and already exists
     if (code && code !== language.code) {
@@ -114,6 +115,7 @@ class LanguageService {
       name: name || language.name,
       nativeName: nativeName !== undefined ? nativeName : language.nativeName,
       flag: flag !== undefined ? flag : language.flag,
+      order: order !== undefined ? (order !== null ? order : null) : language.order,
       isActive: isActive !== undefined ? isActive : language.isActive,
     });
 

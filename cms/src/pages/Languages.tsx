@@ -8,6 +8,7 @@ interface Language {
   name: string;
   nativeName: string;
   flag: string;
+  order: number | null;
   isActive: boolean;
   createdAt: string;
 }
@@ -23,6 +24,7 @@ export default function Languages() {
     name: '',
     nativeName: '',
     flag: '',
+    order: '',
     isActive: true,
   });
 
@@ -45,7 +47,10 @@ export default function Languages() {
       if (isInitialMount) {
         // On initial mount, only auto-open on large screens
         if (isLargeScreen && !editingLanguage && !showModal) {
-          setFormData({ code: '', name: '', nativeName: '', flag: '', isActive: true });
+          const maxOrder = languages.length > 0 
+            ? Math.max(...languages.map(l => l.order || 0)) + 1 
+            : 1;
+          setFormData({ code: '', name: '', nativeName: '', flag: '', order: maxOrder.toString(), isActive: true });
           setShowModal(true);
         }
         isInitialMount = false;
@@ -53,7 +58,10 @@ export default function Languages() {
         // On resize, handle transitions
         if (isLargeScreen && !editingLanguage && !showModal) {
           // Resize from small to large: auto open
-          setFormData({ code: '', name: '', nativeName: '', flag: '', isActive: true });
+          const maxOrder = languages.length > 0 
+            ? Math.max(...languages.map(l => l.order || 0)) + 1 
+            : 1;
+          setFormData({ code: '', name: '', nativeName: '', flag: '', order: maxOrder.toString(), isActive: true });
           setShowModal(true);
         } else if (!isLargeScreen && wasLargeScreen && showModal && !editingLanguage) {
           // Resize from large to small: auto close (only when transitioning from large to small)
@@ -85,7 +93,10 @@ export default function Languages() {
 
   const handleCreate = () => {
     setEditingLanguage(null);
-    setFormData({ code: '', name: '', nativeName: '', flag: '', isActive: true });
+    const maxOrder = languages.length > 0 
+      ? Math.max(...languages.map(l => l.order || 0)) + 1 
+      : 1;
+    setFormData({ code: '', name: '', nativeName: '', flag: '', order: maxOrder.toString(), isActive: true });
     setShowModal(true);
   };
 
@@ -96,6 +107,7 @@ export default function Languages() {
       name: language.name,
       nativeName: language.nativeName || '',
       flag: language.flag || '',
+      order: language.order?.toString() || '',
       isActive: language.isActive,
     });
     setShowModal(true);
@@ -147,10 +159,14 @@ export default function Languages() {
     e.preventDefault();
 
     try {
+      const payload = {
+        ...formData,
+        order: formData.order ? parseInt(formData.order) : null,
+      };
       if (editingLanguage) {
-        await api.put(`/languages/${editingLanguage.id}`, formData);
+        await api.put(`/languages/${editingLanguage.id}`, payload);
       } else {
-        await api.post('/languages', formData);
+        await api.post('/languages', payload);
       }
       setShowModal(false);
       fetchLanguages();
@@ -232,6 +248,7 @@ export default function Languages() {
                   <thead>
                     <tr>
                       <th style={{ width: '10px' }}>#</th>
+                      <th>Order</th>
                       <th>Flag</th>
                       <th>Code</th>
                       <th>Name</th>
@@ -262,6 +279,7 @@ export default function Languages() {
                                   {...provided.dragHandleProps}
                                 >
                                   <td>{index + 1}</td>
+                                  <td>{language.order ?? '-'}</td>
                                   <td className="text-center">
                                     {language.flag && language.flag.startsWith('http') ? (
                                       <img
@@ -383,6 +401,17 @@ export default function Languages() {
                   onChange={(e) => setFormData({ ...formData, nativeName: e.target.value })}
                   placeholder="Tiếng Việt, English, 日本語..."
                 />
+              </div>
+              <div className="form-group">
+                <label>Order</label>
+                <input
+                  type="number"
+                  className="form-control"
+                  value={formData.order}
+                  onChange={(e) => setFormData({ ...formData, order: e.target.value })}
+                  placeholder="Display order"
+                />
+                <small className="text-muted">Lower numbers appear first</small>
               </div>
               <div className="form-group">
                 <label>Flag</label>

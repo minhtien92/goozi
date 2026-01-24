@@ -40,7 +40,11 @@ class VocabularyService {
           ],
         },
       ],
-      order: [['order', 'ASC'], ['createdAt', 'ASC']],
+      order: [
+        [db.sequelize.literal('CASE WHEN "Vocabulary"."order" IS NULL THEN 1 ELSE 0 END'), 'ASC'],
+        ['order', 'ASC'],
+        ['createdAt', 'ASC']
+      ],
       limit: limitNum,
       offset: offset,
     });

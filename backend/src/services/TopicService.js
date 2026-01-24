@@ -37,7 +37,11 @@ class TopicService {
           required: false,
         },
       ],
-      order: [['order', 'ASC'], ['createdAt', 'DESC']],
+      order: [
+        [db.sequelize.literal('CASE WHEN "Topic"."order" IS NULL THEN 1 ELSE 0 END'), 'ASC'],
+        ['order', 'ASC'],
+        ['createdAt', 'DESC']
+      ],
       limit: limitNum,
       offset: offset,
     });
@@ -94,6 +98,7 @@ class TopicService {
         as: 'vocabularies',
         where: { isActive: true },
         required: false,
+        separate: true,
         include: [
           {
             model: db.VocabularyTranslation,
@@ -107,7 +112,11 @@ class TopicService {
             ],
           },
         ],
-        order: [['order', 'ASC'], ['createdAt', 'ASC']],
+        order: [
+          [db.sequelize.literal('CASE WHEN "vocabularies"."order" IS NULL THEN 1 ELSE 0 END'), 'ASC'],
+          ['order', 'ASC'],
+          ['createdAt', 'ASC']
+        ],
       });
     }
 

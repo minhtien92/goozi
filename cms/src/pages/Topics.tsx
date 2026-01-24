@@ -463,7 +463,7 @@ export default function Topics() {
               <table className="table table-bordered table-striped table-hover mb-0">
                 <thead>
                   <tr>
-                    <th style={{ width: '50px' }}>No</th>
+                    <th style={{ width: '50px' }}>Order</th>
                     <th style={{ width: '80px' }}>Image</th>
                     <th>Topic Name</th>
                     <th style={{ width: '80px' }}>Edit</th>
@@ -638,6 +638,18 @@ export default function Topics() {
                     />
                   </div>
                 </div>
+              </div>
+
+              <div className="form-group">
+                <label>Order</label>
+                <input
+                  type="number"
+                  className="form-control"
+                  value={formData.order}
+                  onChange={(e) => setFormData({ ...formData, order: e.target.value })}
+                  placeholder="Display order"
+                />
+                <small className="text-muted">Lower numbers appear first</small>
               </div>
 
               <div className="form-group">
