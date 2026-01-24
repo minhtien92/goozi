@@ -252,7 +252,6 @@ export default function Languages() {
                 <table className="table table-bordered table-striped table-hover mb-0">
                   <thead>
                     <tr>
-                      <th style={{ width: '10px' }}>#</th>
                       <th>Order</th>
                       <th>Flag</th>
                       <th>Code</th>
@@ -283,7 +282,6 @@ export default function Languages() {
                                   {...provided.draggableProps}
                                   {...provided.dragHandleProps}
                                 >
-                                  <td>{index + 1}</td>
                                   <td>{language.order ?? '-'}</td>
                                   <td className="text-center">
                                     {language.flag && language.flag.startsWith('http') ? (
