@@ -511,15 +511,6 @@ export default function Topics() {
                       </td>
                       <td>
                         <div className="font-weight-bold">{topic.name}</div>
-                        {topic.description && (
-                          <div
-                            className="text-muted small text-truncate"
-                            style={{ maxWidth: '200px' }}
-                            title={topic.description}
-                          >
-                            {topic.description}
-                          </div>
-                        )}
                       </td>
                       <td>
                         <button
@@ -669,22 +660,11 @@ export default function Topics() {
                 <small className="text-muted">Lower numbers appear first</small>
               </div>
 
-              <div className="form-group">
-                <label>Description</label>
-                <textarea
-                  className="form-control"
-                  rows={3}
-                  value={formData.description}
-                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  placeholder="Enter description (optional)"
-                />
-              </div>
-
               {/* Language Fields - Translations */}
               <div className="form-group">
                 <label className="mb-3">Translations</label>
                 <div>
-                  {languages.map((lang) => {
+                  {[...languages].reverse().map((lang) => {
                     const firstMeaning =
                       formData.translations[lang.id]?.[1]?.meaning ||
                       formData.translations[lang.id]?.[2]?.meaning ||
