@@ -342,8 +342,13 @@ export default function Slogan() {
           ) : (
             languages.map((lang) => (
               <div key={lang.id} className="form-group">
-                <label>
-                  {lang.flag} {lang.nativeName} ({lang.name})
+                <label className="d-flex align-items-center gap-2">
+                  {lang.flag && (lang.flag.startsWith('http://') || lang.flag.startsWith('https://') || lang.flag.startsWith('/')) ? (
+                    <img src={lang.flag} alt={lang.name} style={{ width: '20px', height: '15px', objectFit: 'cover', marginRight: '8px' }} />
+                  ) : (
+                    <span style={{ marginRight: '8px' }}>{lang.flag}</span>
+                  )}
+                  <span>{lang.nativeName} ({lang.name})</span>
                 </label>
                 <input
                   type="text"
