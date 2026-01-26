@@ -14,12 +14,13 @@ export const uploadFile = async (endpoint: string, file: File, onUploadProgress?
   const formData = new FormData();
   formData.append('file', file);
 
+  // Get token using the same logic as api interceptor
   const authStorage = localStorage.getItem('auth-storage');
   let token = null;
   if (authStorage) {
     try {
       const parsed = JSON.parse(authStorage);
-      token = parsed?.state?.token;
+      token = parsed?.state?.token || parsed?.token;
     } catch (e) {
       token = localStorage.getItem('token');
     }
@@ -27,9 +28,14 @@ export const uploadFile = async (endpoint: string, file: File, onUploadProgress?
     token = localStorage.getItem('token');
   }
 
+  if (!token) {
+    throw new Error('No authentication token found. Please login again.');
+  }
+
   return axios.post(`${API_BASE_URL}${endpoint}`, formData, {
     headers: {
-      ...(token && { Authorization: `Bearer ${token}` }),
+      'Authorization': `Bearer ${token}`,
+      // Don't set Content-Type, let browser set it with boundary for multipart/form-data
     },
     onUploadProgress: onUploadProgress ? (progressEvent) => {
       if (progressEvent.total) {

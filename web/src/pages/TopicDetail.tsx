@@ -45,6 +45,7 @@ export default function TopicDetail() {
   const { user } = useAuthStore();
   const [topic, setTopic] = useState<Topic | null>(null);
   const [currentVocabIndex, setCurrentVocabIndex] = useState(0);
+  const [currentPage, setCurrentPage] = useState(1);
   const [loading, setLoading] = useState(true);
   const [imageErrors, setImageErrors] = useState<Set<string>>(new Set());
   
@@ -54,6 +55,8 @@ export default function TopicDetail() {
   useEffect(() => {
     if (id) {
       fetchTopic();
+      setCurrentPage(1); // Reset to first page when topic changes
+      setCurrentVocabIndex(0); // Reset vocab index
     }
   }, [id]);
 
@@ -214,33 +217,33 @@ export default function TopicDetail() {
       onClick={handleClose}
     >
       <div 
-        className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl overflow-hidden relative"
+        className="bg-white rounded-2xl shadow-2xl w-full max-w-5xl h-[80vh] overflow-hidden relative flex flex-col"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-gray-200">
+        <div className="flex items-center justify-between p-8 border-b border-gray-200">
           <button
             onClick={() => navigate('/topics')}
             className="text-gray-600 hover:text-gray-800"
             title="Quay lại danh sách"
           >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
             </svg>
           </button>
-          <h2 className="text-xl font-bold text-gray-800">
+          <h2 className="text-2xl font-bold text-gray-800">
             {topic?.name || `Name of topic ${id}`}
           </h2>
           <div className="flex items-center gap-3">
             {/* (Optional) Search icon - keep for future */}
             {/* <button className="text-gray-600 hover:text-gray-800">
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
               </svg>
             </button> */}
             <button
               onClick={handleClose}
-              className="text-gray-500 hover:text-gray-700 text-2xl leading-none px-2"
+              className="text-gray-500 hover:text-gray-700 text-3xl leading-none px-2"
               title="Đóng"
             >
               ×
@@ -249,108 +252,80 @@ export default function TopicDetail() {
         </div>
 
         {/* Content Grid */}
-        <div className="flex-1 overflow-y-auto p-6">
-          <div className="grid grid-cols-3 md:grid-cols-5 gap-4">
-            {vocabulariesWithTranslations.map((vocab, index) => {
-              // Get translation with preferred voice accent version for this vocabulary
-              const vocabTranslation = getTranslationWithVoiceAccent(vocab.translations, topic.sourceLanguage?.id);
-              return (
-                <div
-                  key={vocab.id}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    navigate(`/topics/${id}/flashcard?index=${index}`);
-                  }}
-                  className={`bg-gray-100 border-2 rounded-lg p-4 hover:bg-blue-50 transition cursor-pointer ${
-                    currentVocabIndex === index ? 'border-blue-500 bg-blue-50' : 'border-blue-300'
-                  }`}
-                >
-                  <div className="w-full h-24 bg-gray-300 rounded mb-3 flex items-center justify-center text-xs text-gray-500 relative">
-                    {vocab.avatar && !imageErrors.has(vocab.id) ? (
-                      <img 
-                        src={vocab.avatar.startsWith('http') ? vocab.avatar : `${import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:3001'}${vocab.avatar}`} 
-                        alt={vocab.word} 
-                        className="w-full h-full object-cover rounded" 
-                        onError={() => {
-                          setImageErrors(prev => new Set(prev).add(vocab.id));
-                        }}
-                      />
-                    ) : (
-                      <span>Avatar</span>
-                    )}
-                    {/* Audio button overlay */}
-                    {vocabTranslation?.audioUrl && (
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          playAudio(vocabTranslation.audioUrl, vocab.word);
-                        }}
-                        className="absolute bottom-2 right-2 w-8 h-8 bg-white bg-opacity-90 rounded-full flex items-center justify-center hover:bg-opacity-100 shadow-md z-10"
-                        title="Phát âm"
-                      >
-                        <svg className="w-4 h-4 text-gray-700" fill="currentColor" viewBox="0 0 20 20">
-                          <path d="M18 3a1 1 0 00-1.196-.98l-10 2A1 1 0 006 5v9.114A4.369 4.369 0 005 14c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V7.82l8-1.6v5.894A4.37 4.37 0 0015 12c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V3z" />
-                        </svg>
-                      </button>
-                    )}
+        <div className="flex-1 overflow-y-auto p-8">
+          <div className="grid grid-cols-3 md:grid-cols-5 gap-6">
+            {vocabulariesWithTranslations
+              .slice((currentPage - 1) * 15, currentPage * 15)
+              .slice(0, 15) // Ensure max 15 items per page
+              .map((vocab, index) => {
+                // Calculate the actual index in the full array
+                const actualIndex = (currentPage - 1) * 15 + index;
+                // Get translation with preferred voice accent version for this vocabulary
+                const vocabTranslation = getTranslationWithVoiceAccent(vocab.translations, topic.sourceLanguage?.id);
+                return (
+                  <div
+                    key={vocab.id}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      navigate(`/topics/${id}/flashcard?index=${actualIndex}`);
+                    }}
+                    className={`bg-gray-100 border-2 rounded-lg p-6 hover:bg-blue-50 transition cursor-pointer ${
+                      currentVocabIndex === actualIndex ? 'border-blue-500 bg-blue-50' : 'border-blue-300'
+                    }`}
+                  >
+                    <div className="w-full h-32 bg-gray-300 rounded mb-4 flex items-center justify-center text-sm text-gray-500 relative">
+                      {vocab.avatar && !imageErrors.has(vocab.id) ? (
+                        <img 
+                          src={vocab.avatar.startsWith('http') ? vocab.avatar : `${import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:3001'}${vocab.avatar}`} 
+                          alt={vocab.word} 
+                          className="w-full h-full object-cover rounded" 
+                          onError={() => {
+                            setImageErrors(prev => new Set(prev).add(vocab.id));
+                          }}
+                        />
+                      ) : (
+                        <span>Avatar</span>
+                      )}
+                      {/* Audio button overlay */}
+                      {vocabTranslation?.audioUrl && (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            playAudio(vocabTranslation.audioUrl, vocab.word);
+                          }}
+                          className="absolute bottom-3 right-3 w-10 h-10 bg-white bg-opacity-90 rounded-full flex items-center justify-center hover:bg-opacity-100 shadow-md z-10"
+                          title="Phát âm"
+                        >
+                          <svg className="w-5 h-5 text-gray-700" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M18 3a1 1 0 00-1.196-.98l-10 2A1 1 0 006 5v9.114A4.369 4.369 0 005 14c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V7.82l8-1.6v5.894A4.37 4.37 0 0015 12c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V3z" />
+                          </svg>
+                        </button>
+                      )}
+                    </div>
+                    <div className="text-base font-medium text-gray-800 text-center">
+                      {vocab.word || `Name of word ${actualIndex + 1}`}
+                    </div>
                   </div>
-                  <div className="text-sm font-medium text-gray-800 text-center">
-                    {vocab.word || `Name of word ${index + 1}`}
-                  </div>
-                </div>
-              );
-            })}
+                );
+              })}
           </div>
         </div>
 
         {/* Pagination */}
-        {Math.ceil(vocabulariesWithTranslations.length / 15) > 1 && (
-          <div className="flex justify-center items-center gap-2 p-6 border-t border-gray-200">
-            {Array.from({ length: Math.ceil(vocabulariesWithTranslations.length / 15) }, (_, i) => i + 1).map((page) => (
-              <button
-                key={page}
-                className={`w-10 h-10 rounded-full ${
-                  Math.floor(currentVocabIndex / 15) + 1 === page
-                    ? 'bg-teal-600 text-white'
-                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                } transition`}
-              >
-                {page}
-              </button>
-            ))}
-          </div>
-        )}
-
-        {/* Footer - Unlock Bar */}
-        <div className="p-6 border-t border-gray-200 bg-gray-50 flex items-center justify-between">
-          <div className="w-6 h-6 border-2 border-gray-300 rounded"></div>
-          <button 
-            onClick={() => navigate(`/topics/${id}/flashcard`)}
-            disabled={vocabulariesWithTranslations.length === 0}
-            className="flex items-center gap-2 bg-teal-500 hover:bg-teal-600 disabled:bg-gray-400 disabled:cursor-not-allowed text-white px-6 py-3 rounded-lg font-medium transition"
-          >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-            </svg>
-            Unlock
-          </button>
-          <div className="flex gap-2">
-            <button className="w-8 h-8 rounded-full bg-gray-200 hover:bg-gray-300 flex items-center justify-center">
-              <svg className="w-4 h-4 text-gray-600" fill="currentColor" viewBox="0 0 20 20">
-                <path d="M18 3a1 1 0 00-1.196-.98l-10 2A1 1 0 006 5v9.114A4.369 4.369 0 005 14c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V7.82l8-1.6v5.894A4.37 4.37 0 0015 12c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V3z" />
-              </svg>
+        <div className="flex justify-center items-center gap-3 p-8 border-t border-gray-200">
+          {Array.from({ length: Math.ceil(vocabulariesWithTranslations.length / 15) }, (_, i) => i + 1).map((page) => (
+            <button
+              key={page}
+              onClick={() => setCurrentPage(page)}
+              className={`w-12 h-12 rounded-full text-lg font-medium ${
+                currentPage === page
+                  ? 'bg-blue-500 text-white'
+                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+              } transition`}
+            >
+              {page}
             </button>
-            <button className="w-8 h-8 rounded-full bg-gray-200 hover:bg-gray-300 flex items-center justify-center">
-              <svg className="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
-              </svg>
-            </button>
-          </div>
-        </div>
-
-        {/* Bottom Ad Banner */}
-        <div className="bg-lime-400 text-center py-2 text-sm font-medium">
-          ADS - BOTTOM
+          ))}
         </div>
       </div>
     </div>

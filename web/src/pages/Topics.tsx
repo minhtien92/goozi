@@ -87,21 +87,21 @@ export default function Topics() {
 
   return (
     <div className="fixed inset-0 z-40 flex items-center justify-center p-4" onClick={handleClose}>
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-6xl max-h-[90vh] overflow-hidden flex flex-col" onClick={(e) => e.stopPropagation()}>
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-6xl h-[80vh] overflow-hidden flex flex-col" onClick={(e) => e.stopPropagation()}>
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-gray-200">
-          <div className="flex items-center gap-4">
+        <div className="flex items-center justify-between p-8 border-b border-gray-200">
+          <div className="flex items-center gap-6">
             <button
               onClick={handleClose}
               className="text-gray-600 hover:text-gray-800"
             >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
-            <h2 className="text-2xl font-bold text-teal-600">Vocabulary</h2>
+            <h2 className="text-3xl font-bold text-teal-600">Vocabulary</h2>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
             <input
               type="text"
               placeholder="Search topics..."
@@ -110,10 +110,10 @@ export default function Topics() {
                 setSearchQuery(e.target.value);
                 setCurrentPage(1);
               }}
-              className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
+              className="px-6 py-3 text-lg border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
             />
             <button className="text-gray-600 hover:text-gray-800">
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
               </svg>
             </button>
@@ -121,23 +121,23 @@ export default function Topics() {
         </div>
 
         {/* Content */}
-        <div className="flex-1 overflow-y-auto p-6">
+        <div className="flex-1 overflow-y-auto p-8">
           {loading ? (
-            <div className="text-center py-12">
-              <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-teal-600"></div>
+            <div className="text-center py-16">
+              <div className="inline-block animate-spin rounded-full h-16 w-16 border-b-2 border-teal-600"></div>
             </div>
           ) : (
-            <div className="grid grid-cols-3 md:grid-cols-5 gap-4">
+            <div className="grid grid-cols-3 md:grid-cols-5 gap-6">
               {paginatedTopics.map((topic, index) => (
                 <div
                   key={topic.id}
                   onClick={() => handleTopicClick(topic.id)}
-                  className="bg-gray-100 border-2 border-blue-300 rounded-lg p-4 cursor-pointer hover:bg-blue-50 hover:border-blue-500 transition"
+                  className="bg-gray-100 border-2 border-blue-300 rounded-lg p-6 cursor-pointer hover:bg-blue-50 hover:border-blue-500 transition"
                 >
-                  <div className="w-full h-24 bg-gray-300 rounded mb-3 flex items-center justify-center text-xs text-gray-500">
+                  <div className="w-full h-32 bg-gray-300 rounded mb-4 flex items-center justify-center text-sm text-gray-500">
                     Avatar
                   </div>
-                  <div className="text-sm font-medium text-gray-800 text-center">
+                  <div className="text-base font-medium text-gray-800 text-center">
                     {topic.name || `Name of topic ${startIndex + index + 1}`}
                   </div>
                 </div>
@@ -148,12 +148,12 @@ export default function Topics() {
 
         {/* Pagination */}
         {totalPages > 1 && (
-          <div className="flex justify-center items-center gap-2 p-6 border-t border-gray-200">
+          <div className="flex justify-center items-center gap-3 p-8 border-t border-gray-200">
             {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
               <button
                 key={page}
                 onClick={() => setCurrentPage(page)}
-                className={`w-10 h-10 rounded-full ${
+                className={`w-12 h-12 rounded-full text-lg font-medium ${
                   currentPage === page
                     ? 'bg-teal-600 text-white'
                     : 'bg-gray-200 text-gray-700 hover:bg-gray-300'

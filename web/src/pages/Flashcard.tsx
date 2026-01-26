@@ -8,6 +8,7 @@ interface VocabularyTranslation {
   languageId: string;
   meaning: string;
   pronunciation: string | null;
+  ipa?: string | null;
   example: string | null;
   audioUrl: string | null;
   version: number;
@@ -424,11 +425,6 @@ export default function Flashcard() {
   
   const learningLanguageTranslations = getTranslationsForLearningLanguages();
 
-  const handleClose = () => {
-    stopAllAudio();
-    navigate('/');
-  };
-
   const speakWord = (translation: VocabularyTranslation | null, text: string, langCode?: string, key?: string) => {
     playAudio(translation?.audioUrl || null, text, langCode, key);
   };
@@ -437,24 +433,27 @@ export default function Flashcard() {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl overflow-hidden flex flex-col max-h-[90vh] relative">
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-5xl overflow-hidden flex flex-col h-[80vh] relative">
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-gray-200 bg-gray-50">
+        <div className="flex items-center justify-between p-6 border-b border-gray-200 bg-gray-50">
           <button
             onClick={() => navigate(`/topics/${id}`)}
             className="text-gray-600 hover:text-gray-800"
             title="Quay lại"
           >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
             </svg>
           </button>
           <div className="flex-1 text-center">
-            <h2 className="text-lg font-semibold text-gray-800">
+            <h2 className="text-2xl font-semibold text-gray-800">
               {currentVocab.word || `Name of word ${currentIndex + 1}`}
             </h2>
+            <p className="text-lg text-gray-600 mt-2">
+              {currentIndex + 1} / {vocabularies.length}
+            </p>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
             <button
               onClick={() => {
                 const firstTranslation = learningLanguageTranslations[0];
@@ -474,106 +473,145 @@ export default function Flashcard() {
                   );
                 }
               }}
-              className="w-8 h-8 rounded-full bg-white hover:bg-gray-100 flex items-center justify-center shadow-sm"
+              className="w-12 h-12 rounded-full bg-white hover:bg-gray-100 flex items-center justify-center shadow-sm"
               title="Phát âm"
             >
               {playingKey === 'header-source' ||
               (playingKey && playingKey.startsWith('header-')) ? (
                 // Stop icon (red) - giống CMS (fa-stop)
-                <svg className="w-4 h-4 text-red-500" viewBox="0 0 20 20" fill="currentColor">
+                <svg className="w-6 h-6 text-red-500" viewBox="0 0 20 20" fill="currentColor">
                   <path d="M6 5a1 1 0 00-1 1v8a1 1 0 001 1h8a1 1 0 001-1V6a1 1 0 00-1-1H6z" />
                 </svg>
               ) : (
                 // Play icon (green) - giống CMS (fa-play)
-                <svg className="w-4 h-4 text-green-500" viewBox="0 0 20 20" fill="currentColor">
+                <svg className="w-6 h-6 text-green-500" viewBox="0 0 20 20" fill="currentColor">
                   <path d="M6 4.5v11l9-5.5-9-5.5z" />
                 </svg>
               )}
             </button>
-            <button className="w-8 h-8 rounded-full bg-white hover:bg-gray-100 flex items-center justify-center shadow-sm" title="Refresh">
-              <svg className="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <button className="w-12 h-12 rounded-full bg-white hover:bg-gray-100 flex items-center justify-center shadow-sm" title="Refresh">
+              <svg className="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
               </svg>
             </button>
-            <button
-              onClick={handleClose}
-              className="w-8 h-8 rounded-full bg-white hover:bg-gray-100 flex items-center justify-center shadow-sm text-gray-600"
-              title="Đóng"
-            >
-              ×
-            </button>
           </div>
-        </div>
-        
-        {/* Progress indicator */}
-        <div className="text-center py-2 bg-gray-50 border-b border-gray-200">
-          <p className="text-sm text-gray-600">
-            {currentIndex + 1} / {vocabularies.length}
-          </p>
         </div>
 
         {/* Avatar Section */}
-        <div className="relative bg-gray-200 h-64 flex items-center justify-center">
-          {currentVocab.avatar && !imageError ? (
-            <img 
-              src={currentVocab.avatar.startsWith('http') ? currentVocab.avatar : `${import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:3001'}${currentVocab.avatar}`} 
-              alt={currentVocab.word} 
-              className="w-full h-full object-cover" 
-              onError={() => setImageError(true)}
-            />
-          ) : (
-            <div className="text-gray-500 text-sm">Avatar</div>
-          )}
+        <div className="p-8 flex items-center justify-center gap-6">
           {/* Left Arrow */}
           <button
             onClick={handlePrevious}
             disabled={currentIndex === 0}
-            className="absolute left-4 w-10 h-10 bg-white rounded-full shadow-lg flex items-center justify-center hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-14 h-14 bg-white rounded-full shadow-lg flex items-center justify-center hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0"
           >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
             </svg>
           </button>
+          
+          {/* Image Container */}
+          <div className="bg-gray-200 w-full max-w-lg h-96 flex items-center justify-center rounded-lg flex-shrink">
+            {currentVocab.avatar && !imageError ? (
+              <img 
+                src={currentVocab.avatar.startsWith('http') ? currentVocab.avatar : `${import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:3001'}${currentVocab.avatar}`} 
+                alt={currentVocab.word} 
+                className="w-full h-full object-cover rounded-lg" 
+                onError={() => setImageError(true)}
+              />
+            ) : (
+              <div className="text-gray-500 text-base">Avatar</div>
+            )}
+          </div>
+          
           {/* Right Arrow */}
           <button
             onClick={handleNext}
             disabled={currentIndex >= vocabularies.length - 1}
-            className="absolute right-4 w-10 h-10 bg-white rounded-full shadow-lg flex items-center justify-center hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-14 h-14 bg-white rounded-full shadow-lg flex items-center justify-center hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0"
           >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
             </svg>
           </button>
         </div>
 
         {/* Translations */}
-        <div className="p-6 space-y-3 flex-1 overflow-y-auto">
-          {/* Display translations for learning languages */}
-          {learningLanguageTranslations.map((item) => {
+        <div className="p-8 space-y-4 flex-1 overflow-y-auto">
+          {/* Display source language translation (English) first */}
+          {sourceTranslation && sourceLang && (
+            <div className="flex items-center gap-6 p-6 bg-gray-50 rounded-lg">
+              {sourceLang.flag && sourceLang.flag.startsWith('http') ? (
+                <img src={sourceLang.flag} alt={sourceLang.name} className="w-16 h-12 object-cover rounded" />
+              ) : (
+                <span className="text-5xl">{sourceLang.flag || '🌐'}</span>
+              )}
+              <div className="flex-1 text-center">
+                <div className="font-semibold text-2xl text-gray-800">
+                  {currentVocab.word}
+                </div>
+                {(sourceTranslation.ipa || sourceTranslation.pronunciation) && (
+                  <div className="text-xl text-gray-600 italic mt-2">
+                    /{sourceTranslation.ipa || sourceTranslation.pronunciation}/
+                  </div>
+                )}
+              </div>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => speakWord(
+                    sourceTranslation,
+                    currentVocab.word,
+                    sourceLang.code || 'en-US',
+                    `source-${sourceLang.id}`
+                  )}
+                  className="w-12 h-12 rounded-full bg-white hover:bg-gray-100 flex items-center justify-center shadow-sm"
+                  title="Phát âm"
+                >
+                  {playingKey === `source-${sourceLang.id}` ? (
+                    <svg className="w-6 h-6 text-red-500" viewBox="0 0 20 20" fill="currentColor">
+                      <path d="M6 5a1 1 0 00-1 1v8a1 1 0 001 1h8a1 1 0 001-1V6a1 1 0 00-1-1H6z" />
+                    </svg>
+                  ) : (
+                    <svg className="w-6 h-6 text-green-500" viewBox="0 0 20 20" fill="currentColor">
+                      <path d="M6 4.5v11l9-5.5-9-5.5z" />
+                    </svg>
+                  )}
+                </button>
+                <button className="w-12 h-12 rounded-full bg-white hover:bg-gray-100 flex items-center justify-center shadow-sm" title="Person">
+                  <svg className="w-6 h-6 text-gray-600" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+          )}
+          
+          {/* Display translations for learning languages - limit to 2 (total 3 with source) */}
+          {learningLanguageTranslations.slice(0, 2).map((item) => {
             if (!item.language || !item.translation) return null;
             const key = `row-${item.language.id}-${item.translation.id}`;
             
             return (
               <div
                 key={key}
-                className="flex items-center gap-4 p-4 bg-gray-50 rounded-lg"
+                className="flex items-center gap-6 p-6 bg-gray-50 rounded-lg"
               >
                 {item.language.flag && item.language.flag.startsWith('http') ? (
-                  <img src={item.language.flag} alt={item.language.name} className="w-8 h-6 object-cover rounded" />
+                  <img src={item.language.flag} alt={item.language.name} className="w-16 h-12 object-cover rounded" />
                 ) : (
-                  <span className="text-2xl">{item.language.flag || '🌐'}</span>
+                  <span className="text-5xl">{item.language.flag || '🌐'}</span>
                 )}
-                <div className="flex-1">
-                  <div className="font-semibold text-base text-gray-800">
+                <div className="flex-1 text-center">
+                  <div className="font-semibold text-2xl text-gray-800">
                     {item.translation.meaning || currentVocab.word}
                   </div>
-                  {item.translation.pronunciation && (
-                    <div className="text-sm text-gray-600 italic mt-1">
-                      /{item.translation.pronunciation}/
+                  {(item.translation.ipa || item.translation.pronunciation) && (
+                    <div className="text-xl text-gray-600 italic mt-2">
+                      /{item.translation.ipa || item.translation.pronunciation}/
                     </div>
                   )}
                 </div>
-                <div className="flex gap-2">
+                <div className="flex gap-3">
                   <button
                     onClick={() => speakWord(
                       item.translation,
@@ -581,23 +619,23 @@ export default function Flashcard() {
                       item.language.code || 'en-US',
                       key
                     )}
-                    className="w-8 h-8 rounded-full bg-white hover:bg-gray-100 flex items-center justify-center shadow-sm"
+                    className="w-12 h-12 rounded-full bg-white hover:bg-gray-100 flex items-center justify-center shadow-sm"
                     title="Phát âm"
                   >
                     {playingKey === key ? (
                       // Stop icon (red) - giống CMS
-                      <svg className="w-4 h-4 text-red-500" viewBox="0 0 20 20" fill="currentColor">
+                      <svg className="w-6 h-6 text-red-500" viewBox="0 0 20 20" fill="currentColor">
                         <path d="M6 5a1 1 0 00-1 1v8a1 1 0 001 1h8a1 1 0 001-1V6a1 1 0 00-1-1H6z" />
                       </svg>
                     ) : (
                       // Play icon (green) - giống CMS
-                      <svg className="w-4 h-4 text-green-500" viewBox="0 0 20 20" fill="currentColor">
+                      <svg className="w-6 h-6 text-green-500" viewBox="0 0 20 20" fill="currentColor">
                         <path d="M6 4.5v11l9-5.5-9-5.5z" />
                       </svg>
                     )}
                   </button>
-                  <button className="w-8 h-8 rounded-full bg-white hover:bg-gray-100 flex items-center justify-center shadow-sm" title="Person">
-                    <svg className="w-4 h-4 text-gray-600" fill="currentColor" viewBox="0 0 20 20">
+                  <button className="w-12 h-12 rounded-full bg-white hover:bg-gray-100 flex items-center justify-center shadow-sm" title="Person">
+                    <svg className="w-6 h-6 text-gray-600" fill="currentColor" viewBox="0 0 20 20">
                       <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
                     </svg>
                   </button>
@@ -606,64 +644,51 @@ export default function Flashcard() {
             );
           })}
           
-          {/* Locked content row */}
-          {learningLanguageTranslations.length > 0 && (
-            <div className="flex items-center gap-4 p-4 bg-gray-100 rounded-lg opacity-60">
-              <div className="w-8 h-8 border-2 border-gray-300 rounded"></div>
-              <div className="flex-1">
-                <div className="font-semibold text-base text-gray-600">Unlock để xem thêm</div>
+          {/* Locked content row - show if there are more than 2 learning languages */}
+          {learningLanguageTranslations.length > 2 && (() => {
+            const lockedItem = learningLanguageTranslations[2];
+            if (!lockedItem || !lockedItem.language || !lockedItem.translation) return null;
+            
+            return (
+              <div className="relative">
+                {/* Background language card (blurred/disabled) */}
+                <div className="flex items-center gap-6 p-6 bg-gray-50 rounded-lg opacity-50">
+                  {lockedItem.language.flag && lockedItem.language.flag.startsWith('http') ? (
+                    <img src={lockedItem.language.flag} alt={lockedItem.language.name} className="w-16 h-12 object-cover rounded" />
+                  ) : (
+                    <span className="text-5xl">{lockedItem.language.flag || '🌐'}</span>
+                  )}
+                  <div className="flex-1 text-center">
+                    <div className="font-semibold text-2xl text-gray-800">
+                      {lockedItem.translation.meaning || currentVocab.word}
+                    </div>
+                    {(lockedItem.translation.ipa || lockedItem.translation.pronunciation) && (
+                      <div className="text-xl text-gray-600 italic mt-2">
+                        /{lockedItem.translation.ipa || lockedItem.translation.pronunciation}/
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex gap-3">
+                    <div className="w-12 h-12"></div>
+                    <div className="w-12 h-12"></div>
+                  </div>
+                </div>
+                {/* Overlay with Unlock button in center */}
+                <div className="absolute inset-0 flex items-center justify-center bg-gray-100 bg-opacity-80 rounded-lg">
+                  <button className="bg-blue-500 hover:bg-blue-600 text-white px-8 py-4 rounded-lg font-semibold text-lg transition">
+                    Unlock
+                  </button>
+                </div>
               </div>
-              <button className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg font-medium transition">
-                Unlock
-              </button>
-              <div className="flex gap-2">
-                <button className="w-8 h-8 rounded-full bg-gray-200 hover:bg-gray-300 flex items-center justify-center opacity-50" title="Phát âm">
-                  <svg className="w-4 h-4 text-gray-600" fill="currentColor" viewBox="0 0 20 20">
-                    <path d="M18 3a1 1 0 00-1.196-.98l-10 2A1 1 0 006 5v9.114A4.369 4.369 0 005 14c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V7.82l8-1.6v5.894A4.37 4.37 0 0015 12c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V3z" />
-                  </svg>
-                </button>
-                <button className="w-8 h-8 rounded-full bg-gray-200 hover:bg-gray-300 flex items-center justify-center opacity-50" title="Person">
-                  <svg className="w-4 h-4 text-gray-600" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
-                  </svg>
-                </button>
-              </div>
-            </div>
-          )}
+            );
+          })()}
           
           {/* Fallback if no learning languages selected */}
-          {learningLanguageTranslations.length === 0 && (
-            <div className="text-center py-8 text-gray-500">
-              <p>Vui lòng chọn ngôn ngữ học trong profile để xem bản dịch</p>
+          {learningLanguageTranslations.length === 0 && !sourceTranslation && (
+            <div className="text-center py-12 text-gray-500">
+              <p className="text-lg">Vui lòng chọn ngôn ngữ học trong profile để xem bản dịch</p>
             </div>
           )}
-        </div>
-
-        {/* Footer - Unlock Bar */}
-        <div className="p-6 border-t border-gray-200 bg-gray-50 flex items-center justify-between">
-          <div className="w-6 h-6 border-2 border-gray-300 rounded"></div>
-          <button className="flex items-center gap-2 bg-teal-500 hover:bg-teal-600 text-white px-6 py-3 rounded-lg font-medium transition">
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-            </svg>
-            Unlock
-          </button>
-          <div className="flex gap-2">
-            <button
-              onClick={() => speakWord(sourceTranslation, currentVocab.word, sourceLang?.code || 'en-US')}
-              className="w-8 h-8 rounded-full bg-gray-200 hover:bg-gray-300 flex items-center justify-center"
-              title="Phát âm"
-            >
-              <svg className="w-4 h-4 text-gray-600" fill="currentColor" viewBox="0 0 20 20">
-                <path d="M18 3a1 1 0 00-1.196-.98l-10 2A1 1 0 006 5v9.114A4.369 4.369 0 005 14c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V7.82l8-1.6v5.894A4.37 4.37 0 0015 12c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V3z" />
-              </svg>
-            </button>
-            <button className="w-8 h-8 rounded-full bg-gray-200 hover:bg-gray-300 flex items-center justify-center" title="Cài đặt">
-              <svg className="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
-              </svg>
-            </button>
-          </div>
         </div>
 
         {/* Bottom Ad Banner */}

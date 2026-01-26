@@ -86,7 +86,7 @@ await fastify.register(jwt, {
 });
 
 await fastify.register(multipart, {
-  attachFieldsToBody: true, // Add this line
+  attachFieldsToBody: true,
   limits: {
     fileSize: 50 * 1024 * 1024, // 50MB
   },

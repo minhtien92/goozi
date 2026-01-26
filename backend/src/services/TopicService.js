@@ -113,7 +113,6 @@ class TopicService {
           },
         ],
         order: [
-          [db.sequelize.literal('CASE WHEN "vocabularies"."order" IS NULL THEN 1 ELSE 0 END'), 'ASC'],
           ['order', 'ASC'],
           ['createdAt', 'ASC']
         ],

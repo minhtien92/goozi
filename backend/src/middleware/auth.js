@@ -11,12 +11,26 @@ async function authPlugin(fastify, options) {
 
   fastify.decorate('requireAdmin', async function (request, reply) {
     try {
+      // Debug logging
+      const authHeader = request.headers.authorization;
+      console.log('requireAdmin - Authorization header:', authHeader ? 'present' : 'missing');
+      
       await request.jwtVerify();
-      if (request.user.role !== 'admin') {
-        reply.code(403).send({ error: 'Forbidden: Admin access required' });
+      
+      if (!request.user) {
+        console.log('requireAdmin - No user found after JWT verify');
+        return reply.code(401).send({ error: 'Unauthorized' });
       }
+      
+      if (request.user.role !== 'admin') {
+        console.log('requireAdmin - User role:', request.user.role);
+        return reply.code(403).send({ error: 'Forbidden: Admin access required' });
+      }
+      
+      console.log('requireAdmin - Authentication successful for admin:', request.user.email);
     } catch (err) {
-      reply.code(401).send({ error: 'Unauthorized' });
+      console.error('requireAdmin - JWT verification error:', err.message);
+      return reply.code(401).send({ error: 'Unauthorized', message: err.message });
     }
   });
 
