@@ -510,13 +510,13 @@ export default function Flashcard() {
             </svg>
           </button>
           
-          {/* Image Container */}
-          <div className="bg-gray-200 w-full max-w-lg h-96 flex items-center justify-center rounded-lg flex-shrink">
+          {/* Image Container - object-contain để hiển thị hết nội dung ảnh, không crop */}
+          <div className="bg-gray-200 w-full max-w-lg min-h-64 flex items-center justify-center rounded-lg flex-shrink overflow-hidden">
             {currentVocab.avatar && !imageError ? (
               <img 
                 src={currentVocab.avatar.startsWith('http') ? currentVocab.avatar : `${import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:3001'}${currentVocab.avatar}`} 
                 alt={currentVocab.word} 
-                className="w-full h-full object-cover rounded-lg" 
+                className="max-w-full max-h-[min(28rem,70vh)] w-auto h-auto object-contain rounded-lg" 
                 onError={() => setImageError(true)}
               />
             ) : (
