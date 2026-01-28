@@ -569,3 +569,14 @@ Xem hướng dẫn chi tiết trong [docs/API.md](docs/API.md)
 - ✅ Xem request/response schemas
 - ✅ Examples và descriptions đầy đủ
 - ✅ Import vào Postman/Insomnia
+
+
+Tỉ lệ khuyến nghị: \(4:5\) hoặc \(3:4\)
+Kích thước “đẹp” (upload):
+800×1000 px (4:5) (khuyến nghị)
+600×800 px (3:4)
+Kích thước nhẹ (tối ưu dung lượng):
+480×600 px (4:5) hoặc 360×480 px (3:4)
+Định dạng: WebP (ưu tiên) hoặc JPG
+Dung lượng: cố gắng < 200–300 KB/ảnh để tải nhanh
+Nếu bạn muốn ảnh “đầy khung” hơn (ít viền xám), mình có thể chỉnh object-contain → object-cover và chọn tỉ lệ chuẩn cố định.
