@@ -433,27 +433,27 @@ export default function Flashcard() {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-5xl overflow-hidden flex flex-col h-[80vh] relative">
-        {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-gray-200 bg-gray-50">
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-5xl overflow-hidden flex flex-col h-[85vh] relative">
+        {/* Header - thu gọn */}
+        <div className="flex items-center justify-between py-2.5 px-4 border-b border-gray-200 bg-gray-50 flex-shrink-0">
           <button
             onClick={() => navigate(`/topics/${id}`)}
-            className="text-gray-600 hover:text-gray-800"
+            className="text-gray-600 hover:text-gray-800 p-1"
             title="Quay lại"
           >
-            <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
             </svg>
           </button>
-          <div className="flex-1 text-center">
-            <h2 className="text-2xl font-semibold text-gray-800">
+          <div className="flex-1 text-center min-w-0">
+            <h2 className="text-lg font-semibold text-gray-800 truncate px-2">
               {currentVocab.word || `Name of word ${currentIndex + 1}`}
             </h2>
-            <p className="text-lg text-gray-600 mt-2">
+            <p className="text-sm text-gray-500 mt-0.5">
               {currentIndex + 1} / {vocabularies.length}
             </p>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-1.5">
             <button
               onClick={() => {
                 const firstTranslation = learningLanguageTranslations[0];
@@ -473,90 +473,83 @@ export default function Flashcard() {
                   );
                 }
               }}
-              className="w-12 h-12 rounded-full bg-white hover:bg-gray-100 flex items-center justify-center shadow-sm"
+              className="w-9 h-9 rounded-full bg-white hover:bg-gray-100 flex items-center justify-center shadow-sm"
               title="Phát âm"
             >
               {playingKey === 'header-source' ||
               (playingKey && playingKey.startsWith('header-')) ? (
-                // Stop icon (red) - giống CMS (fa-stop)
-                <svg className="w-6 h-6 text-red-500" viewBox="0 0 20 20" fill="currentColor">
+                <svg className="w-5 h-5 text-red-500" viewBox="0 0 20 20" fill="currentColor">
                   <path d="M6 5a1 1 0 00-1 1v8a1 1 0 001 1h8a1 1 0 001-1V6a1 1 0 00-1-1H6z" />
                 </svg>
               ) : (
-                // Play icon (green) - giống CMS (fa-play)
-                <svg className="w-6 h-6 text-green-500" viewBox="0 0 20 20" fill="currentColor">
+                <svg className="w-5 h-5 text-green-500" viewBox="0 0 20 20" fill="currentColor">
                   <path d="M6 4.5v11l9-5.5-9-5.5z" />
                 </svg>
               )}
             </button>
-            <button className="w-12 h-12 rounded-full bg-white hover:bg-gray-100 flex items-center justify-center shadow-sm" title="Refresh">
-              <svg className="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <button className="w-9 h-9 rounded-full bg-white hover:bg-gray-100 flex items-center justify-center shadow-sm" title="Refresh">
+              <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
               </svg>
             </button>
           </div>
         </div>
 
-        {/* Avatar Section */}
-        <div className="p-8 flex items-center justify-center gap-6">
-          {/* Left Arrow */}
+        {/* Avatar Section - giới hạn chiều cao để nhường chỗ cho translation */}
+        <div className="py-3 px-4 flex items-center justify-center gap-4 flex-shrink-0">
           <button
             onClick={handlePrevious}
             disabled={currentIndex === 0}
-            className="w-14 h-14 bg-white rounded-full shadow-lg flex items-center justify-center hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0"
+            className="w-10 h-10 bg-white rounded-full shadow flex items-center justify-center hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0"
           >
-            <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
             </svg>
           </button>
-          
-          {/* Image Container - object-contain để hiển thị hết nội dung ảnh, không crop */}
-          <div className="bg-gray-200 w-full max-w-lg min-h-64 flex items-center justify-center rounded-lg flex-shrink overflow-hidden">
+          <div className="bg-gray-100 w-full max-w-sm h-[min(11rem,22vh)] flex items-center justify-center rounded-lg flex-shrink overflow-hidden">
             {currentVocab.avatar && !imageError ? (
               <img 
                 src={currentVocab.avatar.startsWith('http') ? currentVocab.avatar : `${import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:3001'}${currentVocab.avatar}`} 
                 alt={currentVocab.word} 
-                className="max-w-full max-h-[min(28rem,70vh)] w-auto h-auto object-contain rounded-lg" 
+                className="max-w-full max-h-full w-auto h-auto object-contain rounded-lg" 
                 onError={() => setImageError(true)}
               />
             ) : (
-              <div className="text-gray-500 text-base">Avatar</div>
+              <div className="text-gray-400 text-sm">Ảnh</div>
             )}
           </div>
-          
-          {/* Right Arrow */}
           <button
             onClick={handleNext}
             disabled={currentIndex >= vocabularies.length - 1}
-            className="w-14 h-14 bg-white rounded-full shadow-lg flex items-center justify-center hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0"
+            className="w-10 h-10 bg-white rounded-full shadow flex items-center justify-center hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0"
           >
-            <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
             </svg>
           </button>
         </div>
 
-        {/* Translations */}
-        <div className="p-8 space-y-4 flex-1 overflow-y-auto">
+        {/* Translations - chiếm phần còn lại, luôn đủ chỗ hiển thị nghĩa */}
+        <div className="flex-1 min-h-0 overflow-y-auto py-3 px-4 space-y-3">
           {/* Display source language translation (English) first */}
           {sourceTranslation && sourceLang && (
-            <div className="flex items-center gap-6 p-6 bg-gray-50 rounded-lg">
+            <div className="flex items-center gap-3 p-3 sm:p-4 bg-gray-50 rounded-lg">
               {sourceLang.flag && sourceLang.flag.startsWith('http') ? (
-                <img src={sourceLang.flag} alt={sourceLang.name} className="w-16 h-12 object-cover rounded" />
+                <img src={sourceLang.flag} alt={sourceLang.name} className="w-10 h-8 sm:w-12 sm:h-9 object-cover rounded flex-shrink-0" />
               ) : (
-                <span className="text-5xl">{sourceLang.flag || '🌐'}</span>
+                <span className="text-2xl sm:text-3xl flex-shrink-0">{sourceLang.flag || '🌐'}</span>
               )}
-              <div className="flex-1 text-center">
-                <div className="font-semibold text-2xl text-gray-800">
+              <div className="flex-1 text-center min-w-0">
+                <div className="font-semibold text-lg sm:text-xl text-gray-800 break-words">
                   {currentVocab.word}
                 </div>
                 {(sourceTranslation.ipa || sourceTranslation.pronunciation) && (
-                  <div className="text-xl text-gray-600 italic mt-2">
+                  <div className="text-sm sm:text-base text-gray-600 italic mt-1">
                     /{sourceTranslation.ipa || sourceTranslation.pronunciation}/
                   </div>
                 )}
               </div>
-              <div className="flex gap-3">
+              <div className="flex gap-1.5 flex-shrink-0">
                 <button
                   onClick={() => speakWord(
                     sourceTranslation,
@@ -564,21 +557,21 @@ export default function Flashcard() {
                     sourceLang.code || 'en-US',
                     `source-${sourceLang.id}`
                   )}
-                  className="w-12 h-12 rounded-full bg-white hover:bg-gray-100 flex items-center justify-center shadow-sm"
+                  className="w-9 h-9 rounded-full bg-white hover:bg-gray-100 flex items-center justify-center shadow-sm"
                   title="Phát âm"
                 >
                   {playingKey === `source-${sourceLang.id}` ? (
-                    <svg className="w-6 h-6 text-red-500" viewBox="0 0 20 20" fill="currentColor">
+                    <svg className="w-5 h-5 text-red-500" viewBox="0 0 20 20" fill="currentColor">
                       <path d="M6 5a1 1 0 00-1 1v8a1 1 0 001 1h8a1 1 0 001-1V6a1 1 0 00-1-1H6z" />
                     </svg>
                   ) : (
-                    <svg className="w-6 h-6 text-green-500" viewBox="0 0 20 20" fill="currentColor">
+                    <svg className="w-5 h-5 text-green-500" viewBox="0 0 20 20" fill="currentColor">
                       <path d="M6 4.5v11l9-5.5-9-5.5z" />
                     </svg>
                   )}
                 </button>
-                <button className="w-12 h-12 rounded-full bg-white hover:bg-gray-100 flex items-center justify-center shadow-sm" title="Person">
-                  <svg className="w-6 h-6 text-gray-600" fill="currentColor" viewBox="0 0 20 20">
+                <button className="w-9 h-9 rounded-full bg-white hover:bg-gray-100 flex items-center justify-center shadow-sm" title="Person">
+                  <svg className="w-5 h-5 text-gray-600" fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
                   </svg>
                 </button>
@@ -594,24 +587,24 @@ export default function Flashcard() {
             return (
               <div
                 key={key}
-                className="flex items-center gap-6 p-6 bg-gray-50 rounded-lg"
+                className="flex items-center gap-3 p-3 sm:p-4 bg-gray-50 rounded-lg"
               >
                 {item.language.flag && item.language.flag.startsWith('http') ? (
-                  <img src={item.language.flag} alt={item.language.name} className="w-16 h-12 object-cover rounded" />
+                  <img src={item.language.flag} alt={item.language.name} className="w-10 h-8 sm:w-12 sm:h-9 object-cover rounded flex-shrink-0" />
                 ) : (
-                  <span className="text-5xl">{item.language.flag || '🌐'}</span>
+                  <span className="text-2xl sm:text-3xl flex-shrink-0">{item.language.flag || '🌐'}</span>
                 )}
-                <div className="flex-1 text-center">
-                  <div className="font-semibold text-2xl text-gray-800">
+                <div className="flex-1 text-center min-w-0">
+                  <div className="font-semibold text-lg sm:text-xl text-gray-800 break-words">
                     {item.translation.meaning || currentVocab.word}
                   </div>
                   {(item.translation.ipa || item.translation.pronunciation) && (
-                    <div className="text-xl text-gray-600 italic mt-2">
+                    <div className="text-sm sm:text-base text-gray-600 italic mt-1">
                       /{item.translation.ipa || item.translation.pronunciation}/
                     </div>
                   )}
                 </div>
-                <div className="flex gap-3">
+                <div className="flex gap-1.5 flex-shrink-0">
                   <button
                     onClick={() => speakWord(
                       item.translation,
@@ -619,23 +612,21 @@ export default function Flashcard() {
                       item.language.code || 'en-US',
                       key
                     )}
-                    className="w-12 h-12 rounded-full bg-white hover:bg-gray-100 flex items-center justify-center shadow-sm"
+                    className="w-9 h-9 rounded-full bg-white hover:bg-gray-100 flex items-center justify-center shadow-sm"
                     title="Phát âm"
                   >
                     {playingKey === key ? (
-                      // Stop icon (red) - giống CMS
-                      <svg className="w-6 h-6 text-red-500" viewBox="0 0 20 20" fill="currentColor">
+                      <svg className="w-5 h-5 text-red-500" viewBox="0 0 20 20" fill="currentColor">
                         <path d="M6 5a1 1 0 00-1 1v8a1 1 0 001 1h8a1 1 0 001-1V6a1 1 0 00-1-1H6z" />
                       </svg>
                     ) : (
-                      // Play icon (green) - giống CMS
-                      <svg className="w-6 h-6 text-green-500" viewBox="0 0 20 20" fill="currentColor">
+                      <svg className="w-5 h-5 text-green-500" viewBox="0 0 20 20" fill="currentColor">
                         <path d="M6 4.5v11l9-5.5-9-5.5z" />
                       </svg>
                     )}
                   </button>
-                  <button className="w-12 h-12 rounded-full bg-white hover:bg-gray-100 flex items-center justify-center shadow-sm" title="Person">
-                    <svg className="w-6 h-6 text-gray-600" fill="currentColor" viewBox="0 0 20 20">
+                  <button className="w-9 h-9 rounded-full bg-white hover:bg-gray-100 flex items-center justify-center shadow-sm" title="Person">
+                    <svg className="w-5 h-5 text-gray-600" fill="currentColor" viewBox="0 0 20 20">
                       <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
                     </svg>
                   </button>
@@ -651,26 +642,25 @@ export default function Flashcard() {
             
             return (
               <div className="relative">
-                {/* Background language card (blurred/disabled) */}
-                <div className="flex items-center gap-6 p-6 bg-gray-50 rounded-lg opacity-50">
+                <div className="flex items-center gap-3 p-3 sm:p-4 bg-gray-50 rounded-lg opacity-50">
                   {lockedItem.language.flag && lockedItem.language.flag.startsWith('http') ? (
-                    <img src={lockedItem.language.flag} alt={lockedItem.language.name} className="w-16 h-12 object-cover rounded" />
+                    <img src={lockedItem.language.flag} alt={lockedItem.language.name} className="w-10 h-8 sm:w-12 sm:h-9 object-cover rounded flex-shrink-0" />
                   ) : (
-                    <span className="text-5xl">{lockedItem.language.flag || '🌐'}</span>
+                    <span className="text-2xl sm:text-3xl flex-shrink-0">{lockedItem.language.flag || '🌐'}</span>
                   )}
-                  <div className="flex-1 text-center">
-                    <div className="font-semibold text-2xl text-gray-800">
+                  <div className="flex-1 text-center min-w-0">
+                    <div className="font-semibold text-lg sm:text-xl text-gray-800 break-words">
                       {lockedItem.translation.meaning || currentVocab.word}
                     </div>
                     {(lockedItem.translation.ipa || lockedItem.translation.pronunciation) && (
-                      <div className="text-xl text-gray-600 italic mt-2">
+                      <div className="text-sm sm:text-base text-gray-600 italic mt-1">
                         /{lockedItem.translation.ipa || lockedItem.translation.pronunciation}/
                       </div>
                     )}
                   </div>
-                  <div className="flex gap-3">
-                    <div className="w-12 h-12"></div>
-                    <div className="w-12 h-12"></div>
+                  <div className="flex gap-1.5 flex-shrink-0">
+                    <div className="w-9 h-9"></div>
+                    <div className="w-9 h-9"></div>
                   </div>
                 </div>
                 {/* Overlay with Unlock button in center */}
@@ -685,14 +675,14 @@ export default function Flashcard() {
           
           {/* Fallback if no learning languages selected */}
           {learningLanguageTranslations.length === 0 && !sourceTranslation && (
-            <div className="text-center py-12 text-gray-500">
-              <p className="text-lg">Vui lòng chọn ngôn ngữ học trong profile để xem bản dịch</p>
+            <div className="text-center py-6 text-gray-500">
+              <p className="text-sm sm:text-base">Vui lòng chọn ngôn ngữ học trong profile để xem bản dịch</p>
             </div>
           )}
         </div>
 
         {/* Bottom Ad Banner */}
-        <div className="bg-lime-400 text-center py-2 text-sm font-medium">
+        <div className="bg-lime-400 text-center py-1.5 text-xs font-medium flex-shrink-0">
           ADS - BOTTOM
         </div>
       </div>
