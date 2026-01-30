@@ -299,7 +299,7 @@ export default function Home() {
           {/* Testimonials */}
           {testimonials.length > 0 && (
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto w-full mt-auto">
-              {testimonials.map((testimonial: any) => (
+              {testimonials.slice(0, 3).map((testimonial: any) => (
                 <div key={testimonial.id} className="bg-gray-100 rounded-lg p-6 shadow-md">
                   <p className="text-gray-600 text-sm mb-4 italic">
                     "{testimonial.quote}"
