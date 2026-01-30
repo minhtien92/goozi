@@ -83,6 +83,6 @@ fi
 
 echo ""
 echo "💡 To restore:"
-echo "   Database: docker exec -i $CONTAINER_DB psql -U $DB_USER $DB_NAME < backups/database/db_${TIMESTAMP}.sql.gz"
+echo "   Database: ./scripts/backup/restore-database.sh $DB_BACKUP_DIR/db_${TIMESTAMP}.sql.gz $MODE"
 echo "   Uploads:  ./scripts/backup/restore-uploads.sh $LATEST_UPLOADS $MODE"
 echo ""

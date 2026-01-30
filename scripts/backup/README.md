@@ -2,6 +2,42 @@
 
 Scripts để backup và restore database và uploads cho Goozi.
 
+## 🗄️ Cơ chế backup Database (khi DB có vấn đề vẫn có dữ liệu)
+
+**Backup nhanh (chỉ DB):**
+```bash
+# Dev
+./scripts/backup/backup-database.sh dev
+
+# Prod
+./scripts/backup/backup-database.sh prod
+```
+→ Tạo file: `backups/database/db_YYYYMMDD_HHMMSS.sql.gz`
+
+**Backup đầy đủ (DB + uploads):**
+```bash
+./scripts/backup/backup-all.sh prod
+```
+
+**Restore khi DB lỗi:**
+```bash
+# Xem danh sách backup
+ls -la backups/database/
+
+# Restore (chọn file .sql.gz mới nhất hoặc thời điểm cần)
+./scripts/backup/restore-database.sh backups/database/db_20240115_120000.sql.gz prod
+```
+→ Script sẽ **drop DB hiện tại**, tạo lại và restore từ file. Cần xác nhận trước khi chạy.
+
+**Tự động backup định kỳ (khuyến nghị):**
+```bash
+chmod +x scripts/backup/setup-auto-backup.sh
+./scripts/backup/setup-auto-backup.sh prod daily 30
+```
+→ Backup mỗi ngày 2h sáng, giữ 30 bản.
+
+---
+
 ## 📦 Backup Scripts
 
 ### 1. Backup Uploads
@@ -16,15 +52,16 @@ Scripts để backup và restore database và uploads cho Goozi.
 
 **Output:** `./backups/uploads/uploads_YYYYMMDD_HHMMSS.tar.gz`
 
-### 2. Backup Database
+### 2. Backup Database (chỉ DB)
 
 ```bash
 # Development
-docker exec goozi-postgres-dev pg_dump -U postgres goozi_db > backup.sql
+./scripts/backup/backup-database.sh dev
 
 # Production
-docker exec goozi-postgres pg_dump -U postgres goozi_db > backup.sql
+./scripts/backup/backup-database.sh prod
 ```
+**Output:** `./backups/database/db_YYYYMMDD_HHMMSS.sql.gz`
 
 ### 3. Backup All (Database + Uploads)
 
@@ -51,13 +88,17 @@ docker exec goozi-postgres pg_dump -U postgres goozi_db > backup.sql
 ### 2. Restore Database
 
 ```bash
-# Development
-gunzip -c backups/database/db_20240115_120000.sql.gz | \
-  docker exec -i goozi-postgres-dev psql -U postgres goozi_db
+# Development (file .sql.gz bất kỳ trong backups/database/)
+./scripts/backup/restore-database.sh backups/database/db_20240115_120000.sql.gz dev
 
 # Production
-gunzip -c backups/database/db_20240115_120000.sql.gz | \
-  docker exec -i goozi-postgres psql -U postgres goozi_db
+./scripts/backup/restore-database.sh backups/database/db_20240115_120000.sql.gz prod
+```
+Script sẽ hỏi xác nhận, drop DB hiện tại, tạo lại và restore. Sau khi restore nên restart backend: `docker compose restart backend`.
+
+**Cách thủ công (nếu cần):**
+```bash
+gunzip -c backups/database/db_20240115_120000.sql.gz | docker exec -i goozi-postgres psql -U postgres goozi_db
 ```
 
 ## 🔄 Automated Backup (Cron Job)
