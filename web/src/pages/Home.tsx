@@ -232,7 +232,7 @@ export default function Home() {
       <div className={`relative ${isBackground ? 'z-0' : 'z-10'}`} style={{ position: 'relative' }}>
         {/* Header */}
         {!isBackground && (
-          <header className="relative flex justify-between items-center p-6">
+          <header className="relative flex justify-between items-center p-6 2xl:p-8">
           {/* Left: G icon - clickable */}
           <div className="flex items-center gap-3">
             <button
@@ -270,15 +270,15 @@ export default function Home() {
         )}
 
         {/* Main Content Area */}
-        <div className="px-6 pb-24 flex flex-col items-center justify-between min-h-[calc(100vh-140px)] pt-8">
+        <div className="px-6 2xl:px-10 3xl:px-12 pb-24 flex flex-col items-center justify-between min-h-[calc(100vh-140px)] pt-8 2xl:pt-10">
           {/* Tagline */}
           <div className="text-center w-full">
             {slogans.length > 0 ? (
-              <p className="text-2xl md:text-3xl font-medium text-gray-900">
+              <p className="text-2xl md:text-3xl 2xl:text-4xl font-medium text-gray-900">
                 {slogans[currentSloganIndex]}
               </p>
             ) : (
-              <p className="text-2xl md:text-3xl font-medium text-gray-900">
+              <p className="text-2xl md:text-3xl 2xl:text-4xl font-medium text-gray-900">
                 The more languages you learn, the easier it becomes
               </p>
             )}
@@ -290,7 +290,7 @@ export default function Home() {
               <img
                 src={heroImage}
                 alt="Hero"
-                className="max-w-5xl w-full max-h-[450px] object-contain"
+                className="w-[70vw] max-h-[450px] 2xl:max-h-[500px] 3xl:max-h-[560px] object-contain"
                 onError={() => setHeroImageError(true)}
               />
             </div>
@@ -298,7 +298,7 @@ export default function Home() {
 
           {/* Testimonials */}
           {testimonials.length > 0 && (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto w-full mt-auto">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl 2xl:max-w-6xl 3xl:max-w-7xl mx-auto w-full mt-auto">
               {testimonials.slice(0, 3).map((testimonial: any) => (
                 <div key={testimonial.id} className="bg-gray-100 rounded-lg p-6 shadow-md">
                   <p className="text-gray-600 text-sm mb-4 italic">

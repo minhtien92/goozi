@@ -5,7 +5,11 @@ export default {
     "./src/**/*.{js,ts,jsx,tsx}",
   ],
   theme: {
-    extend: {},
+    extend: {
+      screens: {
+        '3xl': '1920px',  // Full HD+ / 2K: scale content so it doesn't look compressed
+      },
+    },
   },
   plugins: [],
 }

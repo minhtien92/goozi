@@ -433,7 +433,7 @@ export default function Flashcard() {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-3xl overflow-hidden flex flex-col h-[85vh] relative">
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-3xl 2xl:max-w-4xl 3xl:max-w-5xl overflow-hidden flex flex-col h-[85vh] relative">
         {/* Header - thu gọn */}
         <div className="flex items-center justify-between py-2.5 px-4 border-b border-gray-200 bg-gray-50 flex-shrink-0">
           <button

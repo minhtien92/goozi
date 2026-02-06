@@ -220,11 +220,11 @@ export default function TopicDetail() {
       onClick={handleClose}
     >
       <div 
-        className="bg-white rounded-2xl shadow-2xl w-full max-w-5xl h-[80vh] overflow-hidden relative flex flex-col"
+        className="bg-white rounded-2xl shadow-2xl w-full max-w-5xl 2xl:max-w-6xl 3xl:max-w-7xl h-[80vh] overflow-hidden relative flex flex-col"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-center justify-between p-8 border-b border-gray-200">
+        <div className="flex items-center justify-between p-8 2xl:p-10 border-b border-gray-200">
           <button
             onClick={() => navigate('/topics')}
             className="text-gray-600 hover:text-gray-800"
@@ -234,7 +234,7 @@ export default function TopicDetail() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
             </svg>
           </button>
-          <h2 className="text-2xl font-bold text-gray-800">
+          <h2 className="text-2xl 2xl:text-3xl font-bold text-gray-800">
             {topic?.name || `Name of topic ${id}`}
           </h2>
           <div className="flex items-center gap-3">
@@ -255,7 +255,7 @@ export default function TopicDetail() {
         </div>
 
         {/* Content Grid */}
-        <div className="flex-1 overflow-y-auto p-8">
+        <div className="flex-1 overflow-y-auto p-8 2xl:p-10">
           <div className="grid grid-cols-3 md:grid-cols-5 gap-6">
             {vocabulariesWithTranslations
               .slice((currentPage - 1) * 15, currentPage * 15)
