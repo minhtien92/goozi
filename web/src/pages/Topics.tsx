@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../config/api';
 import { useAuthStore } from '../store/authStore';
+import { getTranslation } from '../utils/translations';
 
 interface Language {
   id: string;
@@ -30,6 +31,7 @@ export default function Topics() {
   const itemsPerPage = 15;
   const user = useAuthStore((state) => state.user);
   const navigate = useNavigate();
+  const translations = getTranslation(user?.nativeLanguage?.code);
 
   useEffect(() => {
     fetchLanguages();
@@ -99,12 +101,12 @@ export default function Topics() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
-            <h2 className="text-3xl font-bold text-teal-600">Vocabulary</h2>
+            <h2 className="text-3xl font-bold text-teal-600">{translations.vocabulary}</h2>
           </div>
           <div className="flex items-center gap-3">
             <input
               type="text"
-              placeholder="Search topics..."
+              placeholder={translations.searchTopics}
               value={searchQuery}
               onChange={(e) => {
                 setSearchQuery(e.target.value);

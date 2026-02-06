@@ -2,6 +2,7 @@ import { useEffect, useState, useRef, useCallback } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import api from '../config/api';
 import { useAuthStore } from '../store/authStore';
+import { getTranslation } from '../utils/translations';
 
 interface VocabularyTranslation {
   id: string;
@@ -44,6 +45,7 @@ export default function Flashcard() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { user } = useAuthStore();
+  const translations = getTranslation(user?.nativeLanguage?.code);
   const [vocabularies, setVocabularies] = useState<Vocabulary[]>([]);
   // Get initial index from URL params, default to 0
   const initialIndex = parseInt(searchParams.get('index') || '0', 10);
@@ -329,7 +331,7 @@ export default function Flashcard() {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="text-white text-xl">Đang tải...</div>
+        <div className="text-white text-xl">{translations.loading}</div>
       </div>
     );
   }
@@ -345,8 +347,8 @@ export default function Flashcard() {
         <div className="bg-white rounded-2xl shadow-2xl p-8 text-center max-w-md">
           <p className="text-xl mb-4 text-gray-800">
             {hasVocabulariesWithoutTranslations 
-              ? 'Chưa có bản dịch cho từ vựng' 
-              : 'Chưa có từ vựng để học'}
+              ? translations.noVocabularyFound
+              : translations.noVocabularyToLearn}
           </p>
           <p className="text-sm text-gray-600 mb-6">
             {hasVocabulariesWithoutTranslations
@@ -358,13 +360,13 @@ export default function Flashcard() {
               onClick={() => navigate(`/topics/${id}`)}
               className="px-6 py-3 bg-gray-400 text-white rounded-lg font-medium hover:bg-gray-500"
             >
-              Xem chi tiết
+              {translations.viewDetails}
             </button>
             <button
               onClick={() => navigate('/topics')}
               className="px-6 py-3 bg-blue-400 text-white rounded-lg font-medium hover:bg-blue-500"
             >
-              Chọn chủ đề khác
+              {translations.chooseOtherTopic}
             </button>
           </div>
         </div>
@@ -439,7 +441,7 @@ export default function Flashcard() {
           <button
             onClick={() => navigate(`/topics/${id}`)}
             className="text-gray-600 hover:text-gray-800 p-1"
-            title="Quay lại"
+            title={translations.back}
           >
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -474,7 +476,7 @@ export default function Flashcard() {
                 }
               }}
               className="w-9 h-9 rounded-full bg-white hover:bg-gray-100 flex items-center justify-center shadow-sm"
-              title="Phát âm"
+              title={translations.pronunciation}
             >
               {playingKey === 'header-source' ||
               (playingKey && playingKey.startsWith('header-')) ? (
@@ -558,7 +560,7 @@ export default function Flashcard() {
                     `source-${sourceLang.id}`
                   )}
                   className="w-9 h-9 rounded-full bg-white hover:bg-gray-100 flex items-center justify-center shadow-sm"
-                  title="Phát âm"
+                  title={translations.pronunciation}
                 >
                   {playingKey === `source-${sourceLang.id}` ? (
                     <svg className="w-5 h-5 text-red-500" viewBox="0 0 20 20" fill="currentColor">
@@ -613,7 +615,7 @@ export default function Flashcard() {
                       key
                     )}
                     className="w-9 h-9 rounded-full bg-white hover:bg-gray-100 flex items-center justify-center shadow-sm"
-                    title="Phát âm"
+                    title={translations.pronunciation}
                   >
                     {playingKey === key ? (
                       <svg className="w-5 h-5 text-red-500" viewBox="0 0 20 20" fill="currentColor">
@@ -676,7 +678,7 @@ export default function Flashcard() {
           {/* Fallback if no learning languages selected */}
           {learningLanguageTranslations.length === 0 && !sourceTranslation && (
             <div className="text-center py-6 text-gray-500">
-              <p className="text-sm sm:text-base">Vui lòng chọn ngôn ngữ học trong profile để xem bản dịch</p>
+              <p className="text-sm sm:text-base">{translations.pleaseSelectLanguage}</p>
             </div>
           )}
         </div>

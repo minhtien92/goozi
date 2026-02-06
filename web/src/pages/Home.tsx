@@ -262,7 +262,7 @@ export default function Home() {
           </div>
 
           {/* Center: logo image - not clickable */}
-          <div className="absolute left-1/2 transform -translate-x-1/2 pointer-events-none mt-2">
+          <div className="absolute left-1/2 transform -translate-x-1/2 pointer-events-none mt-4">
             <img src={logoHeader} alt="Goozi logo" className="h-10 md:h-12" />
           </div>
 
@@ -356,7 +356,7 @@ export default function Home() {
                   setLoginModalOpen(true);
                 }
               }}
-              className="w-28 h-28 rounded-full bg-gradient-to-br from-cyan-300 to-sky-500 text-white font-semibold shadow-xl border border-white/50 hover:scale-105 active:scale-95 transition transform flex items-center justify-center text-center text-lg"
+              className="w-36 h-36 rounded-full bg-gradient-to-br from-cyan-300 to-sky-500 text-white font-semibold shadow-xl border border-white/50 hover:scale-105 active:scale-95 transition transform flex items-center justify-center text-center text-lg"
             >
               Let&apos;s study!
             </button>

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import api from '../config/api';
 import { useAuthStore } from '../store/authStore';
+import { getTranslation } from '../utils/translations';
 
 interface VocabularyTranslation {
   id: string;
@@ -43,6 +44,7 @@ export default function TopicDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { user } = useAuthStore();
+  const translations = getTranslation(user?.nativeLanguage?.code);
   const [topic, setTopic] = useState<Topic | null>(null);
   const [currentVocabIndex, setCurrentVocabIndex] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
@@ -157,12 +159,12 @@ export default function TopicDetail() {
       <div className="min-h-screen flex items-center justify-center p-4"
       style={{ background: 'linear-gradient(to bottom, #11BBDD, #F2F4F6)' }}>
         <div className="bg-white rounded-2xl shadow-2xl p-8 text-center">
-          <p className="text-xl mb-4 text-gray-800">Không tìm thấy từ vựng</p>
+          <p className="text-xl mb-4 text-gray-800">{translations.noVocabularyFound}</p>
           <button
             onClick={() => navigate('/topics')}
             className="px-6 py-3 bg-blue-400 text-white rounded-lg font-medium hover:bg-blue-500"
           >
-            Quay lại
+            {translations.back}
           </button>
         </div>
       </div>
@@ -189,7 +191,7 @@ export default function TopicDetail() {
       <div className="min-h-screen flex items-center justify-center p-4"
       style={{ background: 'linear-gradient(to bottom, #11BBDD, #F2F4F6)' }}>
         <div className="bg-white rounded-2xl shadow-2xl p-8 text-center max-w-md">
-          <p className="text-xl mb-4 text-gray-800">Chủ đề này chưa có từ vựng để học</p>
+          <p className="text-xl mb-4 text-gray-800">{translations.noVocabularyToLearn}</p>
           <p className="text-sm text-gray-600 mb-6">
             Vui lòng thêm từ vựng và bản dịch cho chủ đề này trước khi học với flashcard.
           </p>
@@ -197,7 +199,7 @@ export default function TopicDetail() {
             onClick={() => navigate('/topics')}
             className="px-6 py-3 bg-blue-400 text-white rounded-lg font-medium hover:bg-blue-500"
           >
-            Quay lại danh sách
+            {translations.backToList}
           </button>
         </div>
       </div>
@@ -228,7 +230,7 @@ export default function TopicDetail() {
           <button
             onClick={() => navigate('/topics')}
             className="text-gray-600 hover:text-gray-800"
-            title="Quay lại danh sách"
+            title={translations.backToList}
           >
             <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -247,7 +249,7 @@ export default function TopicDetail() {
             <button
               onClick={handleClose}
               className="text-gray-500 hover:text-gray-700 text-3xl leading-none px-2"
-              title="Đóng"
+              title={translations.close}
             >
               ×
             </button>
