@@ -128,20 +128,46 @@ export default function Topics() {
             </div>
           ) : (
             <div className="grid grid-cols-3 md:grid-cols-5 gap-6">
-              {paginatedTopics.map((topic, index) => (
-                <div
-                  key={topic.id}
-                  onClick={() => handleTopicClick(topic.id)}
-                  className="bg-gray-100 border-2 border-blue-300 rounded-lg p-6 cursor-pointer hover:bg-blue-50 hover:border-blue-500 transition"
-                >
-                  <div className="w-full h-32 bg-gray-300 rounded mb-4 flex items-center justify-center text-sm text-gray-500">
-                    Avatar
+              {paginatedTopics.map((topic, index) => {
+                // Chuẩn hoá URL ảnh topic (tương tự heroImage / avatar)
+                const viteApiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
+                const baseUrl = viteApiUrl.endsWith('/api')
+                  ? viteApiUrl.slice(0, -4)
+                  : viteApiUrl.replace(/\/api$/, '') || 'http://localhost:3001';
+                const imageUrl =
+                  topic.image && topic.image.startsWith('http')
+                    ? topic.image
+                    : topic.image
+                    ? `${baseUrl}${topic.image}`
+                    : null;
+
+                return (
+                  <div
+                    key={topic.id}
+                    onClick={() => handleTopicClick(topic.id)}
+                    className="bg-gray-100 border-2 border-blue-300 rounded-lg p-6 cursor-pointer hover:bg-blue-50 hover:border-blue-500 transition"
+                  >
+                    <div className="w-full h-32 bg-gray-300 rounded mb-4 flex items-center justify-center text-sm text-gray-500 overflow-hidden">
+                      {imageUrl ? (
+                        <img
+                          src={imageUrl}
+                          alt={topic.name}
+                          className="w-full h-full object-cover rounded"
+                          onError={(e) => {
+                            // Nếu ảnh lỗi thì quay lại text Avatar
+                            (e.currentTarget as HTMLImageElement).style.display = 'none';
+                          }}
+                        />
+                      ) : (
+                        'Avatar'
+                      )}
+                    </div>
+                    <div className="text-base font-medium text-gray-800 text-center">
+                      {topic.name || `Name of topic ${startIndex + index + 1}`}
+                    </div>
                   </div>
-                  <div className="text-base font-medium text-gray-800 text-center">
-                    {topic.name || `Name of topic ${startIndex + index + 1}`}
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>
