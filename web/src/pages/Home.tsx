@@ -5,6 +5,7 @@ import UserMenu from '../components/UserMenu';
 import LoginModal from '../components/LoginModal';
 import api from '../config/api';
 import logoHeader from '../assets/img/logo_header.svg';
+import smallLogo from '../assets/img/small-logo.svg';
 
 export default function Home() {
   const { user } = useAuthStore();
@@ -256,12 +257,12 @@ export default function Home() {
               onClick={() => setLogoMenuOpen(true)}
               className="w-10 h-10 bg-white bg-opacity-20 rounded-full flex items-center justify-center hover:bg-opacity-30 transition cursor-pointer"
             >
-              <span className="text-white font-bold text-lg">G</span>
+              <img src={smallLogo} alt="Goozi logo" className="w-6 h-6" />
             </button>
           </div>
 
           {/* Center: logo image - not clickable */}
-          <div className="absolute left-1/2 transform -translate-x-1/2 pointer-events-none">
+          <div className="absolute left-1/2 transform -translate-x-1/2 pointer-events-none mt-2">
             <img src={logoHeader} alt="Goozi logo" className="h-10 md:h-12" />
           </div>
 
@@ -355,19 +356,13 @@ export default function Home() {
                   setLoginModalOpen(true);
                 }
               }}
-              className="w-28 h-28 rounded-full bg-gradient-to-br from-cyan-300 to-sky-500 text-white font-semibold shadow-xl border border-white/50 hover:scale-105 active:scale-95 transition transform flex items-center justify-center text-center text-sm"
+              className="w-28 h-28 rounded-full bg-gradient-to-br from-cyan-300 to-sky-500 text-white font-semibold shadow-xl border border-white/50 hover:scale-105 active:scale-95 transition transform flex items-center justify-center text-center text-lg"
             >
               Let&apos;s study!
             </button>
           </div>
         )}
 
-        {/* Footer */}
-        {!isBackground && (
-          <footer className="fixed bottom-0 left-0 right-0 text-center py-4 text-sm text-gray-700 bg-white bg-opacity-60">
-            Copyright @ 2025 Goozi
-          </footer>
-        )}
       </div>
 
       {/* User Menu */}

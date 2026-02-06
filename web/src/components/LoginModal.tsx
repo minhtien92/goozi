@@ -271,102 +271,32 @@ export default function LoginModal({ isOpen, onClose, onSuccess }: LoginModalPro
       />
       
       {/* Modal */}
-      <div className="relative bg-white rounded-lg shadow-xl max-w-md w-full mx-4 z-50 max-h-[90vh] overflow-y-auto">
-        {/* Close button */}
-        <button
-          onClick={onClose}
-          className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition"
-        >
-          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-          </svg>
-        </button>
-
+      <div className="relative bg-white rounded-lg shadow-xl max-w-md w-full mx-4 z-50">
         <div className="p-8">
-          <div>
-            <h2 className="text-center text-3xl font-extrabold text-gray-900 mb-8">
-              Đăng nhập vào Goozi
+          <div className="text-center mb-6">
+            <h2 className="text-xl font-medium text-gray-900">
+              API Login with Google
             </h2>
           </div>
-          <form className="space-y-6" onSubmit={handleSubmit}>
-            {error && (
-              <div className="rounded-md bg-red-50 p-4">
-                <p className="text-sm text-red-800">{error}</p>
-              </div>
-            )}
-            <div className="rounded-md shadow-sm -space-y-px">
-              <div>
-                <label htmlFor="email-modal" className="sr-only">
-                  Email
-                </label>
-                <input
-                  id="email-modal"
-                  name="email"
-                  type="email"
-                  required
-                  className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
-                  placeholder="Email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                />
-              </div>
-              <div>
-                <label htmlFor="password-modal" className="sr-only">
-                  Mật khẩu
-                </label>
-                <input
-                  id="password-modal"
-                  name="password"
-                  type="password"
-                  required
-                  className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
-                  placeholder="Mật khẩu"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                />
-              </div>
+          
+          {error && (
+            <div className="rounded-md bg-red-50 p-4 mb-4">
+              <p className="text-sm text-red-800">{error}</p>
             </div>
+          )}
 
-            <div>
-              <button
-                type="submit"
-                disabled={loading}
-                className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
-              >
-                {loading ? 'Đang đăng nhập...' : 'Đăng nhập'}
-              </button>
+          {GOOGLE_CLIENT_ID ? (
+            <div className="w-full flex justify-center">
+              <div id="google-signin-button-modal" className="min-h-[40px] flex items-center justify-center"></div>
+              {!googleScriptLoaded && (
+                <div className="text-gray-500 text-sm">Đang tải Google Sign In...</div>
+              )}
             </div>
-
-            {GOOGLE_CLIENT_ID ? (
-              <>
-                <div className="relative">
-                  <div className="absolute inset-0 flex items-center">
-                    <div className="w-full border-t border-gray-300"></div>
-                  </div>
-                  <div className="relative flex justify-center text-sm">
-                    <span className="px-2 bg-white text-gray-500">Hoặc</span>
-                  </div>
-                </div>
-
-                <div className="w-full flex justify-center">
-                  <div id="google-signin-button-modal" className="min-h-[40px] flex items-center justify-center"></div>
-                  {!googleScriptLoaded && (
-                    <div className="text-gray-500 text-sm">Đang tải Google Sign In...</div>
-                  )}
-                </div>
-              </>
-            ) : (
-              <div className="text-center text-sm text-gray-500">
-                Google Sign In không khả dụng. Vui lòng kiểm tra cấu hình.
-              </div>
-            )}
-
-            <div className="text-center">
-              <Link to="/register" className="text-sm text-blue-600 hover:text-blue-500">
-                Chưa có tài khoản? Đăng ký ngay
-              </Link>
+          ) : (
+            <div className="text-center text-sm text-gray-500">
+              Google Sign In không khả dụng. Vui lòng kiểm tra cấu hình.
             </div>
-          </form>
+          )}
         </div>
       </div>
     </div>
