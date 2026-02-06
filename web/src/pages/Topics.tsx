@@ -12,6 +12,13 @@ interface Language {
   flag: string;
 }
 
+interface TopicTranslation {
+  id: string;
+  languageId: string;
+  meaning: string;
+  language?: Language;
+}
+
 interface Topic {
   id: string;
   name: string;
@@ -20,6 +27,7 @@ interface Topic {
   vocabularyCount: number;
   sourceLanguage?: Language;
   targetLanguage?: Language;
+  translations?: TopicTranslation[];
 }
 
 export default function Topics() {
@@ -85,6 +93,17 @@ export default function Topics() {
 
   const handleClose = () => {
     navigate('/');
+  };
+
+  // Helper function to get topic name translation based on mother tongue
+  const getTopicName = (topic: Topic): string => {
+    if (!user?.nativeLanguage?.id || !topic.translations || topic.translations.length === 0) {
+      return topic.name;
+    }
+    const translation = topic.translations.find(
+      (t) => t.languageId === user.nativeLanguage.id
+    );
+    return translation?.meaning || topic.name;
   };
 
   return (
@@ -165,7 +184,7 @@ export default function Topics() {
                       )}
                     </div>
                     <div className="text-base font-medium text-gray-800 text-center">
-                      {topic.name || `Name of topic ${startIndex + index + 1}`}
+                      {getTopicName(topic) || `Name of topic ${startIndex + index + 1}`}
                     </div>
                   </div>
                 );

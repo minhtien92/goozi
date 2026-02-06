@@ -31,6 +31,13 @@ interface Language {
   flag: string;
 }
 
+interface TopicTranslation {
+  id: string;
+  languageId: string;
+  meaning: string;
+  language?: Language;
+}
+
 interface Topic {
   id: string;
   name: string;
@@ -38,6 +45,7 @@ interface Topic {
   vocabularies: Vocabulary[];
   sourceLanguage?: Language;
   targetLanguage?: Language;
+  translations?: TopicTranslation[];
 }
 
 export default function TopicDetail() {
@@ -216,6 +224,17 @@ export default function TopicDetail() {
     navigate('/');
   };
 
+  // Helper function to get topic name translation based on mother tongue
+  const getTopicName = (topic: Topic | null): string => {
+    if (!topic || !user?.nativeLanguage?.id || !topic.translations || topic.translations.length === 0) {
+      return topic?.name || `Name of topic ${id}`;
+    }
+    const translation = topic.translations.find(
+      (t) => t.languageId === user.nativeLanguage.id
+    );
+    return translation?.meaning || topic.name;
+  };
+
   return (
     <div 
       className="min-h-screen flex items-center justify-center p-4"
@@ -237,7 +256,7 @@ export default function TopicDetail() {
             </svg>
           </button>
           <h2 className="text-2xl 2xl:text-3xl font-bold text-gray-800">
-            {topic?.name || `Name of topic ${id}`}
+            {getTopicName(topic)}
           </h2>
           <div className="flex items-center gap-3">
             {/* (Optional) Search icon - keep for future */}
