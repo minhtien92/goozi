@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
 import api from '../config/api';
 import { useAuthStore } from '../store/authStore';
 
@@ -24,10 +23,7 @@ interface LoginModalProps {
 }
 
 export default function LoginModal({ isOpen, onClose, onSuccess }: LoginModalProps) {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
   const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
   const [googleScriptLoaded, setGoogleScriptLoaded] = useState(false);
   const setAuth = useAuthStore((state) => state.setAuth);
 
@@ -47,7 +43,6 @@ export default function LoginModal({ isOpen, onClose, onSuccess }: LoginModalPro
 
   const handleGoogleSignIn = async (response: any) => {
     setError('');
-    setLoading(true);
 
     try {
       const authResponse = await api.post('/auth/google', {
@@ -103,8 +98,6 @@ export default function LoginModal({ isOpen, onClose, onSuccess }: LoginModalPro
       }
     } catch (err: any) {
       setError(err.response?.data?.error || 'Đăng nhập Google thất bại');
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -195,68 +188,6 @@ export default function LoginModal({ isOpen, onClose, onSuccess }: LoginModalPro
       }, 200);
     } catch (error) {
       console.error('Error initializing Google Sign In:', error);
-    }
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError('');
-    setLoading(true);
-
-    try {
-      const response = await api.post('/auth/login', { email, password });
-      setAuth(response.data.user, response.data.token);
-      
-      // Fetch fresh user data to ensure all settings are loaded
-      try {
-        const userResponse = await api.get('/auth/me');
-        console.log('Raw user response from /auth/me:', userResponse.data);
-        if (userResponse.data.user) {
-          const userData = userResponse.data.user;
-          console.log('User data from /auth/me after login:', {
-            learningLanguageIds: userData.learningLanguageIds,
-            learningLanguageIdsType: typeof userData.learningLanguageIds,
-            learningLanguageIdsIsArray: Array.isArray(userData.learningLanguageIds),
-            voiceAccentVersion: userData.voiceAccentVersion,
-            voiceAccentVersionType: typeof userData.voiceAccentVersion,
-            nativeLanguage: userData.nativeLanguage,
-            fullUser: userData
-          });
-          
-          // Ensure learningLanguageIds is an array
-          if (userData.learningLanguageIds && typeof userData.learningLanguageIds === 'string') {
-            try {
-              userData.learningLanguageIds = JSON.parse(userData.learningLanguageIds);
-            } catch (e) {
-              console.warn('Failed to parse learningLanguageIds:', e);
-            }
-          }
-          
-          // Ensure voiceAccentVersion is a number
-          if (userData.voiceAccentVersion !== undefined && userData.voiceAccentVersion !== null) {
-            userData.voiceAccentVersion = parseInt(userData.voiceAccentVersion) || 1;
-          }
-          
-          console.log('Processed user data before setAuth:', {
-            learningLanguageIds: userData.learningLanguageIds,
-            voiceAccentVersion: userData.voiceAccentVersion
-          });
-          
-          setAuth(userData, response.data.token);
-        }
-      } catch (fetchError) {
-        console.warn('Failed to fetch user data after login:', fetchError);
-        // Continue with original user data if fetch fails
-      }
-      
-      onClose();
-      if (onSuccess) {
-        onSuccess();
-      }
-    } catch (err: any) {
-      setError(err.response?.data?.error || 'Đăng nhập thất bại');
-    } finally {
-      setLoading(false);
     }
   };
 
