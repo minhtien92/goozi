@@ -15,6 +15,7 @@ export default function Home() {
   const [loginModalOpen, setLoginModalOpen] = useState(false);
   const [slogans, setSlogans] = useState<string[]>([]);
   const [heroImage, setHeroImage] = useState<string>('');
+  const [heroImages, setHeroImages] = useState<string[]>([]);
   const [heroImageError, setHeroImageError] = useState(false);
   const [currentSloganIndex, setCurrentSloganIndex] = useState(0);
   const [testimonials, setTestimonials] = useState<any[]>([]);
@@ -70,10 +71,22 @@ export default function Home() {
     if (slogans.length > 1) {
       const interval = setInterval(() => {
         setCurrentSloganIndex((prev) => (prev + 1) % slogans.length);
-      }, 5000); // Change slogan every 5 seconds
+      }, 30000); // Change slogan every 30 seconds
       return () => clearInterval(interval);
     }
   }, [slogans]);
+
+  // Rotate hero pictures every 30 seconds if there are multiple
+  useEffect(() => {
+    if (heroImages.length > 1) {
+      let index = 0;
+      const interval = setInterval(() => {
+        index = (index + 1) % heroImages.length;
+        setHeroImage(heroImages[index]);
+      }, 30000);
+      return () => clearInterval(interval);
+    }
+  }, [heroImages]);
 
   const fetchHomeSettings = async () => {
     try {
@@ -117,13 +130,17 @@ export default function Home() {
       const pictureSettings = settings.filter((s: any) => s.key === 'picture');
       if (pictureSettings.length > 0) {
         const sorted = [...pictureSettings].sort((a: any, b: any) => (a.order || 0) - (b.order || 0));
-        const heroUrl = sorted
+        const heroUrls = sorted
           .map((s: any) => {
             if (!s.value) return null;
             return s.value.startsWith('http') ? s.value : `${baseUrl}${s.value}`;
           })
-          .filter(Boolean)[0] as string | undefined;
-        if (heroUrl) setHeroImage(heroUrl);
+          .filter(Boolean) as string[];
+        
+        if (heroUrls.length > 0) {
+          setHeroImages(heroUrls);
+          setHeroImage(heroUrls[0]);
+        }
       }
     } catch (error) {
       console.error('Error fetching home settings:', error);
