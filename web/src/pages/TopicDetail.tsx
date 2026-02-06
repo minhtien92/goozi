@@ -226,11 +226,15 @@ export default function TopicDetail() {
 
   // Helper function to get topic name translation based on mother tongue
   const getTopicName = (topic: Topic | null): string => {
-    if (!topic || !user?.nativeLanguage?.id || !topic.translations || topic.translations.length === 0) {
-      return topic?.name || `Name of topic ${id}`;
+    if (!topic) {
+      return `Name of topic ${id}`;
+    }
+    const nativeLanguageId = user?.nativeLanguage?.id;
+    if (!nativeLanguageId || !topic.translations || topic.translations.length === 0) {
+      return topic.name;
     }
     const translation = topic.translations.find(
-      (t) => t.languageId === user.nativeLanguage.id
+      (t) => t.languageId === nativeLanguageId
     );
     return translation?.meaning || topic.name;
   };

@@ -97,11 +97,12 @@ export default function Topics() {
 
   // Helper function to get topic name translation based on mother tongue
   const getTopicName = (topic: Topic): string => {
-    if (!user?.nativeLanguage?.id || !topic.translations || topic.translations.length === 0) {
+    const nativeLanguageId = user?.nativeLanguage?.id;
+    if (!nativeLanguageId || !topic.translations || topic.translations.length === 0) {
       return topic.name;
     }
     const translation = topic.translations.find(
-      (t) => t.languageId === user.nativeLanguage.id
+      (t) => t.languageId === nativeLanguageId
     );
     return translation?.meaning || topic.name;
   };
