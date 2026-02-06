@@ -447,8 +447,19 @@ export default function UserMenu({ onClose }: UserMenuProps) {
             </div>
             <div className="p-4 overflow-y-auto flex-1">
               <div className="flex flex-col items-center mb-6">
-                <div className="w-20 h-20 rounded-full bg-gray-200 flex items-center justify-center text-4xl mb-3">
-                  {user?.nativeLanguage?.flag || '🇰🇷'}
+                <div className="w-20 h-20 rounded-full bg-gray-200 flex items-center justify-center text-4xl mb-3 overflow-hidden">
+                  {user?.nativeLanguage?.flag && user.nativeLanguage.flag.startsWith('http') ? (
+                    <img
+                      src={user.nativeLanguage.flag}
+                      alt={user.nativeLanguage.name}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <span>
+                      {user?.nativeLanguage?.flag ||
+                        (user?.name ? user.name.charAt(0).toUpperCase() : 'U')}
+                    </span>
+                  )}
                 </div>
                 <h4 className="text-lg font-semibold text-blue-600">{user?.name || 'Angelyna'}</h4>
               </div>
@@ -499,20 +510,40 @@ export default function UserMenu({ onClose }: UserMenuProps) {
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg mb-4"
               />
               <div className="space-y-2 overflow-y-auto flex-1">
-                {languages.map((lang) => (
-                  <label
-                    key={lang.id}
-                    className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-100 cursor-pointer"
-                  >
-                    <input
-                      type="checkbox"
-                      checked={selectedLanguages.includes(lang.id)}
-                      onChange={() => handleLanguageToggle(lang.id)}
-                      className="w-4 h-4 text-blue-600 rounded"
-                    />
-                    <span className="text-gray-700">{lang.nativeName}</span>
-                  </label>
-                ))}
+                {languages.map((lang) => {
+                  const isSelected = selectedLanguages.includes(lang.id);
+                  return (
+                    <label
+                      key={lang.id}
+                      className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-100 cursor-pointer"
+                    >
+                      <input
+                        type="checkbox"
+                        checked={isSelected}
+                        onChange={() => handleLanguageToggle(lang.id)}
+                        className="w-4 h-4 text-blue-600 rounded"
+                      />
+                      {lang.flag && lang.flag.startsWith('http') ? (
+                        <img src={lang.flag} alt={lang.name} className="w-8 h-6 object-cover rounded" />
+                      ) : (
+                        <span className="text-2xl">{lang.flag}</span>
+                      )}
+                      <div className="flex-1 text-left">
+                        <div className="text-sm font-medium text-gray-800">{lang.nativeName}</div>
+                        <div className="text-xs text-gray-500">{lang.name}</div>
+                      </div>
+                      {isSelected && (
+                        <svg className="w-5 h-5 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+                          <path
+                            fillRule="evenodd"
+                            d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                            clipRule="evenodd"
+                          />
+                        </svg>
+                      )}
+                    </label>
+                  );
+                })}
               </div>
               </div>
               </div>
