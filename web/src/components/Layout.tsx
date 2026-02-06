@@ -13,7 +13,7 @@ export default function Layout() {
     <>
       {isHomePage && <Home />}
       {!isHomePage && !isTopicsPage && !isTopicDetailPage && !isFlashcardPage && (
-        <div className="min-h-screen bg-gradient-to-r from-blue-400 via-blue-300 to-gray-200">
+        <div className="min-h-screen" style={{ background: 'linear-gradient(to bottom, #11BBDD, #F2F4F6)' }}>
           <Outlet />
         </div>
       )}

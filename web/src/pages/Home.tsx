@@ -154,7 +154,7 @@ export default function Home() {
   }, [location.pathname, user]);
 
   const backgroundStyle = {
-    background: 'linear-gradient(to right, #60a5fa, #4fd1c7, #e5e7eb)',
+    background: 'linear-gradient(to bottom, #11BBDD, #F2F4F6)',
   };
 
   // Check if we're being used as background (via parent class or prop)

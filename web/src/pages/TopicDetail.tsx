@@ -145,7 +145,8 @@ export default function TopicDetail() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-r from-blue-400 via-blue-300 to-gray-200 flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center"
+      style={{ background: 'linear-gradient(to bottom, #11BBDD, #F2F4F6)' }}>
         <div className="text-white text-xl">Đang tải...</div>
       </div>
     );
@@ -153,7 +154,8 @@ export default function TopicDetail() {
 
   if (!topic || !topic.vocabularies || topic.vocabularies.length === 0) {
     return (
-      <div className="min-h-screen bg-gradient-to-r from-blue-400 via-blue-300 to-gray-200 flex items-center justify-center p-4">
+      <div className="min-h-screen flex items-center justify-center p-4"
+      style={{ background: 'linear-gradient(to bottom, #11BBDD, #F2F4F6)' }}>
         <div className="bg-white rounded-2xl shadow-2xl p-8 text-center">
           <p className="text-xl mb-4 text-gray-800">Không tìm thấy từ vựng</p>
           <button
@@ -184,7 +186,8 @@ export default function TopicDetail() {
   // If no vocabularies with translations, show message
   if (vocabulariesWithTranslations.length === 0) {
     return (
-      <div className="min-h-screen bg-gradient-to-r from-blue-400 via-blue-300 to-gray-200 flex items-center justify-center p-4">
+      <div className="min-h-screen flex items-center justify-center p-4"
+      style={{ background: 'linear-gradient(to bottom, #11BBDD, #F2F4F6)' }}>
         <div className="bg-white rounded-2xl shadow-2xl p-8 text-center max-w-md">
           <p className="text-xl mb-4 text-gray-800">Chủ đề này chưa có từ vựng để học</p>
           <p className="text-sm text-gray-600 mb-6">
