@@ -55,7 +55,6 @@ export default function TopicDetail() {
   const translations = getTranslation(user?.nativeLanguage?.code);
   const [topic, setTopic] = useState<Topic | null>(null);
   const [currentVocabIndex, setCurrentVocabIndex] = useState(0);
-  const [currentPage, setCurrentPage] = useState(1);
   const [loading, setLoading] = useState(true);
   const [imageErrors, setImageErrors] = useState<Set<string>>(new Set());
   
@@ -65,8 +64,7 @@ export default function TopicDetail() {
   useEffect(() => {
     if (id) {
       fetchTopic();
-      setCurrentPage(1); // Reset to first page when topic changes
-      setCurrentVocabIndex(0); // Reset vocab index
+      setCurrentVocabIndex(0);
     }
   }, [id]);
 
@@ -285,15 +283,11 @@ export default function TopicDetail() {
           </div>
         </div>
 
-        {/* Content Grid */}
+        {/* Content Grid - hiển thị hết, scroll không phân trang */}
         <div className="flex-1 overflow-y-auto p-8 2xl:p-10">
           <div className="grid grid-cols-3 md:grid-cols-5 gap-6">
-            {vocabulariesWithTranslations
-              .slice((currentPage - 1) * 15, currentPage * 15)
-              .slice(0, 15) // Ensure max 15 items per page
-              .map((vocab, index) => {
-                // Calculate the actual index in the full array
-                const actualIndex = (currentPage - 1) * 15 + index;
+            {vocabulariesWithTranslations.map((vocab, index) => {
+                const actualIndex = index;
                 // Hiển thị theo mother tongue: ưu tiên bản dịch đúng ngôn ngữ (bất kể version) để mọi từ đều nhất quán
                 const motherTongueTranslation = getTranslationForLanguage(vocab.translations, user?.nativeLanguage?.id);
                 const sourceTranslation = getTranslationForLanguage(vocab.translations, topic.sourceLanguage?.id);
@@ -347,23 +341,6 @@ export default function TopicDetail() {
                 );
               })}
           </div>
-        </div>
-
-        {/* Pagination */}
-        <div className="flex justify-center items-center gap-3 p-8 border-t border-gray-200">
-          {Array.from({ length: Math.ceil(vocabulariesWithTranslations.length / 15) }, (_, i) => i + 1).map((page) => (
-            <button
-              key={page}
-              onClick={() => setCurrentPage(page)}
-              className={`w-12 h-12 rounded-full text-lg font-medium ${
-                currentPage === page
-                  ? 'bg-blue-500 text-white'
-                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-              } transition`}
-            >
-              {page}
-            </button>
-          ))}
         </div>
       </div>
     </div>

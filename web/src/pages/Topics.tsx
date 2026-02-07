@@ -35,8 +35,6 @@ export default function Topics() {
   const [selectedSourceLang, setSelectedSourceLang] = useState('');
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
-  const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 15;
   const user = useAuthStore((state) => state.user);
   const navigate = useNavigate();
   const translations = getTranslation(user?.nativeLanguage?.code);
@@ -95,10 +93,6 @@ export default function Topics() {
     getTopicName(topic).toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const totalPages = Math.ceil(filteredTopics.length / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const paginatedTopics = filteredTopics.slice(startIndex, startIndex + itemsPerPage);
-
   const handleTopicClick = (topicId: string) => {
     navigate(`/topics/${topicId}`);
   };
@@ -128,10 +122,7 @@ export default function Topics() {
               type="text"
               placeholder={translations.searchTopics}
               value={searchQuery}
-              onChange={(e) => {
-                setSearchQuery(e.target.value);
-                setCurrentPage(1);
-              }}
+              onChange={(e) => setSearchQuery(e.target.value)}
               className="px-6 py-3 text-lg border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
             />
             <button className="text-gray-600 hover:text-gray-800">
@@ -150,7 +141,7 @@ export default function Topics() {
             </div>
           ) : (
             <div className="grid grid-cols-3 md:grid-cols-5 gap-6">
-              {paginatedTopics.map((topic, index) => {
+              {filteredTopics.map((topic, index) => {
                 // Chuẩn hoá URL ảnh topic (tương tự heroImage / avatar)
                 const viteApiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
                 const baseUrl = viteApiUrl.endsWith('/api')
@@ -185,7 +176,7 @@ export default function Topics() {
                       )}
                     </div>
                     <div className="text-base font-medium text-gray-800 text-center">
-                      {getTopicName(topic) || `Name of topic ${startIndex + index + 1}`}
+                      {getTopicName(topic) || `Name of topic ${index + 1}`}
                     </div>
                   </div>
                 );
@@ -193,25 +184,6 @@ export default function Topics() {
             </div>
           )}
         </div>
-
-        {/* Pagination */}
-        {totalPages > 1 && (
-          <div className="flex justify-center items-center gap-3 p-8 border-t border-gray-200">
-            {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-              <button
-                key={page}
-                onClick={() => setCurrentPage(page)}
-                className={`w-12 h-12 rounded-full text-lg font-medium ${
-                  currentPage === page
-                    ? 'bg-teal-600 text-white'
-                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                } transition`}
-              >
-                {page}
-              </button>
-            ))}
-          </div>
-        )}
       </div>
     </div>
   );
