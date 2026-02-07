@@ -79,8 +79,20 @@ export default function Topics() {
     }
   };
 
+  // Helper: tên chủ đề theo mother tongue (dùng cho hiển thị và tìm kiếm)
+  const getTopicName = (topic: Topic): string => {
+    const nativeLanguageId = user?.nativeLanguage?.id;
+    if (!nativeLanguageId || !topic.translations || topic.translations.length === 0) {
+      return topic.name;
+    }
+    const translation = topic.translations.find(
+      (t) => t.languageId === nativeLanguageId
+    );
+    return translation?.meaning || topic.name;
+  };
+
   const filteredTopics = topics.filter((topic) =>
-    topic.name.toLowerCase().includes(searchQuery.toLowerCase())
+    getTopicName(topic).toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   const totalPages = Math.ceil(filteredTopics.length / itemsPerPage);
@@ -93,18 +105,6 @@ export default function Topics() {
 
   const handleClose = () => {
     navigate('/');
-  };
-
-  // Helper function to get topic name translation based on mother tongue
-  const getTopicName = (topic: Topic): string => {
-    const nativeLanguageId = user?.nativeLanguage?.id;
-    if (!nativeLanguageId || !topic.translations || topic.translations.length === 0) {
-      return topic.name;
-    }
-    const translation = topic.translations.find(
-      (t) => t.languageId === nativeLanguageId
-    );
-    return translation?.meaning || topic.name;
   };
 
   return (
@@ -173,7 +173,7 @@ export default function Topics() {
                       {imageUrl ? (
                         <img
                           src={imageUrl}
-                          alt={topic.name}
+                          alt={getTopicName(topic)}
                           className="w-full h-full object-cover rounded"
                           onError={(e) => {
                             // Nếu ảnh lỗi thì quay lại text Avatar
