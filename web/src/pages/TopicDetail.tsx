@@ -130,6 +130,12 @@ export default function TopicDetail() {
     };
   })();
   
+  // Helper: lấy bản dịch theo ngôn ngữ (ưu tiên mother tongue cho hiển thị), bất kể version
+  const getTranslationForLanguage = (translations: VocabularyTranslation[] | undefined, languageId: string | undefined) => {
+    if (!translations || translations.length === 0 || !languageId) return null;
+    return translations.find((t) => t.languageId === languageId) ?? null;
+  };
+
   // Helper function to get translation with preferred voice accent version
   const getTranslationWithVoiceAccent = (translations: VocabularyTranslation[] | undefined, languageId?: string) => {
     if (!translations || translations.length === 0) return null;
@@ -288,12 +294,12 @@ export default function TopicDetail() {
               .map((vocab, index) => {
                 // Calculate the actual index in the full array
                 const actualIndex = (currentPage - 1) * 15 + index;
-                // Ưu tiên hiển thị theo mother tongue (native language) của user
-                const motherTongueTranslation = getTranslationWithVoiceAccent(vocab.translations, user?.nativeLanguage?.id);
-                const sourceTranslation = getTranslationWithVoiceAccent(vocab.translations, topic.sourceLanguage?.id);
+                // Hiển thị theo mother tongue: ưu tiên bản dịch đúng ngôn ngữ (bất kể version) để mọi từ đều nhất quán
+                const motherTongueTranslation = getTranslationForLanguage(vocab.translations, user?.nativeLanguage?.id);
+                const sourceTranslation = getTranslationForLanguage(vocab.translations, topic.sourceLanguage?.id);
                 const displayText = motherTongueTranslation?.meaning ?? sourceTranslation?.meaning ?? vocab.word ?? `Name of word ${actualIndex + 1}`;
-                const audioTranslation = motherTongueTranslation ?? sourceTranslation;
-                const audioText = motherTongueTranslation?.meaning ?? sourceTranslation?.meaning ?? vocab.word;
+                const audioTranslation = getTranslationWithVoiceAccent(vocab.translations, user?.nativeLanguage?.id) ?? motherTongueTranslation ?? sourceTranslation;
+                const audioText = audioTranslation?.meaning ?? vocab.word;
                 return (
                   <div
                     key={vocab.id}
