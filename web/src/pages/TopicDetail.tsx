@@ -288,8 +288,12 @@ export default function TopicDetail() {
               .map((vocab, index) => {
                 // Calculate the actual index in the full array
                 const actualIndex = (currentPage - 1) * 15 + index;
-                // Get translation with preferred voice accent version for this vocabulary
-                const vocabTranslation = getTranslationWithVoiceAccent(vocab.translations, topic.sourceLanguage?.id);
+                // Ưu tiên hiển thị theo mother tongue (native language) của user
+                const motherTongueTranslation = getTranslationWithVoiceAccent(vocab.translations, user?.nativeLanguage?.id);
+                const sourceTranslation = getTranslationWithVoiceAccent(vocab.translations, topic.sourceLanguage?.id);
+                const displayText = motherTongueTranslation?.meaning ?? sourceTranslation?.meaning ?? vocab.word ?? `Name of word ${actualIndex + 1}`;
+                const audioTranslation = motherTongueTranslation ?? sourceTranslation;
+                const audioText = motherTongueTranslation?.meaning ?? sourceTranslation?.meaning ?? vocab.word;
                 return (
                   <div
                     key={vocab.id}
@@ -305,7 +309,7 @@ export default function TopicDetail() {
                       {vocab.avatar && !imageErrors.has(vocab.id) ? (
                         <img 
                           src={vocab.avatar.startsWith('http') ? vocab.avatar : `${import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:3001'}${vocab.avatar}`} 
-                          alt={vocab.word} 
+                          alt={displayText} 
                           className="w-full h-full object-cover rounded" 
                           onError={() => {
                             setImageErrors(prev => new Set(prev).add(vocab.id));
@@ -314,12 +318,12 @@ export default function TopicDetail() {
                       ) : (
                         <span>Avatar</span>
                       )}
-                      {/* Audio button overlay */}
-                      {vocabTranslation?.audioUrl && (
+                      {/* Audio button overlay - phát theo mother tongue khi có */}
+                      {audioTranslation?.audioUrl && (
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
-                            playAudio(vocabTranslation.audioUrl, vocab.word);
+                            playAudio(audioTranslation.audioUrl, audioText);
                           }}
                           className="absolute bottom-3 right-3 w-10 h-10 bg-white bg-opacity-90 rounded-full flex items-center justify-center hover:bg-opacity-100 shadow-md z-10"
                           title="Phát âm"
@@ -331,7 +335,7 @@ export default function TopicDetail() {
                       )}
                     </div>
                     <div className="text-base font-medium text-gray-800 text-center">
-                      {vocab.word || `Name of word ${actualIndex + 1}`}
+                      {displayText}
                     </div>
                   </div>
                 );
