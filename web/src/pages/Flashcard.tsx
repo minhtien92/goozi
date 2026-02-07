@@ -328,6 +328,12 @@ export default function Flashcard() {
     return getTranslationWithVoiceAccent(vocab.translations, topic.sourceLanguage.id);
   };
 
+  // Lấy bản dịch theo ngôn ngữ (mother tongue) bất kể version - cho title/hiển thị
+  const getTranslationForLanguage = (translations: VocabularyTranslation[] | undefined, languageId: string | undefined) => {
+    if (!translations || translations.length === 0 || !languageId) return null;
+    return translations.find((t) => t.languageId === languageId) ?? null;
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -377,7 +383,9 @@ export default function Flashcard() {
   const currentVocab = vocabularies[currentIndex];
   const sourceTranslation = getSourceTranslation(currentVocab);
   const sourceLang = topic?.sourceLanguage || sourceTranslation?.language;
-  
+  const motherTongueTranslation = getTranslationForLanguage(currentVocab?.translations, user?.nativeLanguage?.id);
+  const headerDisplayTitle = motherTongueTranslation?.meaning ?? sourceTranslation?.meaning ?? currentVocab?.word ?? `Name of word ${currentIndex + 1}`;
+
   // Get learning languages from user profile
   const learningLanguageIds = user?.learningLanguageIds || [];
   const uniqueLearningLanguageIds = Array.from(new Set(learningLanguageIds));
@@ -449,7 +457,7 @@ export default function Flashcard() {
           </button>
           <div className="flex-1 text-center min-w-0">
             <h2 className="text-lg font-semibold text-gray-800 truncate px-2">
-              {currentVocab.word || `Name of word ${currentIndex + 1}`}
+              {headerDisplayTitle}
             </h2>
             <p className="text-sm text-gray-500 mt-0.5">
               {currentIndex + 1} / {vocabularies.length}
@@ -462,14 +470,14 @@ export default function Flashcard() {
                 if (firstTranslation) {
                   speakWord(
                     firstTranslation.translation,
-                    firstTranslation.translation.meaning || currentVocab.word,
+                    firstTranslation.translation.meaning || headerDisplayTitle,
                     firstTranslation.language?.code || 'en-US',
                     `header-${firstTranslation.language.id}`
                   );
                 } else {
                   speakWord(
                     sourceTranslation,
-                    currentVocab.word,
+                    headerDisplayTitle,
                     sourceLang?.code || 'en-US',
                     'header-source'
                   );
@@ -512,7 +520,7 @@ export default function Flashcard() {
             {currentVocab.avatar && !imageError ? (
               <img 
                 src={currentVocab.avatar.startsWith('http') ? currentVocab.avatar : `${import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:3001'}${currentVocab.avatar}`} 
-                alt={currentVocab.word} 
+                alt={headerDisplayTitle} 
                 className="max-w-full max-h-full w-auto h-auto object-contain rounded-lg" 
                 onError={() => setImageError(true)}
               />
