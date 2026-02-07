@@ -62,7 +62,7 @@ export default function Topics() {
   const fetchTopics = async () => {
     try {
       setLoading(true);
-      let url = '/topics?isActive=true';
+      let url = '/topics?isActive=true&limit=5000000';
       if (selectedSourceLang) {
         url += `&sourceLanguageId=${selectedSourceLang}`;
       }
