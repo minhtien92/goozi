@@ -281,7 +281,7 @@ export default function Home() {
                 onClick={() => setLoginModalOpen(true)}
                 className="w-10 h-10 bg-white bg-opacity-20 rounded-full flex items-center justify-center hover:bg-opacity-30 transition cursor-pointer"
               >
-                <img src={btnAccount} alt="Login" className="w-8 h-8" />
+                <img src={btnAccount} alt="Login" className="w-10 h-10" />
               </button>
             )}
           </div>
