@@ -516,7 +516,7 @@ export default function Flashcard() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
             </svg>
           </button>
-          <div className="bg-white w-full max-w-[24rem] aspect-[4/3] flex items-center justify-center rounded-xl shadow-lg border-2 border-gray-200 overflow-hidden">
+          <div className="bg-white w-full max-w-[36rem] aspect-[4/3] flex items-center justify-center rounded-xl shadow-lg border-2 border-gray-200 overflow-hidden">
             {currentVocab.avatar && !imageError ? (
               <img 
                 src={currentVocab.avatar.startsWith('http') ? currentVocab.avatar : `${import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:3001'}${currentVocab.avatar}`} 
