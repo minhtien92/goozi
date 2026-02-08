@@ -214,7 +214,7 @@ export default function LoginModal({ isOpen, onClose, onSuccess }: LoginModalPro
             <div className="w-full flex justify-center">
               <div 
                 id="google-signin-button-modal" 
-                className="min-h-[40px] w-full max-w-[300px] flex items-center justify-center"
+                className="min-h-[50px] w-full max-w-[400px] flex items-center justify-center scale-110"
               ></div>
               {!googleScriptLoaded && (
                 <div className="text-gray-500 text-sm text-center mt-2">Đang tải Google Sign In...</div>
