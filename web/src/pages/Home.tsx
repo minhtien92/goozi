@@ -4,7 +4,7 @@ import { useAuthStore } from '../store/authStore';
 import UserMenu from '../components/UserMenu';
 import LoginModal from '../components/LoginModal';
 import api from '../config/api';
-import logoHeader from '../assets/img/logo_header.svg';
+import logoHeader from '../assets/img/logo.png';
 import smallLogo from '../assets/img/small-logo.svg';
 import btnAccount from '../assets/img/btn-account.svg';
 
