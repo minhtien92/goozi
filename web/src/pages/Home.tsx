@@ -263,7 +263,7 @@ export default function Home() {
           </div>
 
           {/* Center: logo image - not clickable */}
-          <div className="absolute left-1/2 transform -translate-x-1/2 pointer-events-none mt-16">
+          <div className="absolute left-1/2 transform -translate-x-1/2 pointer-events-none mt-20">
             <img src={logoHeader} alt="Goozi logo" className="h-16 md:h-20 2xl:h-24" />
           </div>
 
