@@ -6,6 +6,7 @@ import LoginModal from '../components/LoginModal';
 import api from '../config/api';
 import logoHeader from '../assets/img/logo_header.svg';
 import smallLogo from '../assets/img/small-logo.svg';
+import btnAccount from '../assets/img/btn-account.svg';
 
 export default function Home() {
   const { user } = useAuthStore();
@@ -278,9 +279,9 @@ export default function Home() {
             ) : (
               <button
                 onClick={() => setLoginModalOpen(true)}
-                className="px-4 py-2 bg-white bg-opacity-20 hover:bg-opacity-30 rounded-lg transition font-medium"
+                className="w-10 h-10 bg-white bg-opacity-20 rounded-full flex items-center justify-center hover:bg-opacity-30 transition cursor-pointer"
               >
-                Đăng nhập
+                <img src={btnAccount} alt="Login" className="w-6 h-6" />
               </button>
             )}
           </div>
