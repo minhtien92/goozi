@@ -204,12 +204,6 @@ export default function LoginModal({ isOpen, onClose, onSuccess }: LoginModalPro
       {/* Modal */}
       <div className="relative bg-white rounded-lg shadow-xl max-w-md w-full mx-4 z-50">
         <div className="p-8">
-          <div className="text-center mb-6">
-            <h2 className="text-xl font-medium text-gray-900">
-              API Login with Google
-            </h2>
-          </div>
-          
           {error && (
             <div className="rounded-md bg-red-50 p-4 mb-4">
               <p className="text-sm text-red-800">{error}</p>
@@ -223,7 +217,7 @@ export default function LoginModal({ isOpen, onClose, onSuccess }: LoginModalPro
                 className="min-h-[40px] w-full max-w-[300px] flex items-center justify-center"
               ></div>
               {!googleScriptLoaded && (
-                <div className="text-gray-500 text-sm">Đang tải Google Sign In...</div>
+                <div className="text-gray-500 text-sm text-center mt-2">Đang tải Google Sign In...</div>
               )}
             </div>
           ) : (
