@@ -272,92 +272,110 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8">
-        <div>
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-            Đăng nhập vào Goozi
-          </h2>
-        </div>
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-          {error && (
-            <div className="rounded-md bg-red-50 p-4">
-              <p className="text-sm text-red-800">{error}</p>
-            </div>
-          )}
-          <div className="rounded-md shadow-sm -space-y-px">
-            <div>
-              <label htmlFor="email" className="sr-only">
-                Email
-              </label>
-              <input
-                id="email"
-                name="email"
-                type="email"
-                required
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
-                placeholder="Email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-              />
-            </div>
-            <div>
-              <label htmlFor="password" className="sr-only">
-                Mật khẩu
-              </label>
-              <input
-                id="password"
-                name="password"
-                type="password"
-                required
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
-                placeholder="Mật khẩu"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-              />
-            </div>
-          </div>
+    <div className="min-h-screen relative overflow-hidden">
+      <div className="absolute inset-0 bg-gradient-to-b from-slate-300 via-slate-200 to-slate-300" />
+      <div className="absolute inset-0 bg-black/20" />
 
-          <div>
-            <button
-              type="submit"
-              disabled={loading}
-              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
-            >
-              {loading ? 'Đang đăng nhập...' : 'Đăng nhập'}
-            </button>
-          </div>
-
-          {GOOGLE_CLIENT_ID ? (
-            <>
-              <div className="relative">
-                <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-gray-300"></div>
-                </div>
-                <div className="relative flex justify-center text-sm">
-                  <span className="px-2 bg-gray-50 text-gray-500">Hoặc</span>
-                </div>
+      <div className="relative z-10 min-h-screen flex items-center justify-center px-4 py-10">
+        <div className="w-full max-w-[720px]">
+          <div className="mx-auto w-full max-w-[560px] rounded-[28px] bg-white shadow-[0_20px_60px_rgba(0,0,0,0.25)] px-6 sm:px-10 py-10">
+            <div className="flex flex-col items-center text-center">
+              <div className="h-16 w-16 rounded-full flex items-center justify-center">
+                <div className="text-4xl font-extrabold text-sky-500">G</div>
               </div>
 
-              <div className="w-full flex justify-center">
-                <div id="google-signin-button" className="min-h-[40px] flex items-center justify-center"></div>
-                {!googleScriptLoaded && (
-                  <div className="text-gray-500 text-sm">Đang tải Google Sign In...</div>
+              <p className="mt-4 text-sm sm:text-base tracking-wide text-gray-600">
+                Please sign in to begin your studies.
+              </p>
+            </div>
+
+            <form className="mt-8" onSubmit={handleSubmit}>
+              {error && (
+                <div className="rounded-md bg-red-50 p-4 mb-4">
+                  <p className="text-sm text-red-800">{error}</p>
+                </div>
+              )}
+
+              <div className="space-y-3">
+                <div>
+                  <label htmlFor="email" className="sr-only">
+                    Email
+                  </label>
+                  <input
+                    id="email"
+                    name="email"
+                    type="email"
+                    required
+                    className="block w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-900 placeholder-gray-400 shadow-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
+                    placeholder="Email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                  />
+                </div>
+
+                <div>
+                  <label htmlFor="password" className="sr-only">
+                    Mật khẩu
+                  </label>
+                  <input
+                    id="password"
+                    name="password"
+                    type="password"
+                    required
+                    className="block w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-900 placeholder-gray-400 shadow-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
+                    placeholder="Mật khẩu"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                  />
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="w-full rounded-full bg-sky-500 px-5 py-3 text-sm font-semibold text-white shadow-md hover:bg-sky-600 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2 disabled:opacity-50"
+                >
+                  {loading ? 'Đang đăng nhập...' : 'Đăng nhập'}
+                </button>
+              </div>
+
+              <div className="mt-6">
+                {GOOGLE_CLIENT_ID ? (
+                  <>
+                    <div className="flex items-center justify-center">
+                      <div className="h-px w-full bg-gray-200" />
+                      <span className="px-3 text-xs text-gray-400">OR</span>
+                      <div className="h-px w-full bg-gray-200" />
+                    </div>
+
+                    <div className="mt-5 flex justify-center">
+                      <div
+                        className="rounded-full border border-sky-400 bg-white px-5 py-2 shadow-[0_8px_18px_rgba(2,132,199,0.18)]"
+                      >
+                        <div id="google-signin-button" className="min-h-[40px] flex items-center justify-center" />
+                      </div>
+                    </div>
+
+                    {!googleScriptLoaded && (
+                      <div className="mt-3 text-center text-gray-500 text-sm">
+                        Đang tải Google Sign In...
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  <div className="text-center text-sm text-gray-500">
+                    Google Sign In không khả dụng. Vui lòng kiểm tra cấu hình.
+                  </div>
                 )}
               </div>
-            </>
-          ) : (
-            <div className="text-center text-sm text-gray-500">
-              Google Sign In không khả dụng. Vui lòng kiểm tra cấu hình.
-            </div>
-          )}
 
-          <div className="text-center">
-            <Link to="/register" className="text-sm text-blue-600 hover:text-blue-500">
-              Chưa có tài khoản? Đăng ký ngay
-            </Link>
+              <div className="mt-6 text-center">
+                <Link to="/register" className="text-sm text-sky-600 hover:text-sky-700">
+                  Chưa có tài khoản? Đăng ký ngay
+                </Link>
+              </div>
+            </form>
           </div>
-        </form>
+        </div>
       </div>
     </div>
   );
