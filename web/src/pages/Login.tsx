@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import api from '../config/api';
 import { useAuthStore } from '../store/authStore';
+import logoLogin from '../assets/img/logo_login.jpg';
 
 declare global {
   interface Window {
@@ -280,9 +281,11 @@ export default function Login() {
         <div className="w-full max-w-[720px]">
           <div className="mx-auto w-full max-w-[560px] rounded-[28px] bg-white shadow-[0_20px_60px_rgba(0,0,0,0.25)] px-6 sm:px-10 py-10">
             <div className="flex flex-col items-center text-center">
-              <div className="h-16 w-16 rounded-full flex items-center justify-center">
-                <div className="text-4xl font-extrabold text-sky-500">G</div>
-              </div>
+              <img
+                src={logoLogin}
+                alt="Goozi"
+                className="h-20 w-20 object-contain"
+              />
 
               <p className="mt-4 text-sm sm:text-base tracking-wide text-gray-600">
                 Please sign in to begin your studies.
