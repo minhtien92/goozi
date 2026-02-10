@@ -224,7 +224,7 @@ export default function LoginModal({ isOpen, onClose, onSuccess }: LoginModalPro
           <div className="flex flex-col items-center text-center">
             <img src={logoLogin} alt="Goozi" className="h-20 w-auto object-contain" />
 
-            <p className="mt-4 text-sm sm:text-base tracking-wide text-gray-600">
+            <p className="mt-4 text-sm sm:text-base tracking-wide text-gray-600 w-full">
               Please sign in to begin your studies.
             </p>
           </div>
@@ -241,7 +241,8 @@ export default function LoginModal({ isOpen, onClose, onSuccess }: LoginModalPro
                 <div className="mt-6 flex justify-center">
                   <div
                     id="google-signin-button-modal"
-                    className="min-h-[44px] flex items-center justify-center"
+                    className="min-h-[44px] flex-1 flex items-center justify-center max-w-full"
+                    style={{ width: '100%' }}
                   />
                 </div>
 
