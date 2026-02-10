@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../config/api';
 import { useAuthStore } from '../store/authStore';
-import logoLogin from '../assets/img/logo_login.svg';
+import logoLogin from '../assets/img/logo_login.png';
 
 declare global {
   interface Window {
