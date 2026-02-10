@@ -241,9 +241,7 @@ export default function Login() {
               {GOOGLE_CLIENT_ID ? (
                 <>
                   <div className="mt-5 flex justify-center">
-                    <div className="rounded-full border border-sky-400 bg-white px-5 py-2 shadow-[0_8px_18px_rgba(2,132,199,0.18)]">
-                      <div id="google-signin-button" className="min-h-[40px] flex items-center justify-center" />
-                    </div>
+                    <div id="google-signin-button" className="min-h-[40px] flex items-center justify-center" />
                   </div>
 
                   {!googleScriptLoaded && (
