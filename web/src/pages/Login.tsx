@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import api from '../config/api';
 import { useAuthStore } from '../store/authStore';
-import logoLogin from '../assets/img/logo_login.jpg';
+import logoLogin from '../assets/img/logo_login.svg';
 
 declare global {
   interface Window {
@@ -19,8 +19,6 @@ declare global {
 }
 
 export default function Login() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [googleScriptLoaded, setGoogleScriptLoaded] = useState(false);
@@ -214,63 +212,7 @@ export default function Login() {
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError('');
-    setLoading(true);
 
-    try {
-      const response = await api.post('/auth/login', { email, password });
-      setAuth(response.data.user, response.data.token);
-      
-      // Fetch fresh user data to ensure all settings are loaded
-      try {
-        const userResponse = await api.get('/auth/me');
-        console.log('Raw user response from /auth/me (Login page):', userResponse.data);
-        if (userResponse.data.user) {
-          const userData = userResponse.data.user;
-          console.log('User data from /auth/me after login:', {
-            learningLanguageIds: userData.learningLanguageIds,
-            learningLanguageIdsType: typeof userData.learningLanguageIds,
-            learningLanguageIdsIsArray: Array.isArray(userData.learningLanguageIds),
-            voiceAccentVersion: userData.voiceAccentVersion,
-            voiceAccentVersionType: typeof userData.voiceAccentVersion,
-            nativeLanguage: userData.nativeLanguage
-          });
-          
-          // Ensure learningLanguageIds is an array
-          if (userData.learningLanguageIds && typeof userData.learningLanguageIds === 'string') {
-            try {
-              userData.learningLanguageIds = JSON.parse(userData.learningLanguageIds);
-            } catch (e) {
-              console.warn('Failed to parse learningLanguageIds:', e);
-            }
-          }
-          
-          // Ensure voiceAccentVersion is a number
-          if (userData.voiceAccentVersion !== undefined && userData.voiceAccentVersion !== null) {
-            userData.voiceAccentVersion = parseInt(userData.voiceAccentVersion) || 1;
-          }
-          
-          console.log('Processed user data before setAuth (Login page):', {
-            learningLanguageIds: userData.learningLanguageIds,
-            voiceAccentVersion: userData.voiceAccentVersion
-          });
-          
-          setAuth(userData, response.data.token);
-        }
-      } catch (fetchError) {
-        console.warn('Failed to fetch user data after login:', fetchError);
-        // Continue with original user data if fetch fails
-      }
-      
-      navigate('/');
-    } catch (err: any) {
-      setError(err.response?.data?.error || 'Đăng nhập thất bại');
-    } finally {
-      setLoading(false);
-    }
-  };
 
   return (
     <div className="min-h-screen relative overflow-hidden">
@@ -292,91 +234,31 @@ export default function Login() {
               </p>
             </div>
 
-            <form className="mt-8" onSubmit={handleSubmit}>
-              {error && (
-                <div className="rounded-md bg-red-50 p-4 mb-4">
-                  <p className="text-sm text-red-800">{error}</p>
+            {error && (
+              <div className="rounded-md bg-red-50 p-4 mt-6">
+                <p className="text-sm text-red-800">{error}</p>
+              </div>
+            )}
+
+            <div className="mt-8">
+              {GOOGLE_CLIENT_ID ? (
+                <>
+                  <div className="mt-5 flex justify-center">
+                    <div className="rounded-full border border-sky-400 bg-white px-5 py-2 shadow-[0_8px_18px_rgba(2,132,199,0.18)]">
+                      <div id="google-signin-button" className="min-h-[40px] flex items-center justify-center" />
+                    </div>
+                  </div>
+
+                  {!googleScriptLoaded && (
+                    <div className="mt-3 text-center text-gray-500 text-sm">Đang tải Google Sign In...</div>
+                  )}
+                </>
+              ) : (
+                <div className="text-center text-sm text-gray-500">
+                  Google Sign In không khả dụng. Vui lòng kiểm tra cấu hình.
                 </div>
               )}
-
-              <div className="space-y-3">
-                <div>
-                  <label htmlFor="email" className="sr-only">
-                    Email
-                  </label>
-                  <input
-                    id="email"
-                    name="email"
-                    type="email"
-                    required
-                    className="block w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-900 placeholder-gray-400 shadow-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
-                    placeholder="Email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                  />
-                </div>
-
-                <div>
-                  <label htmlFor="password" className="sr-only">
-                    Mật khẩu
-                  </label>
-                  <input
-                    id="password"
-                    name="password"
-                    type="password"
-                    required
-                    className="block w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-900 placeholder-gray-400 shadow-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
-                    placeholder="Mật khẩu"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                  />
-                </div>
-
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="w-full rounded-full bg-sky-500 px-5 py-3 text-sm font-semibold text-white shadow-md hover:bg-sky-600 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2 disabled:opacity-50"
-                >
-                  {loading ? 'Đang đăng nhập...' : 'Đăng nhập'}
-                </button>
-              </div>
-
-              <div className="mt-6">
-                {GOOGLE_CLIENT_ID ? (
-                  <>
-                    <div className="flex items-center justify-center">
-                      <div className="h-px w-full bg-gray-200" />
-                      <span className="px-3 text-xs text-gray-400">OR</span>
-                      <div className="h-px w-full bg-gray-200" />
-                    </div>
-
-                    <div className="mt-5 flex justify-center">
-                      <div
-                        className="rounded-full border border-sky-400 bg-white px-5 py-2 shadow-[0_8px_18px_rgba(2,132,199,0.18)]"
-                      >
-                        <div id="google-signin-button" className="min-h-[40px] flex items-center justify-center" />
-                      </div>
-                    </div>
-
-                    {!googleScriptLoaded && (
-                      <div className="mt-3 text-center text-gray-500 text-sm">
-                        Đang tải Google Sign In...
-                      </div>
-                    )}
-                  </>
-                ) : (
-                  <div className="text-center text-sm text-gray-500">
-                    Google Sign In không khả dụng. Vui lòng kiểm tra cấu hình.
-                  </div>
-                )}
-              </div>
-
-              <div className="mt-6 text-center">
-                <Link to="/register" className="text-sm text-sky-600 hover:text-sky-700">
-                  Chưa có tài khoản? Đăng ký ngay
-                </Link>
-              </div>
-            </form>
+            </div>
           </div>
         </div>
       </div>

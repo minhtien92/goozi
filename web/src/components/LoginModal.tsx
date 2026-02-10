@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import api from '../config/api';
 import { useAuthStore } from '../store/authStore';
-import logoLogin from '../assets/img/logo_login.jpg';
+import logoLogin from '../assets/img/logo_login.svg';
 
 declare global {
   interface Window {
