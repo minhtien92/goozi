@@ -223,7 +223,7 @@ export default function Login() {
               <img
                 src={logoLogin}
                 alt="Goozi"
-                className="h-20 w-20 object-contain"
+                className="h-20 w-auto object-contain"
               />
 
               <p className="mt-4 text-sm sm:text-base tracking-wide text-gray-600">

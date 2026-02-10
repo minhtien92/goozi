@@ -201,7 +201,7 @@ export default function LoginModal({ isOpen, onClose, onSuccess }: LoginModalPro
       <div className="relative z-10 min-h-screen flex items-center justify-center px-4 py-10">
         <div className="w-full max-w-[560px] rounded-[28px] bg-white shadow-[0_20px_60px_rgba(0,0,0,0.25)] px-6 sm:px-10 py-10">
           <div className="flex flex-col items-center text-center">
-            <img src={logoLogin} alt="Goozi" className="h-20 w-20 object-contain" />
+            <img src={logoLogin} alt="Goozi" className="h-20 w-auto object-contain" />
 
             <p className="mt-4 text-sm sm:text-base tracking-wide text-gray-600">
               Please sign in to begin your studies.
