@@ -238,11 +238,13 @@ export default function LoginModal({ isOpen, onClose, onSuccess }: LoginModalPro
 
             {GOOGLE_CLIENT_ID ? (
               <>
-                <div className="mt-5 flex justify-center">
-                  <div
-                    id="google-signin-button-modal"
-                    className="min-h-[40px] flex items-center justify-center"
-                  />
+                <div className="mt-6 flex justify-center">
+                  <div className="rounded-full border border-sky-400 bg-white px-6 py-3 shadow-[0_10px_24px_rgba(2,132,199,0.2)]">
+                    <div
+                      id="google-signin-button-modal"
+                      className="min-h-[44px] flex items-center justify-center scale-110"
+                    />
+                  </div>
                 </div>
 
                 {!googleScriptLoaded && (
