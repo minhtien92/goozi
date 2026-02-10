@@ -199,7 +199,28 @@ export default function LoginModal({ isOpen, onClose, onSuccess }: LoginModalPro
       <div className="absolute inset-0 bg-black/35" onClick={onClose} />
 
       <div className="relative z-10 min-h-screen flex items-center justify-center px-4 py-10">
-        <div className="w-full max-w-[560px] rounded-[28px] bg-white shadow-[0_20px_60px_rgba(0,0,0,0.25)] px-6 sm:px-10 py-10">
+        <div className="w-full max-w-[560px] rounded-[28px] bg-white shadow-[0_20px_60px_rgba(0,0,0,0.25)] px-6 sm:px-10 py-10 relative">
+          {/* Close button */}
+          <button
+            type="button"
+            onClick={onClose}
+            className="absolute right-4 top-4 text-gray-400 hover:text-gray-600 transition"
+          >
+            <span className="sr-only">Close</span>
+            <svg
+              className="w-5 h-5"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <line x1="18" y1="6" x2="6" y2="18" />
+              <line x1="6" y1="6" x2="18" y2="18" />
+            </svg>
+          </button>
+
           <div className="flex flex-col items-center text-center">
             <img src={logoLogin} alt="Goozi" className="h-20 w-auto object-contain" />
 
@@ -218,12 +239,10 @@ export default function LoginModal({ isOpen, onClose, onSuccess }: LoginModalPro
             {GOOGLE_CLIENT_ID ? (
               <>
                 <div className="mt-5 flex justify-center">
-                  <div className="rounded-full border border-sky-400 bg-white px-5 py-2 shadow-[0_8px_18px_rgba(2,132,199,0.18)]">
-                    <div
-                      id="google-signin-button-modal"
-                      className="min-h-[40px] flex items-center justify-center"
-                    />
-                  </div>
+                  <div
+                    id="google-signin-button-modal"
+                    className="min-h-[40px] flex items-center justify-center"
+                  />
                 </div>
 
                 {!googleScriptLoaded && (
