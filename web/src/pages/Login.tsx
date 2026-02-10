@@ -148,9 +148,10 @@ export default function Login() {
           try {
             window.google.accounts.id.renderButton(buttonContainer, {
               type: 'standard',
-              theme: 'outline',
+              theme: 'filled_blue',
               size: 'large',
               text: 'signin_with',
+              shape: 'pill',
             });
             console.log('Google Sign In button rendered successfully');
           } catch (renderError: any) {
@@ -182,9 +183,10 @@ export default function Login() {
               try {
                 window.google.accounts.id.renderButton(retryContainer, {
                   type: 'standard',
-                  theme: 'outline',
+                  theme: 'filled_blue',
                   size: 'large',
                   text: 'signin_with',
+                  shape: 'pill',
                 });
                 console.log('Google Sign In button rendered on retry');
               } catch (retryError: any) {
