@@ -20,7 +20,6 @@ declare global {
 
 export default function Login() {
   const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
   const [googleScriptLoaded, setGoogleScriptLoaded] = useState(false);
   const navigate = useNavigate();
   const setAuth = useAuthStore((state) => state.setAuth);
