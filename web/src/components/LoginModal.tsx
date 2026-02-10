@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import api from '../config/api';
 import { useAuthStore } from '../store/authStore';
+import logoLogin from '../assets/img/logo_login.jpg';
 
 declare global {
   interface Window {
@@ -194,37 +195,47 @@ export default function LoginModal({ isOpen, onClose, onSuccess }: LoginModalPro
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
-      {/* Overlay */}
-      <div 
-        className="fixed inset-0 bg-black bg-opacity-50"
-        onClick={onClose}
-      />
-      
-      {/* Modal */}
-      <div className="relative bg-white rounded-lg shadow-xl max-w-md w-full mx-4 z-50">
-        <div className="p-8">
-          {error && (
-            <div className="rounded-md bg-red-50 p-4 mb-4">
-              <p className="text-sm text-red-800">{error}</p>
-            </div>
-          )}
+    <div className="fixed inset-0 z-50">
+      <div className="absolute inset-0 bg-black/35" onClick={onClose} />
 
-          {GOOGLE_CLIENT_ID ? (
-            <div className="w-full flex justify-center">
-              <div 
-                id="google-signin-button-modal" 
-                className="min-h-[60px] w-full max-w-[500px] flex items-center justify-center scale-125"
-              ></div>
-              {!googleScriptLoaded && (
-                <div className="text-gray-500 text-sm text-center mt-2">Đang tải Google Sign In...</div>
-              )}
-            </div>
-          ) : (
-            <div className="text-center text-sm text-gray-500">
-              Google Sign In không khả dụng. Vui lòng kiểm tra cấu hình.
-            </div>
-          )}
+      <div className="relative z-10 min-h-screen flex items-center justify-center px-4 py-10">
+        <div className="w-full max-w-[560px] rounded-[28px] bg-white shadow-[0_20px_60px_rgba(0,0,0,0.25)] px-6 sm:px-10 py-10">
+          <div className="flex flex-col items-center text-center">
+            <img src={logoLogin} alt="Goozi" className="h-20 w-20 object-contain" />
+
+            <p className="mt-4 text-sm sm:text-base tracking-wide text-gray-600">
+              Please sign in to begin your studies.
+            </p>
+          </div>
+
+          <div className="mt-6">
+            {error && (
+              <div className="rounded-md bg-red-50 p-4 mb-4">
+                <p className="text-sm text-red-800">{error}</p>
+              </div>
+            )}
+
+            {GOOGLE_CLIENT_ID ? (
+              <>
+                <div className="mt-5 flex justify-center">
+                  <div className="rounded-full border border-sky-400 bg-white px-5 py-2 shadow-[0_8px_18px_rgba(2,132,199,0.18)]">
+                    <div
+                      id="google-signin-button-modal"
+                      className="min-h-[40px] flex items-center justify-center"
+                    />
+                  </div>
+                </div>
+
+                {!googleScriptLoaded && (
+                  <div className="mt-3 text-center text-gray-500 text-sm">Đang tải Google Sign In...</div>
+                )}
+              </>
+            ) : (
+              <div className="text-center text-sm text-gray-500">
+                Google Sign In không khả dụng. Vui lòng kiểm tra cấu hình.
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>

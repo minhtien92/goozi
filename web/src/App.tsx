@@ -6,6 +6,7 @@ import Topics from './pages/Topics';
 import TopicDetail from './pages/TopicDetail';
 import Flashcard from './pages/Flashcard';
 import Layout from './components/Layout';
+import Login from './pages/Login';
 
 function PrivateRoute({ children }: { children: React.ReactNode }) {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated());
@@ -16,7 +17,7 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/login" element={<Home />} />
+        <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         {/* Home page - accessible without login */}
         <Route path="/" element={<Home />} />
