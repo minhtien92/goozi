@@ -41,7 +41,6 @@ export default function Login() {
 
   const handleGoogleSignIn = async (response: any) => {
     setError('');
-    setLoading(true);
 
     try {
       const authResponse = await api.post('/auth/google', {
@@ -94,7 +93,6 @@ export default function Login() {
     } catch (err: any) {
       setError(err.response?.data?.error || 'Đăng nhập Google thất bại');
     } finally {
-      setLoading(false);
     }
   };
 
