@@ -21,6 +21,7 @@ declare global {
 export default function Login() {
   const [error, setError] = useState('');
   const [googleScriptLoaded, setGoogleScriptLoaded] = useState(false);
+  const [googleStarting, setGoogleStarting] = useState(false);
   const navigate = useNavigate();
   const setAuth = useAuthStore((state) => state.setAuth);
 
@@ -137,75 +138,10 @@ export default function Login() {
       window.google.accounts.id.initialize({
         client_id: GOOGLE_CLIENT_ID,
         callback: handleGoogleSignIn,
+        ux_mode: 'popup',
       });
 
-      // Render button with a small delay to ensure DOM is ready
-      setTimeout(() => {
-        const buttonContainer = document.getElementById('google-signin-button');
-        if (buttonContainer && window.google?.accounts?.id?.renderButton) {
-          // Clear container first
-          buttonContainer.innerHTML = '';
-          try {
-            window.google.accounts.id.renderButton(buttonContainer, {
-              type: 'standard',
-              theme: 'filled_blue',
-              size: 'large',
-              text: 'signin_with',
-              shape: 'pill',
-            });
-            console.log('Google Sign In button rendered successfully');
-          } catch (renderError: any) {
-            console.error('Error rendering Google button:', renderError);
-            const errorMessage = renderError?.message || '';
-            if (errorMessage.includes('origin is not allowed') || errorMessage.includes('403')) {
-              buttonContainer.innerHTML = `
-                <div class="text-red-500 text-sm p-2 border border-red-300 rounded bg-red-50">
-                  <p class="font-semibold mb-1">⚠️ Lỗi cấu hình Google OAuth</p>
-                  <p class="text-xs mb-1">Origin "${window.location.origin}" chưa được thêm vào Google Cloud Console.</p>
-                  <p class="text-xs">Xem hướng dẫn: docs/GOOGLE_OAUTH_SETUP.md</p>
-                </div>
-              `;
-            } else {
-              buttonContainer.innerHTML = '<div class="text-red-500 text-sm">Lỗi khi tải nút Google Sign In</div>';
-            }
-          }
-        } else {
-          console.warn('Button container not found or renderButton not available', {
-            hasContainer: !!buttonContainer,
-            hasGoogle: !!window.google,
-            hasRenderButton: !!window.google?.accounts?.id?.renderButton,
-          });
-          // Retry after a longer delay
-          setTimeout(() => {
-            const retryContainer = document.getElementById('google-signin-button');
-            if (retryContainer && window.google?.accounts?.id?.renderButton) {
-              retryContainer.innerHTML = '';
-              try {
-                window.google.accounts.id.renderButton(retryContainer, {
-                  type: 'standard',
-                  theme: 'filled_blue',
-                  size: 'large',
-                  text: 'signin_with',
-                  shape: 'pill',
-                });
-                console.log('Google Sign In button rendered on retry');
-              } catch (retryError: any) {
-                console.error('Error rendering Google button on retry:', retryError);
-                const errorMessage = retryError?.message || '';
-                if (errorMessage.includes('origin is not allowed') || errorMessage.includes('403')) {
-                  retryContainer.innerHTML = `
-                    <div class="text-red-500 text-sm p-2 border border-red-300 rounded bg-red-50">
-                      <p class="font-semibold mb-1">⚠️ Lỗi cấu hình Google OAuth</p>
-                      <p class="text-xs mb-1">Origin "${window.location.origin}" chưa được thêm vào Google Cloud Console.</p>
-                      <p class="text-xs">Xem hướng dẫn: docs/GOOGLE_OAUTH_SETUP.md</p>
-                    </div>
-                  `;
-                }
-              }
-            }
-          }, 1000);
-        }
-      }, 200);
+      console.log('Google Sign In initialized (custom button mode)');
     } catch (error) {
       console.error('Error initializing Google Sign In:', error);
     }
@@ -243,7 +179,25 @@ export default function Login() {
               {GOOGLE_CLIENT_ID ? (
                 <>
                   <div className="mt-5 flex justify-center">
-                    <div id="google-signin-button" className="min-h-[40px] flex items-center justify-center" />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setError('');
+                        if (!window.google?.accounts?.id?.prompt) return;
+                        setGoogleStarting(true);
+                        window.google.accounts.id.prompt();
+                        setTimeout(() => setGoogleStarting(false), 1500);
+                      }}
+                      disabled={!googleScriptLoaded || googleStarting}
+                      className="inline-flex items-center gap-3 rounded-full border border-sky-300 bg-white px-5 py-2.5 text-sm font-medium text-gray-700 shadow-[0_8px_18px_rgba(2,132,199,0.14)] hover:bg-slate-50 disabled:opacity-60 disabled:cursor-not-allowed"
+                    >
+                      <img
+                        src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg"
+                        alt="Google"
+                        className="h-5 w-5"
+                      />
+                      <span>{googleStarting ? 'Đang mở Google...' : 'Đăng nhập bằng Google'}</span>
+                    </button>
                   </div>
 
                   {!googleScriptLoaded && (
