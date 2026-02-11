@@ -349,7 +349,15 @@ export default function UserMenu({ onClose }: UserMenuProps) {
               <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-2xl overflow-hidden">
                 {user?.avatarUrl ? (
                   <img
-                    src={user.avatarUrl.startsWith('http') ? user.avatarUrl : `${import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:3001'}${user.avatarUrl}`}
+                    src={(() => {
+                      const raw = user.avatarUrl;
+                      if (!raw) return '';
+                      if (raw.startsWith('http')) return raw;
+                      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
+                      const baseUrl = apiUrl.endsWith('/api') ? apiUrl.slice(0, -4) : apiUrl.replace(/\/api$/, '') || 'http://localhost:3001';
+                      const path = raw.startsWith('/') ? raw : `/${raw}`;
+                      return `${baseUrl}${path}`;
+                    })()}
                     alt={user?.name || 'Avatar'}
                     className="w-full h-full object-cover"
                   />
@@ -495,7 +503,15 @@ export default function UserMenu({ onClose }: UserMenuProps) {
                 <div className="w-20 h-20 rounded-full bg-gray-200 flex items-center justify-center text-4xl mb-3 overflow-hidden">
                   {user?.avatarUrl ? (
                     <img
-                      src={user.avatarUrl.startsWith('http') ? user.avatarUrl : `${import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:3001'}${user.avatarUrl}`}
+                      src={(() => {
+                        const raw = user.avatarUrl;
+                        if (!raw) return '';
+                        if (raw.startsWith('http')) return raw;
+                        const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
+                        const baseUrl = apiUrl.endsWith('/api') ? apiUrl.slice(0, -4) : apiUrl.replace(/\/api$/, '') || 'http://localhost:3001';
+                        const path = raw.startsWith('/') ? raw : `/${raw}`;
+                        return `${baseUrl}${path}`;
+                      })()}
                       alt={user?.name || 'Avatar'}
                       className="w-full h-full object-cover"
                     />
