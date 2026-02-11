@@ -17,6 +17,7 @@ interface UserMenuProps {
 
 export default function UserMenu({ onClose }: UserMenuProps) {
   const { user, token, logout, setAuth } = useAuthStore();
+  const [avatarUploading, setAvatarUploading] = useState(false);
   const navigate = useNavigate();
   const [showProfile, setShowProfile] = useState(false);
   const [showLanguageSelector, setShowLanguageSelector] = useState(false);
@@ -98,6 +99,45 @@ export default function UserMenu({ onClose }: UserMenuProps) {
       setLanguages(response.data.languages);
     } catch (error) {
       console.error('Error fetching languages:', error);
+    }
+  };
+
+  const handleUploadAvatar = async (file: File) => {
+    if (!user?.id || !token) {
+      alert('Vui lòng đăng nhập để cập nhật avatar');
+      return;
+    }
+
+    try {
+      setAvatarUploading(true);
+
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const uploadRes = await api.post('/upload/image', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+
+      const avatarUrl = uploadRes.data?.url;
+      if (!avatarUrl) {
+        throw new Error('Upload failed: missing url');
+      }
+
+      await api.put(`/users/${user.id}`, {
+        avatarUrl,
+      });
+
+      const userResponse = await api.get('/auth/me');
+      if (userResponse.data.user) {
+        setAuth(userResponse.data.user, token);
+      }
+    } catch (error: any) {
+      console.error('Error uploading avatar:', error);
+      alert('Upload avatar thất bại');
+    } finally {
+      setAvatarUploading(false);
     }
   };
 
@@ -307,10 +347,14 @@ export default function UserMenu({ onClose }: UserMenuProps) {
           <div className="flex items-center justify-between p-4 border-b">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-2xl overflow-hidden">
-                {user?.nativeLanguage?.flag && user.nativeLanguage.flag.startsWith('http') ? (
-                  <img src={user.nativeLanguage.flag} alt={user.nativeLanguage.name} className="w-full h-full object-cover" />
+                {user?.avatarUrl ? (
+                  <img
+                    src={user.avatarUrl.startsWith('http') ? user.avatarUrl : `${import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:3001'}${user.avatarUrl}`}
+                    alt={user?.name || 'Avatar'}
+                    className="w-full h-full object-cover"
+                  />
                 ) : (
-                  <span>{user?.nativeLanguage?.flag || '🇰🇷'}</span>
+                  <span>{user?.name ? user.name.charAt(0).toUpperCase() : 'U'}</span>
                 )}
               </div>
               <span className="font-medium text-gray-800">{user?.name || 'Angelyna'}</span>
@@ -449,19 +493,32 @@ export default function UserMenu({ onClose }: UserMenuProps) {
             <div className="p-4 overflow-y-auto flex-1">
               <div className="flex flex-col items-center mb-6">
                 <div className="w-20 h-20 rounded-full bg-gray-200 flex items-center justify-center text-4xl mb-3 overflow-hidden">
-                  {user?.nativeLanguage?.flag && user.nativeLanguage.flag.startsWith('http') ? (
+                  {user?.avatarUrl ? (
                     <img
-                      src={user.nativeLanguage.flag}
-                      alt={user.nativeLanguage.name}
+                      src={user.avatarUrl.startsWith('http') ? user.avatarUrl : `${import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:3001'}${user.avatarUrl}`}
+                      alt={user?.name || 'Avatar'}
                       className="w-full h-full object-cover"
                     />
                   ) : (
                     <span>
-                      {user?.nativeLanguage?.flag ||
-                        (user?.name ? user.name.charAt(0).toUpperCase() : 'U')}
+                      {user?.name ? user.name.charAt(0).toUpperCase() : 'U'}
                     </span>
                   )}
                 </div>
+                <label className="text-sm text-blue-600 hover:text-blue-700 cursor-pointer">
+                  {avatarUploading ? 'Đang upload...' : 'Upload avatar'}
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    disabled={avatarUploading}
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) handleUploadAvatar(file);
+                      e.currentTarget.value = '';
+                    }}
+                  />
+                </label>
                 <h4 className="text-lg font-semibold text-blue-600">{user?.name || 'Angelyna'}</h4>
               </div>
               <div className="space-y-4">

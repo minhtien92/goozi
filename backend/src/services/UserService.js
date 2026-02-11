@@ -55,15 +55,25 @@ class UserService {
       throw new Error('User not found');
     }
 
-    const { email, name, role, nativeLanguageId, permissions, voiceAccentVersion, learningLanguageIds } = data;
+    const {
+      email,
+      name,
+      role,
+      nativeLanguageId,
+      permissions,
+      voiceAccentVersion,
+      learningLanguageIds,
+      avatarUrl,
+    } = data;
 
-    // For self-update, only allow updating name, nativeLanguageId, voiceAccentVersion, and learningLanguageIds
+    // For self-update, only allow updating name, nativeLanguageId, voiceAccentVersion, learningLanguageIds, and avatarUrl
     if (isSelfUpdate) {
       await user.update({
         name: name || user.name,
         nativeLanguageId: nativeLanguageId !== undefined ? nativeLanguageId : user.nativeLanguageId,
         voiceAccentVersion: voiceAccentVersion !== undefined ? voiceAccentVersion : user.voiceAccentVersion,
         learningLanguageIds: learningLanguageIds !== undefined ? learningLanguageIds : user.learningLanguageIds,
+        avatarUrl: avatarUrl !== undefined ? avatarUrl : user.avatarUrl,
       });
     } else {
       // Admin can update everything
@@ -75,6 +85,7 @@ class UserService {
         nativeLanguageId: nativeLanguageId !== undefined ? nativeLanguageId : user.nativeLanguageId,
         voiceAccentVersion: voiceAccentVersion !== undefined ? voiceAccentVersion : user.voiceAccentVersion,
         learningLanguageIds: learningLanguageIds !== undefined ? learningLanguageIds : user.learningLanguageIds,
+        avatarUrl: avatarUrl !== undefined ? avatarUrl : user.avatarUrl,
       });
     }
 

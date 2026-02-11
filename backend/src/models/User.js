@@ -62,6 +62,11 @@ export default function (sequelize) {
         defaultValue: null,
         comment: 'Array of language IDs that user is learning',
       },
+      avatarUrl: {
+        type: DataTypes.STRING,
+        allowNull: true,
+        comment: 'User avatar image URL',
+      },
     },
     {
       tableName: 'users',
@@ -122,6 +127,7 @@ export default function (sequelize) {
       role: rawValues.role || dataValues.role,
       permissions: rawValues.permissions || dataValues.permissions,
       nativeLanguageId: rawValues.nativeLanguageId || dataValues.nativeLanguageId,
+      avatarUrl: rawValues.avatarUrl || dataValues.avatarUrl || null,
       createdAt: rawValues.createdAt || dataValues.createdAt,
       updatedAt: rawValues.updatedAt || dataValues.updatedAt,
     };

@@ -14,6 +14,7 @@ interface User {
   email: string;
   name: string;
   role: string;
+  avatarUrl?: string | null;
   nativeLanguage?: Language;
   voiceAccentVersion?: number;
   learningLanguageIds?: string[];
