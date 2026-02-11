@@ -145,6 +145,7 @@ class AuthController {
         nativeLanguageId: dataValues.nativeLanguageId || rawValues.nativeLanguageId,
         learningLanguageIds: Array.isArray(learningLangIds) ? learningLangIds : (learningLangIds ? [learningLangIds] : []),
         voiceAccentVersion: parseInt(voiceAccent) || 1,
+        avatarUrl: dataValues.avatarUrl || rawValues.avatarUrl || null,
         createdAt: dataValues.createdAt || rawValues.createdAt,
         updatedAt: dataValues.updatedAt || rawValues.updatedAt,
       };
