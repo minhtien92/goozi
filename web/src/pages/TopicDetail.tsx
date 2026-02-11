@@ -289,7 +289,7 @@ export default function TopicDetail() {
           <div className="flex items-center gap-3">
             <input
               type="text"
-              placeholder={translations.searchTopics}
+              placeholder={translations.searchWords}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="px-4 py-2 text-base border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"

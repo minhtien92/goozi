@@ -3,6 +3,7 @@
 export interface Translations {
   vocabulary: string;
   searchTopics: string;
+  searchWords: string;
   back: string;
   backToList: string;
   close: string;
@@ -19,6 +20,7 @@ const translations: Record<string, Translations> = {
   en: {
     vocabulary: 'Vocabulary',
     searchTopics: 'Search topics...',
+    searchWords: 'Search words...',
     back: 'Back',
     backToList: 'Back to list',
     close: 'Close',
@@ -33,6 +35,7 @@ const translations: Record<string, Translations> = {
   vi: {
     vocabulary: 'Từ vựng',
     searchTopics: 'Tìm kiếm chủ đề...',
+    searchWords: 'Tìm kiếm từ vựng...',
     back: 'Quay lại',
     backToList: 'Quay lại danh sách',
     close: 'Đóng',
@@ -47,6 +50,7 @@ const translations: Record<string, Translations> = {
   ko: {
     vocabulary: '어휘',
     searchTopics: '주제 검색...',
+    searchWords: '단어 검색...',
     back: '뒤로',
     backToList: '목록으로 돌아가기',
     close: '닫기',
@@ -61,6 +65,7 @@ const translations: Record<string, Translations> = {
   zh: {
     vocabulary: '词汇',
     searchTopics: '搜索主题...',
+    searchWords: '搜索词汇...',
     back: '返回',
     backToList: '返回列表',
     close: '关闭',
@@ -75,6 +80,7 @@ const translations: Record<string, Translations> = {
   ja: {
     vocabulary: '語彙',
     searchTopics: 'トピックを検索...',
+    searchWords: '単語を検索...',
     back: '戻る',
     backToList: 'リストに戻る',
     close: '閉じる',
@@ -89,6 +95,7 @@ const translations: Record<string, Translations> = {
   es: {
     vocabulary: 'Vocabulario',
     searchTopics: 'Buscar temas...',
+    searchWords: 'Buscar palabras...',
     back: 'Atrás',
     backToList: 'Volver a la lista',
     close: 'Cerrar',
@@ -103,6 +110,7 @@ const translations: Record<string, Translations> = {
   fr: {
     vocabulary: 'Vocabulaire',
     searchTopics: 'Rechercher des sujets...',
+    searchWords: 'Rechercher des mots...',
     back: 'Retour',
     backToList: 'Retour à la liste',
     close: 'Fermer',
@@ -117,6 +125,7 @@ const translations: Record<string, Translations> = {
   de: {
     vocabulary: 'Wortschatz',
     searchTopics: 'Themen suchen...',
+    searchWords: 'Wörter suchen...',
     back: 'Zurück',
     backToList: 'Zurück zur Liste',
     close: 'Schließen',
