@@ -23,6 +23,7 @@ export default function UserMenu({ onClose }: UserMenuProps) {
   const [showMotherTongue, setShowMotherTongue] = useState(false);
   const [showVoiceAccent, setShowVoiceAccent] = useState(false);
   const [languages, setLanguages] = useState<Language[]>([]);
+  const [motherTongueSearch, setMotherTongueSearch] = useState<string>('');
   // Initialize from user preference - will be updated in useEffect
   const [selectedLanguages, setSelectedLanguages] = useState<string[]>([]);
   const [voiceAccents] = useState<string[]>(['Voice accent 1', 'Voice accent 2', 'Voice accent 3', 'Voice accent 4']);
@@ -561,9 +562,26 @@ export default function UserMenu({ onClose }: UserMenuProps) {
                 ×
               </button>
             </div>
-            <div className="p-4 overflow-y-auto flex-1">
-              <div className="space-y-2">
-                {languages.map((lang) => (
+            <div className="p-4 flex flex-col flex-1 overflow-hidden">
+              <input
+                type="text"
+                placeholder="Search"
+                value={motherTongueSearch}
+                onChange={(e) => setMotherTongueSearch(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg mb-4"
+              />
+              <div className="space-y-2 overflow-y-auto flex-1">
+                {languages
+                  .filter((lang) => {
+                    const q = motherTongueSearch.trim().toLowerCase();
+                    if (!q) return true;
+                    return (
+                      lang.name.toLowerCase().includes(q) ||
+                      lang.nativeName.toLowerCase().includes(q) ||
+                      lang.code.toLowerCase().includes(q)
+                    );
+                  })
+                  .map((lang) => (
                   <button
                     key={lang.id}
                     onClick={() => handleUpdateNativeLanguage(lang.id)}
