@@ -274,6 +274,25 @@ export default function Home() {
                 onClick={() => setUserMenuOpen(true)}
                 className="flex items-center gap-2 hover:opacity-80 transition cursor-pointer"
               >
+                <div className="w-8 h-8 rounded-full bg-white/30 overflow-hidden flex items-center justify-center text-sm font-semibold">
+                  {user?.avatarUrl ? (
+                    <img
+                      src={(() => {
+                        const raw = user.avatarUrl;
+                        if (!raw) return '';
+                        if (raw.startsWith('http')) return raw;
+                        const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
+                        const baseUrl = apiUrl.endsWith('/api') ? apiUrl.slice(0, -4) : apiUrl.replace(/\/api$/, '') || 'http://localhost:3001';
+                        const path = raw.startsWith('/') ? raw : `/${raw}`;
+                        return `${baseUrl}${path}`;
+                      })()}
+                      alt={user?.name || 'Avatar'}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <span>{user?.name ? user.name.charAt(0).toUpperCase() : 'U'}</span>
+                  )}
+                </div>
                 <span>{user?.name || 'User'}</span>
               </button>
             ) : (
