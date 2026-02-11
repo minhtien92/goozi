@@ -300,13 +300,7 @@ export default function TopicDetail() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
               </svg>
             </button> */}
-            <button
-              onClick={handleClose}
-              className="text-gray-500 hover:text-gray-700 text-2xl leading-none px-2"
-              title={translations.close}
-            >
-              ×
-            </button>
+
           </div>
         </div>
 
