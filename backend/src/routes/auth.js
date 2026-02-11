@@ -133,6 +133,7 @@ async function authRoutes(fastify, options) {
                   items: { type: 'string', format: 'uuid' },
                 },
                 voiceAccentVersion: { type: 'integer' },
+                avatarUrl: { type: ['string', 'null'] },
                 nativeLanguage: {
                   type: 'object',
                   properties: {
