@@ -127,7 +127,7 @@ export default function (sequelize) {
       role: rawValues.role || dataValues.role,
       permissions: rawValues.permissions || dataValues.permissions,
       nativeLanguageId: rawValues.nativeLanguageId || dataValues.nativeLanguageId,
-      avatarUrl: rawValues.avatarUrl || dataValues.avatarUrl || null,
+      avatarUrl: rawValues.avatarUrl ?? dataValues.avatarUrl ?? null,
       createdAt: rawValues.createdAt || dataValues.createdAt,
       updatedAt: rawValues.updatedAt || dataValues.updatedAt,
     };
