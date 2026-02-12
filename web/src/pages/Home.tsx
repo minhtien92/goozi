@@ -388,7 +388,7 @@ export default function Home() {
         {!isBackground && (
           <footer className="relative z-10 w-full py-4 text-center">
             <p className="text-gray-600 text-sm">
-              Dòng chữ Copyright @ 2026 Goozi.
+              Copyright @ 2026 Goozi.
             </p>
           </footer>
         )}
