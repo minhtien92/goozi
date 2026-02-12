@@ -446,24 +446,27 @@ export default function Flashcard() {
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-3xl 2xl:max-w-4xl 3xl:max-w-5xl overflow-hidden flex flex-col h-[85vh] relative">
         {/* Header - thu gọn */}
         <div className="flex items-center justify-between py-2.5 px-4 border-b border-gray-200 bg-gray-50 flex-shrink-0">
-          <button
-            onClick={() => navigate(`/topics/${id}`)}
-            className="text-gray-600 hover:text-gray-800 p-1"
-            title={translations.back}
-          >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-            </svg>
-          </button>
-          <div className="flex-1 min-w-0 pl-2">
-            <div className="flex items-center justify-center gap-2 min-w-0">
-              <p className="text-sm text-gray-500 flex-shrink-0">
-                {currentIndex + 1} / {vocabularies.length}
-              </p>
-              <h2 className="text-lg font-semibold text-gray-800 truncate pr-2 text-center">
-                {headerDisplayTitle}
-              </h2>
-            </div>
+          {/* Left: back + index (aligned left) */}
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => navigate(`/topics/${id}`)}
+              className="text-gray-600 hover:text-gray-800 p-1"
+              title={translations.back}
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+            </button>
+            <p className="text-sm text-gray-500 flex-shrink-0">
+              {currentIndex + 1} / {vocabularies.length}
+            </p>
+          </div>
+
+          {/* Center: title (centered) */}
+          <div className="flex-1 min-w-0 flex justify-center px-2">
+            <h2 className="text-lg font-semibold text-gray-800 truncate text-center">
+              {headerDisplayTitle}
+            </h2>
           </div>
           <div className="flex items-center gap-1.5">
             <button
