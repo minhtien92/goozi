@@ -256,9 +256,9 @@ export default function Home() {
           <div className="flex items-center gap-3">
             <button
               onClick={() => setLogoMenuOpen(true)}
-              className="w-10 h-10 bg-white bg-opacity-20 rounded-full flex items-center justify-center hover:bg-opacity-30 transition cursor-pointer"
+              className="flex items-center justify-center cursor-pointer"
             >
-              <img src={smallLogo} alt="Goozi logo" className="w-6 h-6" />
+              <img src={smallLogo} alt="Goozi logo" className="w-8 h-8" />
             </button>
           </div>
 
