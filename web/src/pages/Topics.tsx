@@ -149,12 +149,12 @@ export default function Topics() {
                     onClick={() => handleTopicClick(topic.id)}
                     className="bg-gray-100 border-2 border-blue-300 rounded-lg p-6 cursor-pointer hover:bg-blue-50 hover:border-blue-500 transition"
                   >
-                    <div className="w-full h-32 bg-gray-300 rounded mb-4 flex items-center justify-center text-sm text-gray-500 overflow-hidden">
+                    <div className="w-full bg-gray-300 rounded mb-4 flex items-center justify-center text-sm text-gray-500 relative aspect-[4/3] overflow-hidden">
                       {imageUrl ? (
                         <img
                           src={imageUrl}
                           alt={getTopicName(topic)}
-                          className="w-full h-full object-cover rounded"
+                          className="w-full h-full object-cover"
                           onError={(e) => {
                             // Nếu ảnh lỗi thì quay lại text Avatar
                             (e.currentTarget as HTMLImageElement).style.display = 'none';

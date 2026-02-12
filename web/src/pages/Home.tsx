@@ -264,7 +264,7 @@ export default function Home() {
 
           {/* Center: logo image - not clickable */}
           <div className="absolute left-1/2 transform -translate-x-1/2 pointer-events-none mt-20">
-            <img src={logoHeader} alt="Goozi logo" className="h-16 md:h-20 2xl:h-24" />
+            <img src={logoHeader} alt="Goozi logo" className="h-12 md:h-16 2xl:h-20" />
           </div>
 
           {/* Right: user / login */}
@@ -308,7 +308,7 @@ export default function Home() {
         )}
 
         {/* Main Content Area */}
-        <div className="px-6 2xl:px-10 3xl:px-12 pb-24 flex flex-col items-center justify-between min-h-[calc(100vh-140px)] pt-8 2xl:pt-10">
+        <div className="px-6 2xl:px-10 3xl:px-12 pb-24 flex flex-col items-center justify-between min-h-[calc(100vh-140px)] pt-12 2xl:pt-16">
           {/* Tagline */}
           <div className="text-center w-full">
             {slogans.length > 0 ? (
@@ -336,7 +336,7 @@ export default function Home() {
 
           {/* Testimonials */}
           {testimonials.length > 0 && (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl 2xl:max-w-6xl 3xl:max-w-7xl mx-auto w-full mt-8 md:mt-10">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-10 max-w-5xl 2xl:max-w-6xl 3xl:max-w-7xl mx-auto w-full mt-8 md:mt-10">
               {testimonials.slice(0, 3).map((testimonial: any) => (
                 <div key={testimonial.id} className="bg-gray-100 rounded-lg p-6 shadow-md">
                   <p className="text-gray-600 text-sm mb-4 italic">
