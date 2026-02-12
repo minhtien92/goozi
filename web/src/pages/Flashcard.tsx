@@ -455,13 +455,15 @@ export default function Flashcard() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
             </svg>
           </button>
-          <div className="flex-1 text-center min-w-0">
-            <h2 className="text-lg font-semibold text-gray-800 truncate px-2">
-              {headerDisplayTitle}
-            </h2>
-            <p className="text-sm text-gray-500 mt-0.5">
-              {currentIndex + 1} / {vocabularies.length}
-            </p>
+          <div className="flex-1 text-left min-w-0 pl-2">
+            <div className="flex items-center gap-2 min-w-0">
+              <p className="text-sm text-gray-500 flex-shrink-0">
+                {currentIndex + 1} / {vocabularies.length}
+              </p>
+              <h2 className="text-lg font-semibold text-gray-800 truncate pr-2">
+                {headerDisplayTitle}
+              </h2>
+            </div>
           </div>
           <div className="flex items-center gap-1.5">
             <button
@@ -673,8 +675,8 @@ export default function Flashcard() {
                     <div className="w-9 h-9"></div>
                   </div>
                 </div>
-                {/* Overlay with Unlock button in center */}
-                <div className="absolute inset-0 flex items-center justify-center bg-gray-100 bg-opacity-80 rounded-lg">
+                {/* Overlay with Unlock button aligned to the right */}
+                <div className="absolute inset-0 flex items-center justify-end bg-gray-100 bg-opacity-80 rounded-lg pr-6">
                   <button className="bg-blue-500 hover:bg-blue-600 text-white px-8 py-4 rounded-lg font-semibold text-lg transition">
                     Unlock
                   </button>

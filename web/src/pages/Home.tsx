@@ -197,8 +197,8 @@ export default function Home() {
           <div className="fixed left-0 top-0 h-full w-80 bg-white z-50 shadow-2xl">
             {/* Header */}
             <div className="flex justify-between items-center p-6 border-b border-gray-200">
-              <div className="text-2xl font-bold text-cyan-500 flex items-center gap-2">
-                <span>GOOZI</span>
+              <div className="flex items-center gap-2">
+                <img src={logoHeader} alt="Goozi" className="h-8 w-auto" />
               </div>
               <button
                 onClick={() => setLogoMenuOpen(false)}
@@ -366,7 +366,7 @@ export default function Home() {
 
         {/* Navigation CTA (Bottom Right) */}
         {!isBackground && (
-          <div className="fixed bottom-20 right-6 z-30">
+          <div className="fixed bottom-6 right-6 z-30">
             <button
               onClick={() => {
                 if (user) {
