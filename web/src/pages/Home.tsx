@@ -383,6 +383,15 @@ export default function Home() {
           </div>
         )}
 
+        {/* Footer */}
+        {!isBackground && (
+          <footer className="relative z-10 w-full py-4 text-center">
+            <p className="text-gray-600 text-sm">
+              Dòng chữ Copyright @ 2026 Goozi.
+            </p>
+          </footer>
+        )}
+
       </div>
 
       {/* User Menu */}

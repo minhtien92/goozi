@@ -326,7 +326,7 @@ export default function TopicDetail() {
                       currentVocabIndex === actualIndex ? 'border-blue-500 bg-blue-50' : 'border-blue-300'
                     }`}
                   >
-                    <div className="w-full h-24 bg-gray-300 rounded mb-3 flex items-center justify-center text-sm text-gray-500 relative">
+                    <div className="w-full h-40 bg-gray-300 rounded mb-3 flex items-center justify-center text-sm text-gray-500 relative">
                       {vocab.avatar && !imageErrors.has(vocab.id) ? (
                         <img 
                           src={vocab.avatar.startsWith('http') ? vocab.avatar : `${import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:3001'}${vocab.avatar}`} 
