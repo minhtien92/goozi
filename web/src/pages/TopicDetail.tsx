@@ -322,11 +322,11 @@ export default function TopicDetail() {
                       const originalIndex = vocabulariesWithTranslations.findIndex((v) => v.id === vocab.id);
                       navigate(`/topics/${id}/flashcard?index=${originalIndex >= 0 ? originalIndex : actualIndex}`);
                     }}
-                    className={`bg-gray-100 border-2 rounded-lg p-6 hover:bg-blue-50 transition cursor-pointer ${
-                      currentVocabIndex === actualIndex ? 'border-blue-500 bg-blue-50' : 'border-blue-300'
+                    className={`bg-gray-100 border-2 border-blue-300 rounded-lg p-6 cursor-pointer hover:bg-blue-50 hover:border-blue-500 transition ${
+                      currentVocabIndex === actualIndex ? 'border-blue-500 bg-blue-50' : ''
                     }`}
                   >
-                    <div className="w-full h-40 bg-gray-300 rounded mb-3 flex items-center justify-center text-sm text-gray-500 relative">
+                    <div className="w-full bg-gray-300 rounded mb-4 flex items-center justify-center text-sm text-gray-500 relative aspect-[4/3] overflow-hidden">
                       {vocab.avatar && !imageErrors.has(vocab.id) ? (
                         <img 
                           src={vocab.avatar.startsWith('http') ? vocab.avatar : `${import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:3001'}${vocab.avatar}`} 
