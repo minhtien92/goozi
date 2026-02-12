@@ -560,7 +560,7 @@ export default function Flashcard() {
                 </div>
                 {(sourceTranslation.ipa || sourceTranslation.pronunciation) && (
                   <div className="text-sm sm:text-base text-gray-600 italic mt-1">
-                    /{sourceTranslation.ipa || sourceTranslation.pronunciation}/
+                    {sourceTranslation.ipa || sourceTranslation.pronunciation}
                   </div>
                 )}
               </div>
@@ -615,7 +615,7 @@ export default function Flashcard() {
                   </div>
                   {(item.translation.ipa || item.translation.pronunciation) && (
                     <div className="text-sm sm:text-base text-gray-600 italic mt-1">
-                      /{item.translation.ipa || item.translation.pronunciation}/
+                      {item.translation.ipa || item.translation.pronunciation}
                     </div>
                   )}
                 </div>
@@ -669,7 +669,7 @@ export default function Flashcard() {
                     </div>
                     {(lockedItem.translation.ipa || lockedItem.translation.pronunciation) && (
                       <div className="text-sm sm:text-base text-gray-600 italic mt-1">
-                        /{lockedItem.translation.ipa || lockedItem.translation.pronunciation}/
+                        {lockedItem.translation.ipa || lockedItem.translation.pronunciation}
                       </div>
                     )}
                   </div>
