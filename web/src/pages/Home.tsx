@@ -272,7 +272,7 @@ export default function Home() {
             {user ? (
               <button
                 onClick={() => setUserMenuOpen(true)}
-                className="flex items-center gap-2 hover:opacity-80 transition cursor-pointer"
+                className="flex items-center hover:opacity-80 transition cursor-pointer"
               >
                 <div className="w-8 h-8 rounded-full bg-white/30 overflow-hidden flex items-center justify-center text-sm font-semibold">
                   {user?.avatarUrl ? (
@@ -293,7 +293,6 @@ export default function Home() {
                     <span>{user?.name ? user.name.charAt(0).toUpperCase() : 'U'}</span>
                   )}
                 </div>
-                <span>{user?.name || 'User'}</span>
               </button>
             ) : (
               <button
