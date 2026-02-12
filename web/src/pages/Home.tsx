@@ -376,7 +376,8 @@ export default function Home() {
                   setLoginModalOpen(true);
                 }
               }}
-              className="w-36 h-36 rounded-full bg-gradient-to-br from-cyan-300 to-sky-500 text-white font-semibold shadow-xl border border-white/50 hover:scale-105 active:scale-95 transition transform flex items-center justify-center text-center text-lg"
+              className="w-36 h-36 rounded-full text-white font-semibold shadow-xl border border-white/50 hover:scale-105 active:scale-95 transition transform flex items-center justify-center text-center text-lg"
+              style={{ background: 'linear-gradient(to bottom, #11BBDD, #F2F4F6)' }}
             >
               Let&apos;s study!
             </button>
