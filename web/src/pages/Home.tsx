@@ -182,7 +182,7 @@ export default function Home() {
   
   return (
     <div 
-      className={`min-h-screen relative overflow-hidden w-full h-full ${isBackground ? 'pointer-events-none' : ''}`} 
+      className={`h-screen relative overflow-hidden w-full ${isBackground ? 'pointer-events-none' : ''}`} 
       style={{ ...backgroundStyle, ...(isBackground ? { zIndex: 0 } : {}) }}
     >
       {/* Logo Menu */}
@@ -248,7 +248,7 @@ export default function Home() {
       )}
 
       {/* Main Content */}
-      <div className={`relative ${isBackground ? 'z-0' : 'z-10'}`} style={{ position: 'relative' }}>
+      <div className={`relative flex flex-col h-full ${isBackground ? 'z-0' : 'z-10'}`} style={{ position: 'relative' }}>
         {/* Header */}
         {!isBackground && (
           <header className="relative flex justify-between items-center p-6 2xl:p-8">
@@ -307,7 +307,7 @@ export default function Home() {
         )}
 
         {/* Main Content Area */}
-        <div className="px-6 2xl:px-10 3xl:px-12 pb-24 flex flex-col items-center justify-between min-h-[calc(100vh-140px)] pt-12 2xl:pt-16">
+        <div className="px-6 2xl:px-10 3xl:px-12 pb-8 flex-1 flex flex-col items-center justify-between pt-10 2xl:pt-12">
           {/* Tagline */}
           <div className="text-center w-full">
             {slogans.length > 0 ? (
