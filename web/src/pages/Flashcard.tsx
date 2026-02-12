@@ -455,12 +455,12 @@ export default function Flashcard() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
             </svg>
           </button>
-          <div className="flex-1 text-left min-w-0 pl-2">
-            <div className="flex items-center gap-2 min-w-0">
+          <div className="flex-1 min-w-0 pl-2">
+            <div className="flex items-center justify-center gap-2 min-w-0">
               <p className="text-sm text-gray-500 flex-shrink-0">
                 {currentIndex + 1} / {vocabularies.length}
               </p>
-              <h2 className="text-lg font-semibold text-gray-800 truncate pr-2">
+              <h2 className="text-lg font-semibold text-gray-800 truncate pr-2 text-center">
                 {headerDisplayTitle}
               </h2>
             </div>

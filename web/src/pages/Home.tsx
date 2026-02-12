@@ -5,6 +5,7 @@ import UserMenu from '../components/UserMenu';
 import LoginModal from '../components/LoginModal';
 import api from '../config/api';
 import logoHeader from '../assets/img/logo_header.svg';
+import logo from '../assets/img/logo.svg';
 import smallLogo from '../assets/img/small-logo.svg';
 import btnAccount from '../assets/img/btn-account.svg';
 
@@ -194,11 +195,11 @@ export default function Home() {
             onClick={() => setLogoMenuOpen(false)}
           />
           {/* Menu */}
-          <div className="fixed left-0 top-0 h-full w-80 bg-white z-50 shadow-2xl">
+          <div className="fixed left-0 top-0 h-full w-80 bg-[#11BBDD] z-50 shadow-2xl">
             {/* Header */}
-            <div className="flex justify-between items-center p-6 border-b border-gray-200">
+            <div className="flex justify-between items-center p-6 border-b border-white/30">
               <div className="flex items-center gap-2">
-                <img src={logoHeader} alt="Goozi" className="h-8 w-auto" />
+                <img src={logo} alt="Goozi" className="h-8 w-auto" />
               </div>
               <button
                 onClick={() => setLogoMenuOpen(false)}

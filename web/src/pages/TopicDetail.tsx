@@ -274,18 +274,20 @@ export default function TopicDetail() {
       >
         {/* Header */}
         <div className="flex items-center justify-between p-5 2xl:p-6 border-b border-gray-200">
-          <button
-            onClick={() => navigate('/topics')}
-            className="text-gray-600 hover:text-gray-800"
-            title={translations.backToList}
-          >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-            </svg>
-          </button>
-          <h2 className="text-xl 2xl:text-2xl font-bold text-gray-800">
-            {getTopicName(topic)}
-          </h2>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => navigate('/topics')}
+              className="text-gray-600 hover:text-gray-800"
+              title={translations.backToList}
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+            </button>
+            <h2 className="text-xl 2xl:text-2xl font-bold text-gray-800">
+              {getTopicName(topic)}
+            </h2>
+          </div>
           <div className="flex items-center gap-3">
             <input
               type="text"
